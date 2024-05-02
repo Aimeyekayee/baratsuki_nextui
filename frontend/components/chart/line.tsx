@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Empty, Typography } from "antd";
+import { useDisclosure } from "@nextui-org/react";
 
 import dynamic from "next/dynamic";
 import { Line, LineConfig, G2 } from "@ant-design/plots";
@@ -15,6 +16,7 @@ import { each, findIndex } from "@antv/util";
 // import type { LineConfig } from "@ant-design/plots";
 import { text } from "stream/consumers";
 import { ModalOpenStore } from "@/store/modal.open.store";
+import ModalHours from "../modal/modal.hour";
 interface Data {
   ct_actual: number;
   prod_actual: number;
@@ -42,9 +44,72 @@ if (typeof document !== "undefined") {
 }
 const LinePlot: React.FC<LineProps> = ({ parameter }) => {
   console.log(parameter);
-  const setModalOpen = ModalOpenStore((state)=>state.setOpenModal)
+  const formattedData = parameter.map((entry) => {
+    const period = entry.period.slice(0, -3); // Remove the last three characters (":00")
+    return { ...entry, period };
+  });
+  const dayShiftTimes = [
+    "07:35",
+    "08:30",
+    "09:40",
+    "09:50",
+    "10:30",
+    "11:30",
+    "12:30",
+    "13:30",
+    "14:40",
+    "14:50",
+    "15:30",
+    "16:30",
+    "16:50",
+    "17:50",
+    "19:20",
+  ];
+
+  const nightShiftTimes = [
+    "19:35",
+    "20:30",
+    "21:30",
+    "21:40",
+    "22:30",
+    "23:30",
+    "00:20",
+    "01:30",
+    "02:30",
+    "02:50",
+    "03:30",
+    "04:30",
+    "04:50",
+    "05:50",
+    "07:20",
+  ];
+  const updatePeriod = (period: string, shift: string): string => {
+    let index = -1;
+    if (shift === "day") {
+      index = dayShiftTimes.indexOf(period);
+      if (index !== -1 && index > 0) {
+        return `${dayShiftTimes[index - 1]} - ${period}`;
+      }
+    } else if (shift === "night") {
+      index = nightShiftTimes.indexOf(period);
+      if (index !== -1 && index > 0) {
+        return `${nightShiftTimes[index - 1]} - ${period}`;
+      }
+    }
+    return period;
+  };
+
+  const updatedParameter = formattedData.map((item) => ({
+    ...item,
+    period: updatePeriod(item.period, item.shift),
+  }));
+  console.log("updatedParameter", updatedParameter);
+
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const setModalOpen = ModalOpenStore((state) => state.setOpenModal);
+  const setDataTooltip = ModalOpenStore((state) => state.setDataTooltip);
   const { InteractionAction, registerInteraction, registerAction } = G2;
-  const parameterWithoutZero = parameter.filter((obj) => obj.value !== 0);
+  // const parameterWithoutZero = parameter.filter((obj) => obj.value !== 0);
   const ct_target = 16.5;
   const upper = Math.floor((3600 / 16.5) * 1.05);
   const lower = Math.floor((3600 / 16.5) * 0.95);
@@ -180,14 +245,14 @@ const LinePlot: React.FC<LineProps> = ({ parameter }) => {
     ],
   });
 
-  const annotations: any[] = parameterWithoutZero
+  const annotations: any[] = updatedParameter
     .filter((d) => d.type === "actual")
     .map((point) => ({
       type: "text",
       data: [point.period, point.value],
       shape: "badge",
       style: {
-        text: point.value.toString(),
+        text: point.value,
         dy: -1,
         markerSize: 30,
         fontWeight: 30,
@@ -201,50 +266,44 @@ const LinePlot: React.FC<LineProps> = ({ parameter }) => {
       tooltip: false,
     }));
 
-  const annotations142: any[] = parameterWithoutZero
-    .filter((d) => d.type === "actual")
-    .map((point) => ({
-      type: "text",
-      content: point.value.toString(),
-      position: (xScale: any, yScale: any) => {
-        return [
-          `${xScale.scale(point.period.toString()) * 100}%`,
-          `${(1 - yScale.value.scale(point.value)) * 100 - 5}%`,
-        ];
-      },
-      style: {
-        textAlign: "center",
-        fill: "white",
-        cursor:"pointer"
-      },
-      offsetY: -4,
+  const annotations142: any[] = updatedParameter.map((point) => ({
+    type: "text",
+    content: point.value,
+    position: (xScale: any, yScale: any) => {
+      return [
+        `${xScale.scale(point.period.toString()) * 100}%`,
+        `${(1 - yScale.value.scale(point.value)) * 100 - 5}%`,
+      ];
+    },
+    style: {
+      textAlign: "center",
+      fill: "white",
+      cursor: "pointer",
+      fontSize: 22,
+    },
+    offsetY: -4,
 
-      background: {
-        padding: 10,
-        style: {
-          radius: 17,
-          cursor:"pointer",
-          fill:
-            point.value >= upper
-              ? "rgba(255,0,0,0.7)"
-              : point.value <= lower
-              ? "rgba(255,0,0,0.7)"
-              : "green",
-        },
+    background: {
+      padding: 10,
+      style: {
+        radius: 17,
+        cursor: "pointer",
+        fill:
+          point.value >= upper
+            ? "rgba(255,0,0,0.7)"
+            : point.value <= lower
+            ? "rgba(255,0,0,0.7)"
+            : "green",
       },
-    }));
+    },
+  }));
 
   let chart: any;
   const value = 158;
-  const config = {
-    data: parameterWithoutZero,
+  const config: LineConfig = {
+    data: updatedParameter,
     xField: "period",
     yField: "value",
-    // colorField: "type",
-    // point: {
-    //   shapeField: "point",
-    //   sizeField: 4,
-    // },
     point: {
       size: 5,
       shape: "custom-point",
@@ -261,22 +320,35 @@ const LinePlot: React.FC<LineProps> = ({ parameter }) => {
     annotations: [
       ...annotations142,
       {
+        type: "region",
+        start: ["min", lower],
+        end: ["max", upper],
+        style: {
+          fill: "#2289ff",
+          fillOpacity: "0.2",
+          // opacity: 1,
+        },
+      },
+      {
         type: "line",
         start: ["min", lower],
         end: ["max", lower],
         text: {
-          content: `Upper = ${upper}`,
-          offsetY: -2,
+          content: `Lower = ${lower}`,
+          offsetY: 1,
           position: "right",
           style: {
             textAlign: "right",
             fontSize: 22,
-            fill: "rgba(44, 53, 66, 0.45)",
-            textBaseline: "bottom",
+            fontWeight: "bold",
+            fill: "rgba(34, 137, 255, 1)",
+            textBaseline: "top",
           },
         },
         style: {
-          stroke: "rgba(0, 0, 0, 0.55)",
+          stroke: "rgba(34, 137, 255, 1)",
+          lineDash: [4, 4],
+          lineWidth: 2.5,
         },
       }, // 目标值
       {
@@ -285,17 +357,21 @@ const LinePlot: React.FC<LineProps> = ({ parameter }) => {
         end: ["max", upper],
         text: {
           position: "right",
-          content: `Lower = ${lower}`,
+          content: `Upper = ${upper}`,
           offsetY: -2,
           style: {
             textAlign: "right",
             fontSize: 22,
-            fill: "rgba(44, 53, 66, 0.45)",
+            fontWeight: "bold",
+            fill: "rgba(34, 137, 255, 1)",
             textBaseline: "bottom",
           },
         },
         style: {
-          stroke: "rgba(0, 0, 0, 0.55)",
+          fill: "#2289ff",
+          stroke: "rgba(34, 137, 255, 1)",
+          lineDash: [4, 4],
+          lineWidth: 2.5,
         },
       },
     ],
@@ -318,18 +394,21 @@ const LinePlot: React.FC<LineProps> = ({ parameter }) => {
     ],
   };
 
-  return parameterWithoutZero.length > 0 ? (
+  return (
     <Line
       {...config}
       onReady={(plot) => {
-        plot.chart.on("plot:click", (evt:any) => {
+        plot.chart.on("plot:click", (evt: any) => {
           const { x, y } = evt;
-          console.log(plot.chart.getTooltipItems({ x, y }));
+          const bigDataFromToolItem = plot.chart.getTooltipItems({
+            x,
+            y,
+          });
+          setDataTooltip(bigDataFromToolItem);
+          setModalOpen(true);
         });
       }}
     />
-  ) : (
-    <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
   );
 };
 

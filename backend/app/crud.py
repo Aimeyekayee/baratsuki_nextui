@@ -68,48 +68,49 @@ def get_dataparameter(
     db: Session,
 ):
     stmt = f"""
-        	SELECT id, section_code, line_id, machine_no, date, data
-            FROM public.data_baratsuki 
+        	SELECT db.id, db.section_code, db.line_id, db.machine_no, db.date, db.data,m.machine_name
+            FROM public.data_baratsuki db
+            JOIN public.machines m ON db.machine_no = m.machine_no
             WHERE (
-                date::date = '{date_current}'
+                db.date::date = '{date_current}'
                 AND (
-                    (EXTRACT(HOUR FROM date) = 7 AND EXTRACT(MINUTE FROM date) = 35)
-                    OR (EXTRACT(HOUR FROM date) = 8 AND EXTRACT(MINUTE FROM date) = 30)
-                    OR (EXTRACT(HOUR FROM date) = 9 AND EXTRACT(MINUTE FROM date) IN (40, 50))
-                    OR (EXTRACT(HOUR FROM date) = 10 AND EXTRACT(MINUTE FROM date) = 30)
-                    OR (EXTRACT(HOUR FROM date) = 11 AND EXTRACT(MINUTE FROM date) = 30)
-                    OR (EXTRACT(HOUR FROM date) = 12 AND EXTRACT(MINUTE FROM date) = 30)
-                    OR (EXTRACT(HOUR FROM date) = 13 AND EXTRACT(MINUTE FROM date) = 30)
-                    OR (EXTRACT(HOUR FROM date) = 14 AND EXTRACT(MINUTE FROM date) IN (40, 50))
-                    OR (EXTRACT(HOUR FROM date) = 15 AND EXTRACT(MINUTE FROM date) = 30)
-                    OR (EXTRACT(HOUR FROM date) = 16 AND EXTRACT(MINUTE FROM date) IN (30, 50))
-                    OR (EXTRACT(HOUR FROM date) = 17 AND EXTRACT(MINUTE FROM date) = 50)
-                    OR (EXTRACT(HOUR FROM date) = 19 AND EXTRACT(MINUTE FROM date) IN (20, 35))
-                    OR (EXTRACT(HOUR FROM date) = 20 AND EXTRACT(MINUTE FROM date) = 30)
-                    OR (EXTRACT(HOUR FROM date) = 21 AND EXTRACT(MINUTE FROM date) IN (30, 40))
-                    OR (EXTRACT(HOUR FROM date) = 22 AND EXTRACT(MINUTE FROM date) = 30)
-                    OR (EXTRACT(HOUR FROM date) = 23 AND EXTRACT(MINUTE FROM date) = 30)
-                    OR (EXTRACT(HOUR FROM date) = 0 AND EXTRACT(MINUTE FROM date) = 20)
-                    OR (EXTRACT(HOUR FROM date) = 1 AND EXTRACT(MINUTE FROM date) = 30)
-                    OR (EXTRACT(HOUR FROM date) = 2 AND EXTRACT(MINUTE FROM date) IN (30, 50))
-                    OR (EXTRACT(HOUR FROM date) = 3 AND EXTRACT(MINUTE FROM date) = 30)
-                    OR (EXTRACT(HOUR FROM date) = 4 AND EXTRACT(MINUTE FROM date) IN (30, 50))
-                    OR (EXTRACT(HOUR FROM date) = 5 AND EXTRACT(MINUTE FROM date) = 50)
-                )
-            ) OR (
-                date::date = '{next_date}'
-                AND (
-                    (EXTRACT(HOUR FROM date) = 0 AND EXTRACT(MINUTE FROM date) = 20)
-                    OR (EXTRACT(HOUR FROM date) = 1 AND EXTRACT(MINUTE FROM date) = 30)
-                    OR (EXTRACT(HOUR FROM date) = 2 AND EXTRACT(MINUTE FROM date) IN (30, 50))
-                    OR (EXTRACT(HOUR FROM date) = 3 AND EXTRACT(MINUTE FROM date) = 30)
-                    OR (EXTRACT(HOUR FROM date) = 4 AND EXTRACT(MINUTE FROM date) IN (30, 50))
-                    OR (EXTRACT(HOUR FROM date) = 5 AND EXTRACT(MINUTE FROM date) = 50)
-                    OR (EXTRACT(HOUR FROM date) = 7 AND EXTRACT(MINUTE FROM date) = 20)
-                )
-                AND section_code = {section_code} AND line_id = {line_id} AND machine_no in ('{machine_no1}','{machine_no2}')
+                (EXTRACT(HOUR FROM db.date) = 7 AND EXTRACT(MINUTE FROM db.date) = 35)
+                OR (EXTRACT(HOUR FROM db.date) = 8 AND EXTRACT(MINUTE FROM db.date) = 30)
+                OR (EXTRACT(HOUR FROM db.date) = 9 AND EXTRACT(MINUTE FROM db.date) IN (40, 50))
+                OR (EXTRACT(HOUR FROM db.date) = 10 AND EXTRACT(MINUTE FROM db.date) = 30)
+                OR (EXTRACT(HOUR FROM db.date) = 11 AND EXTRACT(MINUTE FROM db.date) = 30)
+                OR (EXTRACT(HOUR FROM db.date) = 12 AND EXTRACT(MINUTE FROM db.date) = 30)
+                OR (EXTRACT(HOUR FROM db.date) = 13 AND EXTRACT(MINUTE FROM db.date) = 30)
+                OR (EXTRACT(HOUR FROM db.date) = 14 AND EXTRACT(MINUTE FROM db.date) IN (40, 50))
+                OR (EXTRACT(HOUR FROM db.date) = 15 AND EXTRACT(MINUTE FROM db.date) = 30)
+                OR (EXTRACT(HOUR FROM db.date) = 16 AND EXTRACT(MINUTE FROM db.date) IN (30, 50))
+                OR (EXTRACT(HOUR FROM db.date) = 17 AND EXTRACT(MINUTE FROM db.date) = 50)
+                OR (EXTRACT(HOUR FROM db.date) = 19 AND EXTRACT(MINUTE FROM db.date) IN (20, 35))
+                OR (EXTRACT(HOUR FROM db.date) = 20 AND EXTRACT(MINUTE FROM db.date) = 30)
+                OR (EXTRACT(HOUR FROM db.date) = 21 AND EXTRACT(MINUTE FROM db.date) IN (30, 40))
+                OR (EXTRACT(HOUR FROM db.date) = 22 AND EXTRACT(MINUTE FROM db.date) = 30)
+                OR (EXTRACT(HOUR FROM db.date) = 23 AND EXTRACT(MINUTE FROM db.date) = 30)
+                OR (EXTRACT(HOUR FROM db.date) = 0 AND EXTRACT(MINUTE FROM db.date) = 20)
+                OR (EXTRACT(HOUR FROM db.date) = 1 AND EXTRACT(MINUTE FROM db.date) = 30)
+                OR (EXTRACT(HOUR FROM db.date) = 2 AND EXTRACT(MINUTE FROM db.date) IN (30, 50))
+                OR (EXTRACT(HOUR FROM db.date) = 3 AND EXTRACT(MINUTE FROM db.date) = 30)
+                OR (EXTRACT(HOUR FROM db.date) = 4 AND EXTRACT(MINUTE FROM db.date) IN (30, 50))
+                OR (EXTRACT(HOUR FROM db.date) = 5 AND EXTRACT(MINUTE FROM db.date) = 50)
             )
-            ORDER BY id ASC;
+            ) OR (
+                db.date::date = '{next_date}'
+                AND (
+                (EXTRACT(HOUR FROM db.date) = 0 AND EXTRACT(MINUTE FROM db.date) = 20)
+                OR (EXTRACT(HOUR FROM db.date) = 1 AND EXTRACT(MINUTE FROM db.date) = 30)
+                OR (EXTRACT(HOUR FROM db.date) = 2 AND EXTRACT(MINUTE FROM db.date) IN (30, 50))
+                OR (EXTRACT(HOUR FROM db.date) = 3 AND EXTRACT(MINUTE FROM db.date) = 30)
+                OR (EXTRACT(HOUR FROM db.date) = 4 AND EXTRACT(MINUTE FROM db.date) IN (30, 50))
+                OR (EXTRACT(HOUR FROM db.date) = 5 AND EXTRACT(MINUTE FROM db.date) = 50)
+                OR (EXTRACT(HOUR FROM db.date) = 7 AND EXTRACT(MINUTE FROM db.date) = 20)
+            )
+                AND db.section_code = {section_code} AND db.line_id = {line_id} AND db.machine_no in ('{machine_no1}','{machine_no2}')
+            )
+            ORDER BY db.id ASC;
 	
     """
     try:
@@ -121,8 +122,6 @@ def get_dataparameter(
                 "data"
             ]  # Convert JSONB to Python dictionary
             parsed_result.append(parsed_row)
-
-        return parsed_result
 
         return parsed_result
     except Exception as e:

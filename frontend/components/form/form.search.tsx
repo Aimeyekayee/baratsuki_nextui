@@ -6,6 +6,7 @@ import { requestSection } from "@/action/request.record";
 import { requestMachinename } from "@/action/request.record";
 import { useDateFormatter } from "@react-aria/i18n";
 import dayjs from "dayjs";
+import { GeneralStore } from "@/store/general.store";
 import { MQTTStore } from "@/store/mqttStore";
 import {
   Button,
@@ -25,6 +26,7 @@ import {
 } from "@internationalized/date";
 import { ISection } from "@/types/section.type";
 import { ZonedDateTime } from "@internationalized/date";
+import { ModalOpenStore } from "@/store/modal.open.store";
 
 const FormSearch = () => {
   let formatter = useDateFormatter({ dateStyle: "medium" });
@@ -35,6 +37,7 @@ const FormSearch = () => {
   const [machineNames, setMachineNames] = useState([]);
   const sections = SearchRecStore((state) => state.sections);
   const machinename = SearchRecStore((state) => state.name_no_machine);
+  const modalOpen = ModalOpenStore((state) => state.openModal);
 
   const sortedSection = sections
     .slice()
@@ -59,6 +62,34 @@ const FormSearch = () => {
     mqttDataMachine1,
     mqttDataMachine2,
   } = MQTTStore();
+
+  const machine_no_from_form = ["6EW-0040", "6TM-0315"];
+
+  useEffect(() => {
+    if (!client) return;
+
+    client.on("connect", () => {
+      console.log("connected!");
+      //!อาจจะพิจารณาแค่ 2 อันตาม form ที่เก็บจาก select
+      client.subscribe([
+        "414273/86/baratsuki/+/raw",
+        // "test1emqxmqtt414272/A220/AddOn_Zone2/faultcode/Raw",
+      ]);
+      client.on("message", async (topic, payload) => {
+        const data = JSON.parse(payload.toString());
+        if (data.machine_no === machine_no_from_form.at(0)) {
+          console.log(data);
+          setMqttDataMachine1(data);
+        } else if (data.machine_no === machine_no_from_form.at(1)) {
+          setMqttDataMachine2(data);
+        }
+      });
+    }); //ดึงจาก environment
+
+    return () => {
+      console.log("run before change page");
+    };
+  }, [client, setMqttDataMachine1, setMqttDataMachine2]);
   const {
     register,
     handleSubmit,
@@ -104,7 +135,8 @@ const FormSearch = () => {
     setSection_code(section_code);
     await requestMachinename(section_code);
   };
-  const [dateStrings, setCurrentStrings] = useState<string>("");
+  const setDateString = GeneralStore((state) => state.setDateStrings);
+  const dateStrings = GeneralStore((state) => state.dateStrings);
   const [nextDate, setNextDate] = useState<string>("");
   const currentDate = dayjs().format("YYYY-MM-DD");
 
@@ -119,12 +151,19 @@ const FormSearch = () => {
   }, []);
 
   const [lineId, setLineID] = useState<number | undefined>(0);
-  const [target, setTarget] = useState<number>(0);
-  const [actualNotRealTimeMC1, setActualNotRealTimeMC1] = useState<number>(0);
-  const [actualNotRealTimeMC2, setActualNotRealTimeMC2] = useState<number>(0);
-  const onMultiChange = (value: Selection | any) => {
-    
-  };
+  const setTargetNotRealTimeMC1 = GeneralStore(
+    (state) => state.setTargetNotRealTimeMC1
+  );
+  const setTargetNotRealTimeMC2 = GeneralStore(
+    (state) => state.setTargetNotRealTimeMC2
+  );
+  const setActualNotRealTimeMC1 = GeneralStore(
+    (state) => state.setActualNotRealTimeMC1
+  );
+  const setActualNotRealTimeMC2 = GeneralStore(
+    (state) => state.setActualNotRealTimeMC2
+  );
+  const onMultiChange = (value: Selection | any) => {};
 
   const onDateChange = (value: DateValue | any) => {
     const date = formatter.format(value.toDate(getLocalTimeZone()));
@@ -133,31 +172,21 @@ const FormSearch = () => {
     const month = ("0" + (orginalDate.getMonth() + 1)).slice(-2);
     const day = ("0" + orginalDate.getDate()).slice(-2);
     const formattedDate = `${year}-${month}-${day}`;
-    setCurrentStrings(formattedDate);
+    setDateString(formattedDate);
     const selectDate = new Date(formattedDate);
     selectDate.setDate(selectDate.getDate() + 1);
     const nextDate = selectDate.toISOString().split("T")[0];
     setNextDate(nextDate);
   };
-  const [zone1, setZone1] = useState<any[]>([]);
-  const [zone2, setZone2] = useState<any[]>([]);
-  const [machineMulti, setMachineMulti] = useState<string[]>([]);
+  const setZone1 = GeneralStore((state) => state.setZone1);
+  const setZone2 = GeneralStore((state) => state.setZone2);
   const FetchSetting = async () => {
-    const machine_no = getValues(['machine_no'])
-    const split_machine = machine_no[0].split(',')
-    console.log("section_code", typeof section_code);
-    console.log("line_id", typeof lineId);
-    console.log("machine_no1", typeof split_machine[0]);
-    console.log("machine_no2", typeof split_machine[1]);
-    console.log("dateString", typeof dateStrings);
-    console.log("nextdate", typeof nextDate);
-
-    console.log("section_code",section_code);
-    console.log("line_id",lineId);
-    console.log("machine_no1",split_machine[0]);
-    console.log("machine_no2",split_machine[1]);
-    console.log("dateString",dateStrings);
-    console.log("nextdate",nextDate);
+    const machine_no = getValues(["machine_no"]);
+    const split_machine = machine_no[0].split(",");
+    const modifiedData = split_machine.map((item: any) =>
+      item.replace(/-\d+$/, "")
+    );
+    console.log(modifiedData);
     try {
       const response = await axios.get(
         "http://localhost:8000/get_dataparameter",
@@ -165,8 +194,8 @@ const FormSearch = () => {
           params: {
             section_code: section_code,
             line_id: lineId,
-            machine_no1: split_machine[0],
-            machine_no2: split_machine[1],
+            machine_no1: modifiedData[0],
+            machine_no2: modifiedData[1],
             date_current: dateStrings,
             next_date: nextDate,
           },
@@ -230,7 +259,10 @@ const FormSearch = () => {
         let previousNightValueMc1 = 0;
         let previousDayValueMc2 = 0;
         let previousNightValueMc2 = 0;
-        machineNo1Results.forEach((entry: any, index: number) => {
+
+        console.log(machineNo1Results);
+
+        machineNo1Results.forEach((entry, index) => {
           const time = new Date(entry.date).toLocaleTimeString("en-US", {
             hour12: false,
           });
@@ -240,30 +272,28 @@ const FormSearch = () => {
           entry.shift = isDayShift ? "day" : "night";
 
           if (isDayShift) {
-            if (time === "09:50:00") {
-              entry.value = machineNo1Results[index - 1].value;
-            } else if (time === "12:30:00") {
-              entry.value = machineNo1Results[index - 1].value;
-            } else if (time === "14:50:00") {
-              entry.value = machineNo1Results[index - 1].value;
-            } else if (time === "16:50:00") {
-              entry.value = machineNo1Results[index - 1].value;
+            if (
+              time === "09:50:00" ||
+              time === "12:30:00" ||
+              time === "14:50:00" ||
+              time === "16:50:00"
+            ) {
+              entry.value = index > 0 ? machineNo1Results[index - 1].value : 0;
             } else {
               entry.value = entry.data.prod_actual - previousDayValueMc1;
               previousDayValueMc1 = entry.data.prod_actual;
             }
           } else if (isNightShift) {
-            if (time === "21:40:00") {
-              entry.value = machineNo1Results[index - 1].value;
-            } else if (time === "00:20:00") {
-              entry.value = machineNo1Results[index - 1].value;
-            } else if (time === "02:50:00") {
-              entry.value = machineNo1Results[index - 1].value;
-            } else if (time === "04:50:00") {
-              entry.value = machineNo1Results[index - 1].value;
+            if (
+              time === "21:40:00" ||
+              time === "00:20:00" ||
+              time === "02:50:00" ||
+              time === "04:50:00"
+            ) {
+              entry.value = index > 0 ? machineNo1Results[index - 1].value : 0;
             } else {
               entry.value =
-                isNightShift && time === "19:35:00"
+                time === "19:35:00"
                   ? 0
                   : entry.data.prod_actual - previousNightValueMc1;
               previousNightValueMc1 = entry.data.prod_actual;
@@ -272,12 +302,13 @@ const FormSearch = () => {
 
           entry.period = time;
           entry.type = "actual";
+          console.log(entry);
         });
         const lastIndexObjectMachine1 =
           machineNo1Results[machineNo1Results.length - 1].data.prod_actual;
         setActualNotRealTimeMC1(lastIndexObjectMachine1);
 
-        machineNo2Results.forEach((entry: any, index: number) => {
+        machineNo2Results.forEach((entry, index) => {
           const time = new Date(entry.date).toLocaleTimeString("en-US", {
             hour12: false,
           });
@@ -287,30 +318,28 @@ const FormSearch = () => {
           entry.shift = isDayShift ? "day" : "night";
 
           if (isDayShift) {
-            if (time === "09:50:00") {
-              entry.value = machineNo2Results[index - 1].value;
-            } else if (time === "12:30:00") {
-              entry.value = machineNo2Results[index - 1].value;
-            } else if (time === "14:50:00") {
-              entry.value = machineNo2Results[index - 1].value;
-            } else if (time === "16:50:00") {
-              entry.value = machineNo2Results[index - 1].value;
+            if (
+              time === "09:50:00" ||
+              time === "12:30:00" ||
+              time === "14:50:00" ||
+              time === "16:50:00"
+            ) {
+              entry.value = index > 0 ? machineNo2Results[index - 1].value : 0;
             } else {
               entry.value = entry.data.prod_actual - previousDayValueMc2;
               previousDayValueMc2 = entry.data.prod_actual;
             }
           } else if (isNightShift) {
-            if (time === "21:40:00") {
-              entry.value = machineNo2Results[index - 1].value;
-            } else if (time === "00:20:00") {
-              entry.value = machineNo2Results[index - 1].value;
-            } else if (time === "02:50:00") {
-              entry.value = machineNo2Results[index - 1].value;
-            } else if (time === "04:50:00") {
-              entry.value = machineNo2Results[index - 1].value;
+            if (
+              time === "21:40:00" ||
+              time === "00:20:00" ||
+              time === "02:50:00" ||
+              time === "04:50:00"
+            ) {
+              entry.value = index > 0 ? machineNo2Results[index - 1].value : 0;
             } else {
               entry.value =
-                isNightShift && time === "19:35:00"
+                time === "19:35:00"
                   ? 0
                   : entry.data.prod_actual - previousNightValueMc2;
               previousNightValueMc2 = entry.data.prod_actual;
@@ -319,6 +348,7 @@ const FormSearch = () => {
 
           entry.period = time;
           entry.type = "actual";
+          console.log(entry);
         });
 
         const lastIndexObjectMachine2 =
@@ -334,7 +364,24 @@ const FormSearch = () => {
         console.log("result1", results1);
         console.log("result2", results2);
 
-        const resultTest = results1
+        const resultTest1 = results1
+          .map((item: any, index: any, array: any) => {
+            if (index < array.length - 1) {
+              const beginDate = new Date(item.date);
+              const endDate = new Date(array[index + 1].date);
+              const deltaTime =
+                (endDate.getTime() - beginDate.getTime()) / 1000;
+              return {
+                begin: item.date,
+                end: array[index + 1].date,
+                time: deltaTime,
+              };
+            }
+            return null;
+          })
+          .filter((item: any) => item !== null); // Filter out nulls
+
+        const resultTest2 = results2
           .map((item: any, index: any, array: any) => {
             if (index < array.length - 1) {
               const beginDate = new Date(item.date);
@@ -360,16 +407,26 @@ const FormSearch = () => {
           "02:30:00",
           "04:30:00",
         ];
-        const filteredResults = resultTest.filter((item) => {
+        const filteredResults11 = resultTest1.filter((item) => {
           const timePart = item?.begin.split("T")[1];
           return !timesToRemove.includes(timePart);
         });
 
-        console.log(filteredResults);
-        const sumTimeTarget =
-          filteredResults.reduce((total, item: any) => total + item.time, 0) /
+        const filteredResults22 = resultTest2.filter((item) => {
+          const timePart = item?.begin.split("T")[1];
+          return !timesToRemove.includes(timePart);
+        });
+
+        console.log(filteredResults11);
+        const sumTimeTarget1 =
+          filteredResults11.reduce((total, item: any) => total + item.time, 0) /
           16.5;
-        setTarget(sumTimeTarget);
+        setTargetNotRealTimeMC1(sumTimeTarget1);
+
+        const sumTimeTarget2 =
+          filteredResults22.reduce((total, item: any) => total + item.time, 0) /
+          16.5;
+        setTargetNotRealTimeMC2(sumTimeTarget2);
 
         const excludedPeriods = ["07:35:00", "19:35:00"];
 
@@ -382,6 +439,7 @@ const FormSearch = () => {
 
         setZone1(filteredResults1);
         console.log("filterRes1", filteredResults1);
+        console.log("results1", results1);
         setZone2(filteredResults2);
         console.log("filterRes2", filteredResults2);
 

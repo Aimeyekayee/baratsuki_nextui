@@ -1,55 +1,59 @@
-
+import { VoidFunctionComponent } from "react";
 import { create } from "zustand";
 
 interface IMode {
-  loadingSpin: boolean;
-  loadingFetchLinename: boolean;
-  loadingFetchMachineNo: boolean;
-  loadingSection: boolean;
-  clearFormRec: boolean;
-  editableData: boolean;
-
-  loadingSpinModal: boolean;
-  setLoadingSpinModal: (loadingSpinModal: boolean) => void;
-  setEditableData: (editable: boolean) => void;
-  setClearFormRec: (clearFormRec: boolean) => void;
-  setloadingSection: (loadingSection: boolean) => void;
-  setloadingSpin: (loadingSpin: boolean) => void;
-  setloadingFetchLinename: (loadingFetchLinename: boolean) => void;
-  setloadingFetchMachineNo: (loadingFetchMachineNo: boolean) => void;
+  zone1: any[];
+  zone2: any[];
+  dateStrings: string | string[];
+  actualNotRealTimeMC1: number;
+  actualNotRealTimeMC2: number;
+  targetNotRealTimeMC1: number;
+  targetNotRealTimeMC2: number;
+  openModal: boolean;
+  setOpenModal: (openModal: boolean) => void;
+  setTargetNotRealTimeMC1: (targetNotRealTimeMC1: number) => void;
+  setTargetNotRealTimeMC2: (targetNotRealTimeMC2: number) => void;
+  setActualNotRealTimeMC1: (actualNotRealTimeMC1: number) => void;
+  setActualNotRealTimeMC2: (actualNotRealTimeMC1: number) => void;
+  setZone1: (newDataArray: any[]) => void;
+  setZone2: (newDataArray: any[]) => void;
+  setDateStrings: (dateStrings: string | string[]) => void;
 }
 
 export const GeneralStore = create<IMode>((...args) => {
   const [set, get] = args;
   return {
-    loadingSpin: false,
-    loadingFetchLinename: false,
-    loadingFetchMachineNo: false,
-    loadingSection: true,
-    clearFormRec: false,
-    editableData: false,
-    loadingSpinModal: false,
-    setLoadingSpinModal(loadingSpinModal) {
-      set({ loadingSpinModal });
+    zone1: [],
+    zone2: [],
+    dateStrings: "",
+    actualNotRealTimeMC1: 0,
+    actualNotRealTimeMC2: 0,
+    targetNotRealTimeMC1: 0,
+    targetNotRealTimeMC2: 0,
+    openModal: false,
+    setOpenModal(openModal) {
+      set({ openModal });
     },
-
-    setEditableData(editableData) {
-      set({ editableData });
+    setTargetNotRealTimeMC1(targetNotRealTimeMC1) {
+      set({ targetNotRealTimeMC1 });
     },
-    setClearFormRec(clearFormRec) {
-      set({ clearFormRec });
+    setTargetNotRealTimeMC2(targetNotRealTimeMC2) {
+      set({ targetNotRealTimeMC2 });
     },
-    setloadingSection(loadingSection) {
-      set({ loadingSection });
+    setActualNotRealTimeMC1(actualNotRealTimeMC1) {
+      set({ actualNotRealTimeMC1 });
     },
-    setloadingSpin(loadingSpin) {
-      set({ loadingSpin });
+    setActualNotRealTimeMC2(actualNotRealTimeMC2) {
+      set({ actualNotRealTimeMC2 });
     },
-    setloadingFetchLinename(loadingFetchLinename) {
-      set({ loadingFetchLinename });
+    setDateStrings(dateStrings) {
+      set({ dateStrings });
     },
-    setloadingFetchMachineNo(loadingFetchMachineNo) {
-      set({ loadingFetchMachineNo });
+    setZone1(newDataArray) {
+      set({ zone1: newDataArray });
+    },
+    setZone2(newDataArray) {
+      set({ zone2: newDataArray });
     },
   };
 });

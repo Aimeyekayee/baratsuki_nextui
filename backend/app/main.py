@@ -66,6 +66,7 @@ class DataResponse(BaseModel):
     section_code: int
     line_id: int
     machine_no: str
+    machine_name:str
     date: Optional[dt.datetime]
     data: dict
 
