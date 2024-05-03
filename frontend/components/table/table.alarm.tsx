@@ -25,7 +25,6 @@ type User = (typeof users)[0];
 export default function TableMock() {
   const renderCell = React.useCallback((user: User, columnKey: React.Key) => {
     const cellValue = user[columnKey as keyof User];
-
     switch (columnKey) {
       case "role":
         return (
@@ -36,6 +35,8 @@ export default function TableMock() {
             </p>
           </div>
         );
+      case "name":
+        return <p>{user.name}</p>;
       case "status":
         return (
           <Chip

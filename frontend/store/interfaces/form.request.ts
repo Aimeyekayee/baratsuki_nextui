@@ -1,1 +1,0 @@
-import { FormRecordData } from "@/types/formrec.type";

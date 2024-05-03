@@ -404,8 +404,9 @@ const LinePlot: React.FC<LineProps> = ({ parameter }) => {
             x,
             y,
           });
-          setDataTooltip(bigDataFromToolItem);
-          setModalOpen(true);
+          console.log(bigDataFromToolItem)
+          // setDataTooltip(bigDataFromToolItem);
+          // setModalOpen(true);
         });
       }}
     />

@@ -116,8 +116,8 @@ const MonitorData: React.FC<IProps> = ({
           >
             {dateString === currentDate
               ? zone === 1
-                ? ((mqttDataMachine1 / targetMqtt) * 100).toFixed(2)
-                : ((mqttDataMachine2 / targetMqtt) * 100).toFixed(2)
+                ? ((mqttDataMachine1.prod_actual / targetMqtt) * 100).toFixed(2)
+                : ((mqttDataMachine2.prod_actual / targetMqtt) * 100).toFixed(2)
               : ((actual / targetNotRealtime) * 100).toFixed(2)}
           </Typography>
         </Card>

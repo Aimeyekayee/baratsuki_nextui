@@ -92,7 +92,7 @@ const ModalHour: React.FC = () => {
         isOpen={modalOpen}
         onOpenChange={onOpenChange}
         onClose={() => setOpenModal(false)}
-        style={{width:"50rem"}}
+        size="5xl"
       >
         <ModalContent>
           {(onClose) => (
@@ -124,16 +124,12 @@ const ModalHour: React.FC = () => {
                 })}
               </ModalHeader>
               <ModalBody className="flex flex-row">
-                  <AreaPlot />
-                  <TableMock/>
-
+                <AreaPlot />
+                  <ModalHour />
               </ModalBody>
               <ModalFooter>
                 <Button color="danger" variant="light" onPress={onClose}>
                   Close
-                </Button>
-                <Button color="primary" onPress={onClose}>
-                  Action
                 </Button>
               </ModalFooter>
             </>
