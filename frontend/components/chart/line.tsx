@@ -1,7 +1,18 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Empty, Typography } from "antd";
-import { useDisclosure } from "@nextui-org/react";
+import {
+  useDisclosure,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Button,
+  Chip,
+} from "@nextui-org/react";
+import AreaPlot from "./areaHour";
+import ModalHour from "../modal/modal.hour";
 
 import dynamic from "next/dynamic";
 import { Line, LineConfig, G2 } from "@ant-design/plots";
@@ -44,6 +55,8 @@ if (typeof document !== "undefined") {
 }
 const LinePlot: React.FC<LineProps> = ({ parameter }) => {
   console.log(parameter);
+  
+  const dataTooltip = ModalOpenStore((state) => state.dataTooltip);
   const formattedData = parameter.map((entry) => {
     const period = entry.period.slice(0, -3); // Remove the last three characters (":00")
     return { ...entry, period };
@@ -82,6 +95,36 @@ const LinePlot: React.FC<LineProps> = ({ parameter }) => {
     "04:50",
     "05:50",
     "07:20",
+  ];
+  const period = [
+    { periodTime: "07:35 - 08:30", time: 3300, status: 1 },
+    { periodTime: "08:30 - 09:40", time: 4200, status: 1 },
+    { periodTime: "09:40 - 09:50", time: 600, status: 2 },
+    { periodTime: "09:50 - 10:30", time: 2400, status: 1 },
+    { periodTime: "10:30 - 11:30", time: 3600, status: 1 },
+    { periodTime: "11:30 - 12:30", time: 3600, status: 3 },
+    { periodTime: "12:30 - 13:30", time: 3600, status: 1 },
+    { periodTime: "13:30 - 14:40", time: 4200, status: 1 },
+    { periodTime: "14:40 - 14:50", time: 600, status: 2 },
+    { periodTime: "14:50 - 15:30", time: 2400, status: 1 },
+    { periodTime: "15:30 - 16:30", time: 3600, status: 1 },
+    { periodTime: "16:30 - 16:50", time: 1200, status: 2 },
+    { periodTime: "16:50 - 17:50", time: 3600, status: 1 },
+    { periodTime: "17:50 - 19:20", time: 5400, status: 1 },
+    { periodTime: "19:35 - 20:30", time: 3300, status: 1 },
+    { periodTime: "20:30 - 21:30", time: 3600, status: 1 },
+    { periodTime: "21:30 - 21:40", time: 600, status: 2 },
+    { periodTime: "21:40 - 22:30", time: 3000, status: 1 },
+    { periodTime: "22:30 - 23:30", time: 3600, status: 1 },
+    { periodTime: "23:30 - 00:20", time: 3000, status: 3 },
+    { periodTime: "00:20 - 01:30", time: 4200, status: 1 },
+    { periodTime: "01:30 - 02:30", time: 3600, status: 1 },
+    { periodTime: "02:30 - 02:50", time: 1200, status: 2 },
+    { periodTime: "02:50 - 03:30", time: 2400, status: 1 },
+    { periodTime: "03:30 - 04:30", time: 3600, status: 1 },
+    { periodTime: "04:30 - 04:50", time: 1200, status: 2 },
+    { periodTime: "04:50 - 05:50", time: 3600, status: 1 },
+    { periodTime: "05:50 - 07:20", time: 5400, status: 1 },
   ];
   const updatePeriod = (period: string, shift: string): string => {
     let index = -1;
@@ -395,21 +438,72 @@ const LinePlot: React.FC<LineProps> = ({ parameter }) => {
   };
 
   return (
-    <Line
-      {...config}
-      onReady={(plot) => {
-        plot.chart.on("plot:click", (evt: any) => {
-          const { x, y } = evt;
-          const bigDataFromToolItem = plot.chart.getTooltipItems({
-            x,
-            y,
+    <>
+      <Line
+        {...config}
+        onReady={(plot) => {
+          plot.chart.on("plot:click", (evt: any) => {
+            const { x, y } = evt;
+            const bigDataFromToolItem = plot.chart.getTooltipItems({
+              x,
+              y,
+            });
+            console.log(bigDataFromToolItem);
+            setDataTooltip(bigDataFromToolItem);
+            onOpen();
           });
-          console.log(bigDataFromToolItem)
-          // setDataTooltip(bigDataFromToolItem);
-          // setModalOpen(true);
-        });
-      }}
-    />
+        }}
+      />
+      <Modal
+        isOpen={isOpen}
+        onOpenChange={onOpenChange}
+        isDismissable={false}
+        isKeyboardDismissDisabled={true}
+        size="5xl"
+      >
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex gap-1">
+                {dataTooltip[0].data.machine_no}{" "}
+                {dataTooltip[0].data.machine_name} : {dataTooltip[0].title}{" "}
+                {period.map((periodItem) => {
+                  if (periodItem.periodTime === dataTooltip[0].title) {
+                    let statusText = "";
+                    if (periodItem.status === 1) {
+                      statusText = "Working time";
+                    } else if (periodItem.status === 2) {
+                      statusText = "Rest time";
+                    } else if (periodItem.status === 3) {
+                      statusText = "Lunch time";
+                    }
+                    return (
+                      <Chip
+                        key={periodItem.periodTime}
+                        color="warning"
+                        variant="flat"
+                      >
+                        {statusText} {periodItem.time} sec.
+                      </Chip>
+                    );
+                  }
+                  return null; // Render nothing if periodTime doesn't match
+                })}
+              </ModalHeader>
+              <ModalBody className="flex flex-row">
+                <AreaPlot />
+                <ModalHour />
+              </ModalBody>
+              <ModalFooter>
+                <Button color="danger" variant="light" onPress={onClose}>
+                  Close
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+    </>
   );
 };
 
