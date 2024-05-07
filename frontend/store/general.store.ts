@@ -10,6 +10,8 @@ interface IMode {
   targetNotRealTimeMC1: number;
   targetNotRealTimeMC2: number;
   openModal: boolean;
+  shift: string;
+  setShift: (shift: string) => void;
   setOpenModal: (openModal: boolean) => void;
   setTargetNotRealTimeMC1: (targetNotRealTimeMC1: number) => void;
   setTargetNotRealTimeMC2: (targetNotRealTimeMC2: number) => void;
@@ -25,12 +27,16 @@ export const GeneralStore = create<IMode>((...args) => {
   return {
     zone1: [],
     zone2: [],
+    shift: "",
     dateStrings: "",
     actualNotRealTimeMC1: 0,
     actualNotRealTimeMC2: 0,
     targetNotRealTimeMC1: 0,
     targetNotRealTimeMC2: 0,
     openModal: false,
+    setShift(shift) {
+      set({ shift });
+    },
     setOpenModal(openModal) {
       set({ openModal });
     },

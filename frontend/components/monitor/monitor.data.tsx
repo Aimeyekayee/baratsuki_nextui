@@ -56,7 +56,7 @@ const MonitorData: React.FC<IProps> = ({
               fontSize: "2rem",
             }}
           >
-            {dateString === currentDate ? target : 2200}
+            {dateString === currentDate ? target.toFixed(0) : 2200}
           </Typography>
         </Card>
       </Flex>

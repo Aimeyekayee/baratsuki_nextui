@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Empty, Typography } from "antd";
+import VideoPlayer from "../video/video.player";
 import {
   useDisclosure,
   Modal,
@@ -10,9 +11,24 @@ import {
   ModalFooter,
   Button,
   Chip,
+  Dropdown,
+  DropdownItem,
+  Card,
+  DropdownTrigger,
+  DropdownMenu,
+  Tooltip,
+  Listbox,
+  ListboxItem,
+  cn,
+  Avatar,
 } from "@nextui-org/react";
+import { users } from "@/asset/member_data/data";
+import { ListboxWrapper } from "../listbox/ListboxWrapper";
+import TableMock from "../table/table.alarm";
 import AreaPlot from "./areaHour";
 import ModalHour from "../modal/modal.hour";
+import { GeneralStore } from "@/store/general.store";
+import dayjs from "dayjs";
 
 import dynamic from "next/dynamic";
 import { Line, LineConfig, G2 } from "@ant-design/plots";
@@ -28,6 +44,7 @@ import { each, findIndex } from "@antv/util";
 import { text } from "stream/consumers";
 import { ModalOpenStore } from "@/store/modal.open.store";
 import ModalHours from "../modal/modal.hour";
+import ListBoxMember from "../listbox/listbox.member";
 interface Data {
   ct_actual: number;
   prod_actual: number;
@@ -55,7 +72,22 @@ if (typeof document !== "undefined") {
 }
 const LinePlot: React.FC<LineProps> = ({ parameter }) => {
   console.log(parameter);
-  
+  const dateStrings = GeneralStore((state) => state.dateStrings);
+  const currentDate = dayjs().format("YYYY-MM-DD");
+  const items = [
+    {
+      key: "code39",
+      label: "Code 39",
+    },
+    {
+      key: "code42",
+      label: "Code 42",
+    },
+    {
+      key: "full",
+      label: "Full",
+    },
+  ];
   const dataTooltip = ModalOpenStore((state) => state.dataTooltip);
   const formattedData = parameter.map((entry) => {
     const period = entry.period.slice(0, -3); // Remove the last three characters (":00")
@@ -459,7 +491,7 @@ const LinePlot: React.FC<LineProps> = ({ parameter }) => {
         onOpenChange={onOpenChange}
         isDismissable={false}
         isKeyboardDismissDisabled={true}
-        size="5xl"
+        size="full"
       >
         <ModalContent>
           {(onClose) => (
@@ -491,8 +523,72 @@ const LinePlot: React.FC<LineProps> = ({ parameter }) => {
                 })}
               </ModalHeader>
               <ModalBody className="flex flex-row">
-                <AreaPlot />
-                <ModalHour />
+                <Card
+                  style={{ width: "50%", height: "100%", padding: "1rem" }}
+                  shadow="sm"
+                  radius="sm"
+                  isBlurred
+                >
+                  <AreaPlot />
+                </Card>
+                <div
+                  className="flex flex-col justify-between gap-4"
+                  style={{ width: "50%", height: "100%" }}
+                >
+                  <div style={{ width: "100%" }} className="flex gap-4">
+                    <div style={{width:"40%",height:"18rem"}}>
+                      <TableMock />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <p className="font-semibold">Person In-Charge</p>
+                      <ListBoxMember />
+                    </div>
+                  </div>
+                  <div
+                    className="flex justify-between"
+                    style={{ width: "100%" }}
+                  >
+                    <div className="space-y-1">
+                      <h4 className="text-medium font-medium">
+                        Recording and Highlights
+                      </h4>
+                      <p className="text-small text-default-400">
+                        Click on any period to watch alarm.
+                      </p>
+                    </div>
+                    <Tooltip
+                      placement="top-end"
+                      content="Choose to Download clip on period"
+                    >
+                      <Dropdown>
+                        <DropdownTrigger>
+                          <Button variant="bordered">Download Video</Button>
+                        </DropdownTrigger>
+                        <DropdownMenu
+                          aria-label="Dynamic Actions"
+                          items={items}
+                        >
+                          {(item) => (
+                            <DropdownItem
+                              key={item.key}
+                              color={
+                                item.key === "delete" ? "danger" : "default"
+                              }
+                              className={
+                                item.key === "delete" ? "text-danger" : ""
+                              }
+                            >
+                              {item.label}
+                            </DropdownItem>
+                          )}
+                        </DropdownMenu>
+                      </Dropdown>
+                    </Tooltip>
+                  </div>
+                  <div style={{ width: "100%", height: "70%" }}>
+                    <VideoPlayer />
+                  </div>
+                </div>
               </ModalBody>
               <ModalFooter>
                 <Button color="danger" variant="light" onPress={onClose}>

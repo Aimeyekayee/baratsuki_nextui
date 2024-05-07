@@ -31,7 +31,8 @@ import { ModalOpenStore } from "@/store/modal.open.store";
 const FormSearch = () => {
   let formatter = useDateFormatter({ dateStyle: "medium" });
 
-  const [shift, setShift] = React.useState("london");
+  const shift = GeneralStore((state) => state.shift);
+  const setShift = GeneralStore((state) => state.setShift);
   const [section, setSection] = useState("");
   const [lineName, setLineName] = useState("");
   const [machineNames, setMachineNames] = useState([]);
