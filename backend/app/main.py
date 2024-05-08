@@ -2,12 +2,14 @@ from fastapi import Depends, FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from . import crud
+import requests
 from sqlalchemy.orm import Session
 from .database import SessionLocal, engine
 from typing import Union, List
 import datetime as dt
 from fastapi import HTTPException
 from typing import Optional, List, Dict, Any, Union
+
 
 origins = ["*"]
 
@@ -66,7 +68,7 @@ class DataResponse(BaseModel):
     section_code: int
     line_id: int
     machine_no: str
-    machine_name:str
+    machine_name: str
     date: Optional[dt.datetime]
     data: dict
 
@@ -95,6 +97,26 @@ async def get_machinename(section_code: int, db: Session = Depends(get_db)):
     return machine_name
 
 
+@app.get("/get_data_area", response_model=List[DataResponse])
+async def get_data_area(
+    section_code: int,
+    line_id: int,
+    machine_no: str,
+    interval: str,
+    date: Optional[dt.datetime],
+    db: Session = Depends(get_db),
+):
+    data_area = crud.get_data_area(
+        section_code=section_code,
+        line_id=line_id,
+        machine_no=machine_no,
+        date=date,
+        interval=interval,
+        db=db,
+    )
+    return data_area
+
+
 @app.get("/get_dataparameter", response_model=List[DataResponse])
 async def get_dataparameter(
     section_code: int,
@@ -116,3 +138,23 @@ async def get_dataparameter(
         db=db,
     )
     return data
+
+
+@app.post("/send")
+async def send_to_line_notify(message: str):
+    line_notify_token = "i3OfFdxy7kdqOesvoCFqjwrRjtYKO3ucCdbIdU86OsB"
+    line_notify_api = "https://notify-api.line.me/api/notify"
+
+    headers = {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Authorization": f"Bearer {line_notify_token}"
+    }
+
+    payload = {"message": message}
+
+    response = requests.post(line_notify_api, headers=headers, data=payload)
+
+    if response.status_code != 200:
+        raise HTTPException(status_code=response.status_code, detail="Failed to send message to Line Notify")
+
+    return {"message": "Message sent successfully"}

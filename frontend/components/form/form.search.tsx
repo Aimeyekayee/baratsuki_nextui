@@ -307,7 +307,6 @@ const FormSearch = () => {
         });
         const lastIndexObjectMachine1 =
           machineNo1Results[machineNo1Results.length - 1].data.prod_actual;
-        setActualNotRealTimeMC1(lastIndexObjectMachine1);
 
         machineNo2Results.forEach((entry, index) => {
           const time = new Date(entry.date).toLocaleTimeString("en-US", {
@@ -354,7 +353,7 @@ const FormSearch = () => {
 
         const lastIndexObjectMachine2 =
           machineNo2Results[machineNo2Results.length - 1].data.prod_actual;
-        setActualNotRealTimeMC2(lastIndexObjectMachine2);
+
         const results1 = machineNo1Results.filter(
           (item: any) => item.shift === shift
         );
@@ -439,9 +438,42 @@ const FormSearch = () => {
         );
 
         setZone1(filteredResults1);
+        const periodsToExclude = [
+          "21:40:00",
+          "00:20:00",
+          "02:50:00",
+          "04:50:00",
+          "09:50:00",
+          "12:30:00",
+          "14:50:00",
+          "16:50:00",
+        ];
+        const sumOfNumbers1 = filteredResults1.reduce(
+          (accumulator, currentValue) => {
+            if (!periodsToExclude.includes(currentValue.period)) {
+              return accumulator + currentValue.value;
+            } else {
+              return accumulator;
+            }
+          },
+          0
+        );
+        console.log(sumOfNumbers1);
+        setActualNotRealTimeMC1(sumOfNumbers1);
         console.log("filterRes1", filteredResults1);
         console.log("results1", results1);
         setZone2(filteredResults2);
+        const sumOfNumbers2 = filteredResults2.reduce(
+          (accumulator, currentValue) => {
+            if (!periodsToExclude.includes(currentValue.period)) {
+              return accumulator + currentValue.value;
+            } else {
+              return accumulator;
+            }
+          },
+          0
+        );
+        setActualNotRealTimeMC2(sumOfNumbers2);
         console.log("filterRes2", filteredResults2);
 
         console.log("res1", results1);

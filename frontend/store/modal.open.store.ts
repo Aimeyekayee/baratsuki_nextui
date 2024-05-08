@@ -5,7 +5,7 @@ interface TypeData {
   prod_actual: number | null;
 }
 
-interface Data {
+export interface DataBaratsuki {
   data: TypeData;
   date: Date | undefined;
   line_id: number | null;
@@ -20,7 +20,7 @@ interface Data {
 
 interface ToolTipItem {
   color: any;
-  data: Data;
+  data: DataBaratsuki;
   mappingData: any;
   marker: boolean;
   name: string;

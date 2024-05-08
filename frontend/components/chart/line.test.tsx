@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { Empty, Typography } from "antd";
 import VideoPlayer from "../video/video.player";
+import { updateParamMoc, graphDataMock } from "./datamock";
 import {
   useDisclosure,
   Modal,
@@ -52,7 +53,6 @@ interface Data {
 }
 interface DataProps {
   data: Data;
-  date_working: string;
   line_id: number;
   machine_no: string;
   period: string;
@@ -73,7 +73,7 @@ if (typeof document !== "undefined") {
   // you are safe to use the "document" object here
   console.log(document.location.href);
 }
-const LinePlot: React.FC<LineProps> = ({ parameter }) => {
+const LinePlotTest: React.FC<LineProps> = ({ parameter }) => {
   console.log(parameter);
   const dateStrings = GeneralStore((state) => state.dateStrings);
   const currentDate = dayjs().format("YYYY-MM-DD");
@@ -352,19 +352,19 @@ const LinePlot: React.FC<LineProps> = ({ parameter }) => {
     ...item,
     period: updatePeriod(item.period, item.shift),
   }));
-  console.log(updatedParameter);
 
-  const graphData = updatedParameter?.map((update) => {
-    const matchingPeriod = period.find(
-      (periodItem) => periodItem.periodTime === update.period
-    );
-    if (matchingPeriod) {
-      update.upper = matchingPeriod.upper;
-      update.lower = matchingPeriod.lower;
-    }
-    return update; // Return the updated object
-  });
-  console.log(graphData);
+  //   const graphData = updatedParameter?.map((update) => {
+  //     const matchingPeriod = period.find(
+  //       (periodItem) => periodItem.periodTime === update.period
+  //     );
+  //     if (matchingPeriod) {
+  //       update.upper = matchingPeriod.upper;
+  //       update.lower = matchingPeriod.lower;
+  //     }
+  //     return update; // Return the updated object
+  //   });
+  //   console.log(graphData);
+
   // console.log("updatedParameter", updatedParameter);
 
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -542,7 +542,7 @@ const LinePlot: React.FC<LineProps> = ({ parameter }) => {
         return value >= upper || value <= lower ? "rgba(255,0,0,0.7)" : "green";
     }
   }
-  const annotations142: any[] = graphData.map((point) => ({
+  const annotations142: any[] = graphDataMock.map((point) => ({
     type: "text",
     content: getModifiedContent(point.period, point.value),
     position: (xScale: any, yScale: any) => {
@@ -603,7 +603,7 @@ const LinePlot: React.FC<LineProps> = ({ parameter }) => {
     return -60;
   };
 
-  const annotationsLower: any[] = graphData
+  const annotationsLower: any[] = graphDataMock
     .map((update, index, array) => {
       const matchingPeriod = period.find(
         (periodItem) => periodItem.periodTime === update.period
@@ -616,7 +616,7 @@ const LinePlot: React.FC<LineProps> = ({ parameter }) => {
           end: nextUpdate
             ? [nextUpdate.period, matchingPeriod.lower]
             : [update.period, matchingPeriod.lower],
-          offsetX: OffsetX(graphData),
+          offsetX: OffsetX(graphDataMock),
           text: {
             content: `${matchingPeriod.lower}`,
             offsetY: 1,
@@ -648,36 +648,36 @@ const LinePlot: React.FC<LineProps> = ({ parameter }) => {
       annotationsLower[annotationsLower.length - 2].start[0];
     lastAnnotation.end[0] =
       annotationsLower[annotationsLower.length - 2].end[0];
-    if (graphData.length === 2) {
+    if (graphDataMock.length === 2) {
       lastAnnotation.offsetX = 375;
-    } else if (graphData.length === 3) {
+    } else if (graphDataMock.length === 3) {
       lastAnnotation.offsetX = 252;
-    } else if (graphData.length === 4) {
+    } else if (graphDataMock.length === 4) {
       lastAnnotation.offsetX = 560;
-    } else if (graphData.length === 5) {
+    } else if (graphDataMock.length === 5) {
       lastAnnotation.offsetX = 151;
-    } else if (graphData.length === 6) {
+    } else if (graphDataMock.length === 6) {
       lastAnnotation.offsetX = 128;
-    } else if (graphData.length === 7) {
+    } else if (graphDataMock.length === 7) {
       lastAnnotation.offsetX = 326;
-    } else if (graphData.length === 8) {
+    } else if (graphDataMock.length === 8) {
       lastAnnotation.offsetX = 93;
-    } else if (graphData.length === 9) {
+    } else if (graphDataMock.length === 9) {
       lastAnnotation.offsetX = 84;
-    } else if (graphData.length === 10) {
+    } else if (graphDataMock.length === 10) {
       lastAnnotation.offsetX = 225;
-    } else if (graphData.length === 11) {
+    } else if (graphDataMock.length === 11) {
       lastAnnotation.offsetX = 68;
-    } else if (graphData.length === 12) {
+    } else if (graphDataMock.length === 12) {
       lastAnnotation.offsetX = 65;
-    } else if (graphData.length === 13) {
+    } else if (graphDataMock.length === 13) {
       lastAnnotation.offsetX = 175;
-    } else if (graphData.length === 14) {
+    } else if (graphDataMock.length === 14) {
       lastAnnotation.offsetX = 53;
     }
   }
 
-  const annotationsUpper: any[] = graphData
+  const annotationsUpper: any[] = graphDataMock
     .map((update, index, array) => {
       const matchingPeriod = period.find(
         (periodItem) => periodItem.periodTime === update.period
@@ -690,7 +690,7 @@ const LinePlot: React.FC<LineProps> = ({ parameter }) => {
           end: nextUpdate
             ? [nextUpdate.period, matchingPeriod.upper]
             : [update.period, matchingPeriod.upper],
-          offsetX: OffsetX(graphData),
+          offsetX: OffsetX(graphDataMock),
           text: {
             content: `${matchingPeriod.upper}`,
             offsetY: -12,
@@ -721,36 +721,36 @@ const LinePlot: React.FC<LineProps> = ({ parameter }) => {
       annotationsUpper[annotationsUpper.length - 2].start[0];
     lastAnnotation.end[0] =
       annotationsUpper[annotationsUpper.length - 2].end[0];
-    if (graphData.length === 2) {
+    if (graphDataMock.length === 2) {
       lastAnnotation.offsetX = 375;
-    } else if (graphData.length === 3) {
+    } else if (graphDataMock.length === 3) {
       lastAnnotation.offsetX = 252;
-    } else if (graphData.length === 4) {
+    } else if (graphDataMock.length === 4) {
       lastAnnotation.offsetX = 560;
-    } else if (graphData.length === 5) {
+    } else if (graphDataMock.length === 5) {
       lastAnnotation.offsetX = 151;
-    } else if (graphData.length === 6) {
+    } else if (graphDataMock.length === 6) {
       lastAnnotation.offsetX = 128;
-    } else if (graphData.length === 7) {
+    } else if (graphDataMock.length === 7) {
       lastAnnotation.offsetX = 326;
-    } else if (graphData.length === 8) {
+    } else if (graphDataMock.length === 8) {
       lastAnnotation.offsetX = 93;
-    } else if (graphData.length === 9) {
+    } else if (graphDataMock.length === 9) {
       lastAnnotation.offsetX = 84;
-    } else if (graphData.length === 10) {
+    } else if (graphDataMock.length === 10) {
       lastAnnotation.offsetX = 225;
-    } else if (graphData.length === 11) {
+    } else if (graphDataMock.length === 11) {
       lastAnnotation.offsetX = 68;
-    } else if (graphData.length === 12) {
+    } else if (graphDataMock.length === 12) {
       lastAnnotation.offsetX = 65;
-    } else if (graphData.length === 13) {
+    } else if (graphDataMock.length === 13) {
       lastAnnotation.offsetX = 175;
-    } else if (graphData.length === 14) {
-      lastAnnotation.offsetX = 53;
-    }
+    }else if (graphDataMock.length === 14) {
+        lastAnnotation.offsetX = 53;
+      }
   }
 
-  const annotationsRegion: any[] = graphData
+  const annotationsRegion: any[] = graphDataMock
     .map((update, index, array) => {
       const matchingPeriod = period.find(
         (periodItem) => periodItem.periodTime === update.period
@@ -763,7 +763,7 @@ const LinePlot: React.FC<LineProps> = ({ parameter }) => {
           end: nextUpdate
             ? [nextUpdate.period, matchingPeriod.upper]
             : [update.period, matchingPeriod.upper],
-          offsetX: OffsetX(graphData),
+          offsetX: OffsetX(graphDataMock),
           style: {
             fill: "#2289ff",
             fillOpacity: "0.2",
@@ -774,6 +774,7 @@ const LinePlot: React.FC<LineProps> = ({ parameter }) => {
       return null; // Return null for periods without matching or zero lower values
     })
     .filter((annotation) => annotation !== null);
+  console.log(annotationsRegion);
 
   // Modify the last object in annotationsLower array
   if (annotationsRegion.length > 1) {
@@ -782,39 +783,39 @@ const LinePlot: React.FC<LineProps> = ({ parameter }) => {
       annotationsRegion[annotationsRegion.length - 2].start[0];
     lastAnnotation.end[0] =
       annotationsRegion[annotationsRegion.length - 2].end[0];
-    if (graphData.length === 2) {
+    if (graphDataMock.length === 2) {
       lastAnnotation.offsetX = 375;
-    } else if (graphData.length === 3) {
+    } else if (graphDataMock.length === 3) {
       lastAnnotation.offsetX = 252;
-    } else if (graphData.length === 4) {
+    } else if (graphDataMock.length === 4) {
       lastAnnotation.offsetX = 560;
-    } else if (graphData.length === 5) {
+    } else if (graphDataMock.length === 5) {
       lastAnnotation.offsetX = 151;
-    } else if (graphData.length === 6) {
+    } else if (graphDataMock.length === 6) {
       lastAnnotation.offsetX = 128;
-    } else if (graphData.length === 7) {
+    } else if (graphDataMock.length === 7) {
       lastAnnotation.offsetX = 326;
-    } else if (graphData.length === 8) {
+    } else if (graphDataMock.length === 8) {
       lastAnnotation.offsetX = 93;
-    } else if (graphData.length === 9) {
+    } else if (graphDataMock.length === 9) {
       lastAnnotation.offsetX = 84;
-    } else if (graphData.length === 10) {
+    } else if (graphDataMock.length === 10) {
       lastAnnotation.offsetX = 225;
-    } else if (graphData.length === 11) {
+    } else if (graphDataMock.length === 11) {
       lastAnnotation.offsetX = 68;
-    } else if (graphData.length === 12) {
+    } else if (graphDataMock.length === 12) {
       lastAnnotation.offsetX = 65;
-    } else if (graphData.length === 13) {
+    } else if (graphDataMock.length === 13) {
       lastAnnotation.offsetX = 175;
-    } else if (graphData.length === 14) {
-      lastAnnotation.offsetX = 53;
-    }
+    }else if (graphDataMock.length === 14) {
+        lastAnnotation.offsetX = 53;
+      }
   }
 
   let chart: any;
   const value = 158;
   const config: LineConfig = {
-    data: updatedParameter,
+    data: updateParamMoc,
     xField: "period",
     yField: "value",
     yAxis: { maxLimit: 340 },
@@ -1006,4 +1007,4 @@ const LinePlot: React.FC<LineProps> = ({ parameter }) => {
   );
 };
 
-export default LinePlot;
+export default LinePlotTest;

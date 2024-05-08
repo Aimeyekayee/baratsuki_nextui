@@ -5,6 +5,7 @@ from datetime import datetime
 from fastapi import HTTPException
 import json
 from typing import Optional, List, Dict, Any, Union
+import datetime as dt
 
 
 def convert_result(res):
@@ -50,6 +51,29 @@ def get_machinename(section_code: int, db: Session):
         SELECT machine_no,machine_name FROM machines
         WHERE registered_section_code = {section_code}
         AND (machine_no LIKE '6%' OR machine_no LIKE 'T6%')
+    """
+    try:
+        result = db.execute(text(stmt)).mappings().all()
+        return result
+    except Exception as e:
+        raise HTTPException(400, "Error get section :" + str(e))
+
+
+def get_data_area(
+    section_code: int,
+    line_id: int,
+    machine_no: str,
+    date: Optional[dt.datetime],
+    interval:str,
+    db: Session,
+):
+    stmt = f"""
+        SELECT * FROM data_baratsuki
+        WHERE section_code = {section_code}
+        AND line_id = {line_id}
+        AND machine_no = '{machine_no}'
+        AND date BETWEEN TIMESTAMP '{date}' - INTERVAL '1 hour' 
+        AND TIMESTAMP '2024-04-24T20:30:00';
     """
     try:
         result = db.execute(text(stmt)).mappings().all()

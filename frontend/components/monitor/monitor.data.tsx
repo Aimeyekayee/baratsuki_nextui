@@ -1,7 +1,13 @@
 import React from "react";
 import { Flex, Typography } from "antd";
 import { MQTTStore } from "@/store/mqttStore";
-import { Card, CardHeader, CardBody, CardFooter,Input } from "@nextui-org/react";
+import {
+  Card,
+  CardHeader,
+  CardBody,
+  CardFooter,
+  Input,
+} from "@nextui-org/react";
 
 interface IProps {
   target: number;

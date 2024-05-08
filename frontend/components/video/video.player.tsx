@@ -20,7 +20,7 @@ const VideoPlayer = () => {
         url="/IMG_1056.MOV" // Assuming myvideo.mp4 is in the "public" folder
         controls
         width="100%"
-        // height="auto"
+        height="30rem"
         onReady={handleReady}
       />
       <div className="flex justify-center items-center pt-4">

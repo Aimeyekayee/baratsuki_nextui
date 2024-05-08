@@ -6,6 +6,7 @@ import LinePlot from "@/components/chart/line";
 import { GeneralStore } from "@/store/general.store";
 import MonitorData from "@/components/monitor/monitor.data";
 import { ConfigProvider, Empty } from "antd";
+import LinePlotTest from "@/components/chart/line.test";
 import dayjs from "dayjs";
 import {
   Card,
