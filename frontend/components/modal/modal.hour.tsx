@@ -8,19 +8,50 @@ import {
   Button,
   useDisclosure,
   Chip,
+  Card,
+  Tooltip,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
 } from "@nextui-org/react";
+import ListBoxMember from "../listbox/listbox.member";
 import { GeneralStore } from "@/store/general.store";
 import { modal } from "@nextui-org/theme";
 import { ModalOpenStore } from "@/store/modal.open.store";
 import AreaPlot from "../chart/areaHour";
 import TableMock from "../table/table.alarm";
+import VideoPlayer from "../video/video.player";
 
-const ModalHour: React.FC = () => {
+interface ModalManagement {
+  isOpen: boolean;
+  onOpen: () => void;
+  onOpenChange: () => void;
+}
+
+const ModalHour: React.FC<ModalManagement> = ({
+  isOpen,
+  onOpen,
+  onOpenChange,
+}) => {
   const modalOpen = ModalOpenStore((state) => state.openModal);
+  const setDataBaratsuki = GeneralStore((state) => state.setDataBaratsuki);
   const setOpenModal = ModalOpenStore((state) => state.setOpenModal);
   const dataTooltip = ModalOpenStore((state) => state.dataTooltip);
-  const { onOpenChange } = useDisclosure(); // Unused
-
+  const items = [
+    {
+      key: "code39",
+      label: "Code 39",
+    },
+    {
+      key: "code42",
+      label: "Code 42",
+    },
+    {
+      key: "full",
+      label: "Full",
+    },
+  ];
   const dayShiftTimes = [
     "07:35 - 08:30",
     "08:30 - 09:40",
@@ -87,56 +118,111 @@ const ModalHour: React.FC = () => {
   ];
 
   return (
-    <>
-      <Modal
-        isOpen={modalOpen}
-        onOpenChange={onOpenChange}
-        onClose={() => setOpenModal(false)}
-        size="5xl"
-      >
-        <ModalContent>
-          {(onClose) => (
-            <>
-              <ModalHeader className="flex gap-1">
-                {dataTooltip[0].data.machine_no}{" "}
-                {dataTooltip[0].data.machine_name} : {dataTooltip[0].title}{" "}
-                {period.map((periodItem) => {
-                  if (periodItem.periodTime === dataTooltip[0].title) {
-                    let statusText = "";
-                    if (periodItem.status === 1) {
-                      statusText = "Working time";
-                    } else if (periodItem.status === 2) {
-                      statusText = "Rest time";
-                    } else if (periodItem.status === 3) {
-                      statusText = "Lunch time";
-                    }
-                    return (
-                      <Chip
-                        key={periodItem.periodTime}
-                        color="warning"
-                        variant="flat"
-                      >
-                        {statusText} {periodItem.time} sec.
-                      </Chip>
-                    );
+    <Modal
+      isOpen={isOpen}
+      onOpenChange={onOpenChange}
+      isDismissable={false}
+      isKeyboardDismissDisabled={true}
+      size="full"
+    >
+      <ModalContent>
+        {(onClose) => (
+          <>
+            <ModalHeader className="flex gap-1">
+              {dataTooltip[0].data.machine_no}{" "}
+              {dataTooltip[0].data.machine_name} : {dataTooltip[0].title}{" "}
+              {period.map((periodItem) => {
+                if (periodItem.periodTime === dataTooltip[0].title) {
+                  let statusText = "";
+                  if (periodItem.status === 1) {
+                    statusText = "Working time";
+                  } else if (periodItem.status === 2) {
+                    statusText = "Rest time";
+                  } else if (periodItem.status === 3) {
+                    statusText = "Lunch time";
                   }
-                  return null; // Render nothing if periodTime doesn't match
-                })}
-              </ModalHeader>
-              <ModalBody className="flex flex-row">
+                  return (
+                    <Chip
+                      key={periodItem.periodTime}
+                      color="warning"
+                      variant="flat"
+                    >
+                      {statusText} {periodItem.time} sec.
+                    </Chip>
+                  );
+                }
+                return null; // Render nothing if periodTime doesn't match
+              })}
+            </ModalHeader>
+            <ModalBody className="flex flex-row">
+              <Card
+                style={{ width: "50%", height: "100%", padding: "1rem" }}
+                shadow="sm"
+                radius="sm"
+                isBlurred
+              >
                 <AreaPlot />
-                  <ModalHour />
-              </ModalBody>
-              <ModalFooter>
-                <Button color="danger" variant="light" onPress={onClose}>
-                  Close
-                </Button>
-              </ModalFooter>
-            </>
-          )}
-        </ModalContent>
-      </Modal>
-    </>
+              </Card>
+              <div
+                className="flex flex-col justify-between gap-4"
+                style={{ width: "50%", height: "100%" }}
+              >
+                <div style={{ width: "100%" }} className="flex gap-4">
+                  <div style={{ width: "40%", height: "13rem" }}>
+                    <TableMock />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <p className="font-semibold">Person In-Charge</p>
+                    <ListBoxMember />
+                  </div>
+                </div>
+                <div className="flex justify-between" style={{ width: "100%" }}>
+                  <div className="space-y-1">
+                    <h4 className="text-medium font-medium">
+                      Recording and Highlights
+                    </h4>
+                    <p className="text-small text-default-400">
+                      Click on any period to watch alarm.
+                    </p>
+                  </div>
+                  <Dropdown>
+                    <DropdownTrigger>
+                      <Button variant="bordered">Download Video</Button>
+                    </DropdownTrigger>
+                    <DropdownMenu aria-label="Dynamic Actions" items={items}>
+                      {(item) => (
+                        <DropdownItem
+                          key={item.key}
+                          color={item.key === "delete" ? "danger" : "default"}
+                          className={item.key === "delete" ? "text-danger" : ""}
+                        >
+                          {item.label}
+                        </DropdownItem>
+                      )}
+                    </DropdownMenu>
+                  </Dropdown>
+                </div>
+                <div style={{ width: "100%", height: "70%" }}>
+                  <VideoPlayer />
+                </div>
+              </div>
+            </ModalBody>
+            <ModalFooter>
+              <Button
+                color="danger"
+                variant="light"
+                onPress={() => {
+                  onClose;
+                  setDataBaratsuki([]);
+                }}
+              >
+                Close
+              </Button>
+            </ModalFooter>
+          </>
+        )}
+      </ModalContent>
+    </Modal>
   );
 };
 

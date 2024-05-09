@@ -71,11 +71,10 @@ interface LineProps {
 
 if (typeof document !== "undefined") {
   // you are safe to use the "document" object here
-  console.log(document.location.href);
 }
 const LinePlot: React.FC<LineProps> = ({ parameter }) => {
-  console.log(parameter);
   const dateStrings = GeneralStore((state) => state.dateStrings);
+  const setDataBaratsuki = GeneralStore((state) => state.setDataBaratsuki);
   const currentDate = dayjs().format("YYYY-MM-DD");
   const items = [
     {
@@ -112,6 +111,17 @@ const LinePlot: React.FC<LineProps> = ({ parameter }) => {
     "16:50",
     "17:50",
     "19:20",
+  ];
+
+  const excludedTitles = [
+    "09:40 - 09:50",
+    "11:30 - 12:30",
+    "14:40 - 14:50",
+    "21:30 - 21:40",
+    "23:30 - 00:20",
+    "02:30 - 02:50",
+    "04:30 - 04:50",
+    "16:30 - 16:50",
   ];
 
   const nightShiftTimes = [
@@ -324,12 +334,64 @@ const LinePlot: React.FC<LineProps> = ({ parameter }) => {
       time: "40 minutes",
     },
     {
-      point: "08:30:00",
+      point: "16:30:00",
+      time: "1 hour",
+    },
+    {
+      point: "16:50:00",
+      time: "20 minutes",
+    },
+    {
+      point: "17:50:00",
+      time: "1 hour",
+    },
+    {
+      point: "19:20:00",
+      time: "1 hour 30 minutes",
+    },
+    {
+      point: "20:30:00",
       time: "55 minutes",
     },
     {
-      point: "08:30:00",
-      time: "55 minutes",
+      point: "21:30:00",
+      time: "1 hour",
+    },
+    {
+      point: "21:40:00",
+      time: "10 minutes",
+    },
+    {
+      point: "22:30:00",
+      time: "50 minutes",
+    },
+    {
+      point: "23:30:00",
+      time: "1 hour",
+    },
+    {
+      point: "01:30:00",
+      time: "1 hour 10 minutes",
+    },
+    {
+      point: "02:30:00",
+      time: "1 hour",
+    },
+    {
+      point: "03:30:00",
+      time: "40 minutes",
+    },
+    {
+      point: "04:30:00",
+      time: "1 hour",
+    },
+    {
+      point: "05:50:00",
+      time: "1 hour",
+    },
+    {
+      point: "07:20:00",
+      time: "1 hour 30 minutes",
     },
   ];
   const updatePeriod = (period: string, shift: string): string => {
@@ -352,7 +414,6 @@ const LinePlot: React.FC<LineProps> = ({ parameter }) => {
     ...item,
     period: updatePeriod(item.period, item.shift),
   }));
-  console.log(updatedParameter);
 
   const graphData = updatedParameter?.map((update) => {
     const matchingPeriod = period.find(
@@ -364,8 +425,6 @@ const LinePlot: React.FC<LineProps> = ({ parameter }) => {
     }
     return update; // Return the updated object
   });
-  console.log(graphData);
-  // console.log("updatedParameter", updatedParameter);
 
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const setModalOpen = ModalOpenStore((state) => state.setOpenModal);
@@ -522,6 +581,22 @@ const LinePlot: React.FC<LineProps> = ({ parameter }) => {
     }
   }
 
+  function getModifiedCursor(period: string): string {
+    switch (period) {
+      case "09:40 - 09:50":
+      case "11:30 - 12:30":
+      case "14:40 - 14:50":
+      case "21:30 - 21:40":
+      case "23:30 - 00:20":
+      case "02:30 - 02:50":
+      case "04:30 - 04:50":
+      case "16:30 - 16:50":
+        return "default";
+      default:
+        return "pointer";
+    }
+  }
+
   function getFill(
     period: string,
     value: number,
@@ -554,7 +629,7 @@ const LinePlot: React.FC<LineProps> = ({ parameter }) => {
     style: {
       textAlign: "center",
       fill: "white",
-      cursor: "pointer",
+      cursor: getModifiedCursor(point.period),
       fontSize: 22,
     },
     offsetY: -4,
@@ -563,7 +638,7 @@ const LinePlot: React.FC<LineProps> = ({ parameter }) => {
       style: {
         z: 0,
         radius: 17,
-        cursor: "pointer",
+        cursor: getModifiedCursor(point.period),
         fill: getFill(point.period, point.value, point.upper, point.lower),
       },
     },
@@ -639,7 +714,6 @@ const LinePlot: React.FC<LineProps> = ({ parameter }) => {
       return null; // Return null for periods without matching or zero lower values
     })
     .filter((annotation) => annotation !== null);
-  console.log(annotationsLower);
 
   // Modify the last object in annotationsLower array
   if (annotationsLower.length > 1) {
@@ -655,7 +729,7 @@ const LinePlot: React.FC<LineProps> = ({ parameter }) => {
     } else if (graphData.length === 4) {
       lastAnnotation.offsetX = 560;
     } else if (graphData.length === 5) {
-      lastAnnotation.offsetX = 151;
+      lastAnnotation.offsetX = 452;
     } else if (graphData.length === 6) {
       lastAnnotation.offsetX = 128;
     } else if (graphData.length === 7) {
@@ -713,6 +787,7 @@ const LinePlot: React.FC<LineProps> = ({ parameter }) => {
       return null; // Return null for periods without matching or zero lower values
     })
     .filter((annotation) => annotation !== null);
+    console.log("anupper",annotationsUpper)
 
   // Modify the last object in annotationsLower array
   if (annotationsUpper.length > 1) {
@@ -728,7 +803,7 @@ const LinePlot: React.FC<LineProps> = ({ parameter }) => {
     } else if (graphData.length === 4) {
       lastAnnotation.offsetX = 560;
     } else if (graphData.length === 5) {
-      lastAnnotation.offsetX = 151;
+      lastAnnotation.offsetX = 452;
     } else if (graphData.length === 6) {
       lastAnnotation.offsetX = 128;
     } else if (graphData.length === 7) {
@@ -789,7 +864,7 @@ const LinePlot: React.FC<LineProps> = ({ parameter }) => {
     } else if (graphData.length === 4) {
       lastAnnotation.offsetX = 560;
     } else if (graphData.length === 5) {
-      lastAnnotation.offsetX = 151;
+      lastAnnotation.offsetX = 452;
     } else if (graphData.length === 6) {
       lastAnnotation.offsetX = 128;
     } else if (graphData.length === 7) {
@@ -812,12 +887,20 @@ const LinePlot: React.FC<LineProps> = ({ parameter }) => {
   }
 
   let chart: any;
-  const value = 158;
   const config: LineConfig = {
     data: updatedParameter,
     xField: "period",
     yField: "value",
-    yAxis: { maxLimit: 340 },
+    yAxis: {
+      maxLimit: 340,
+      title: {
+        text: "Pieces per Hour",
+        style: { fontSize: 20, fontWeight: "bold" },
+      },
+    },
+    xAxis: {
+      title: { text: "Period", style: { fontSize: 20, fontWeight: "bold" } },
+    },
     point: {
       size: 5,
       shape: "custom-point",
@@ -831,6 +914,7 @@ const LinePlot: React.FC<LineProps> = ({ parameter }) => {
       chart = plot.chart; // Store chart instance
       chart.render(); // Make sure to render the chart to access the scales
     },
+
     annotations: [
       ...annotations142,
       ...annotationsLower,
@@ -868,140 +952,49 @@ const LinePlot: React.FC<LineProps> = ({ parameter }) => {
               y,
             });
             console.log(bigDataFromToolItem);
-            setDataTooltip(bigDataFromToolItem);
-            onOpen();
-            // try {
-            //   const data: DataBaratsuki = bigDataFromToolItem[0];
-            //   const response = await axios(
-            //     "http://localhost:8000/get_data_area",
-            //     {
-            //       params: {
-            //         section_code: data.section_code,
-            //         line_id: data.line_id,
-            //         machine_no: data.machine_no,
-            //         date: data.date,
-            //       },
-            //     }
-            //   );
-            // } catch (err) {
-            //   console.error(err);
-            // }
+            if (
+              bigDataFromToolItem.length > 0 &&
+              !excludedTitles.includes(bigDataFromToolItem[0].title)
+            ) {
+              setDataTooltip(bigDataFromToolItem);
+              onOpen();
+              try {
+                const data: DataBaratsuki = bigDataFromToolItem[0].data;
+                const dateP = bigDataFromToolItem[0].data.date;
+                const formattedTime = dayjs(dateP).format("HH:mm:ss");
+                const matchingInterval = interval.find(
+                  (item: any) => item.point === formattedTime
+                );
+                const timeToSendToAPI = matchingInterval
+                  ? matchingInterval.time
+                  : null;
+                console.log(data);
+                const parameter = {
+                  section_code: data.section_code,
+                  line_id: data.line_id,
+                  machine_no: data.machine_no,
+                  date: data.date,
+                  interval: timeToSendToAPI,
+                };
+                console.log(parameter);
+                const response = await axios(
+                  "http://localhost:8000/get_data_area",
+                  {
+                    params: parameter,
+                  }
+                );
+                if (response.status === 200) {
+                  setDataBaratsuki(response.data);
+                }
+              } catch (err) {
+                console.error(err);
+              }
+            } else {
+            }
           });
         }}
       />
-      <Modal
-        isOpen={isOpen}
-        onOpenChange={onOpenChange}
-        isDismissable={false}
-        isKeyboardDismissDisabled={true}
-        size="full"
-      >
-        <ModalContent>
-          {(onClose) => (
-            <>
-              <ModalHeader className="flex gap-1">
-                {dataTooltip[0].data.machine_no}{" "}
-                {dataTooltip[0].data.machine_name} : {dataTooltip[0].title}{" "}
-                {period.map((periodItem) => {
-                  if (periodItem.periodTime === dataTooltip[0].title) {
-                    let statusText = "";
-                    if (periodItem.status === 1) {
-                      statusText = "Working time";
-                    } else if (periodItem.status === 2) {
-                      statusText = "Rest time";
-                    } else if (periodItem.status === 3) {
-                      statusText = "Lunch time";
-                    }
-                    return (
-                      <Chip
-                        key={periodItem.periodTime}
-                        color="warning"
-                        variant="flat"
-                      >
-                        {statusText} {periodItem.time} sec.
-                      </Chip>
-                    );
-                  }
-                  return null; // Render nothing if periodTime doesn't match
-                })}
-              </ModalHeader>
-              <ModalBody className="flex flex-row">
-                <Card
-                  style={{ width: "50%", height: "100%", padding: "1rem" }}
-                  shadow="sm"
-                  radius="sm"
-                  isBlurred
-                >
-                  <AreaPlot />
-                </Card>
-                <div
-                  className="flex flex-col justify-between gap-4"
-                  style={{ width: "50%", height: "100%" }}
-                >
-                  <div style={{ width: "100%" }} className="flex gap-4">
-                    <div style={{ width: "40%", height: "13rem" }}>
-                      <TableMock />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <p className="font-semibold">Person In-Charge</p>
-                      <ListBoxMember />
-                    </div>
-                  </div>
-                  <div
-                    className="flex justify-between"
-                    style={{ width: "100%" }}
-                  >
-                    <div className="space-y-1">
-                      <h4 className="text-medium font-medium">
-                        Recording and Highlights
-                      </h4>
-                      <p className="text-small text-default-400">
-                        Click on any period to watch alarm.
-                      </p>
-                    </div>
-                    <Tooltip
-                      placement="top-end"
-                      content="Choose to Download clip on period"
-                    >
-                      <Dropdown>
-                        <DropdownTrigger>
-                          <Button variant="bordered">Download Video</Button>
-                        </DropdownTrigger>
-                        <DropdownMenu
-                          aria-label="Dynamic Actions"
-                          items={items}
-                        >
-                          {(item) => (
-                            <DropdownItem
-                              key={item.key}
-                              color={
-                                item.key === "delete" ? "danger" : "default"
-                              }
-                              className={
-                                item.key === "delete" ? "text-danger" : ""
-                              }
-                            >
-                              {item.label}
-                            </DropdownItem>
-                          )}
-                        </DropdownMenu>
-                      </Dropdown>
-                    </Tooltip>
-                  </div>
-                  <div style={{ width: "100%", height: "70%" }}>
-                    <VideoPlayer />
-                  </div>
-                </div>
-              </ModalBody>
-              <ModalFooter>
-                <Button color="danger" variant="light" onPress={onClose}>
-                  Close
-                </Button>
-              </ModalFooter>
-            </>
-          )}
-        </ModalContent>
-      </Modal>
+      <ModalHour isOpen={isOpen} onOpen={onOpen} onOpenChange={onOpenChange} />
     </>
   );
 };

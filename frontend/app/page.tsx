@@ -57,7 +57,7 @@ export default function Home() {
         </ConfigProvider>
       </div>
       <FormSearch />
-      <ModalHour />
+      {/* <ModalHour /> */}
       <Card
         shadow="md"
         style={{

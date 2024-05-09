@@ -68,12 +68,12 @@ def get_data_area(
     db: Session,
 ):
     stmt = f"""
-        SELECT * FROM data_baratsuki
+        SELECT section_code, line_id, machine_no, date, data FROM data_baratsuki
         WHERE section_code = {section_code}
         AND line_id = {line_id}
         AND machine_no = '{machine_no}'
-        AND date BETWEEN TIMESTAMP '{date}' - INTERVAL '1 hour' 
-        AND TIMESTAMP '2024-04-24T20:30:00';
+        AND date BETWEEN TIMESTAMP '{date}' - INTERVAL '{interval}' 
+        AND TIMESTAMP '{date}';
     """
     try:
         result = db.execute(text(stmt)).mappings().all()

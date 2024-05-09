@@ -73,6 +73,14 @@ class DataResponse(BaseModel):
     data: dict
 
 
+class DataResponseHour(BaseModel):
+    section_code: int
+    line_id: int
+    machine_no: str
+    date: Optional[dt.datetime]
+    data: dict
+
+
 # @app.get("/get_data", response_model=List[Data])
 # async def get_data(db: Session = Depends(get_db)):
 #     data = crud.get_data(db=db)
@@ -97,7 +105,7 @@ async def get_machinename(section_code: int, db: Session = Depends(get_db)):
     return machine_name
 
 
-@app.get("/get_data_area", response_model=List[DataResponse])
+@app.get("/get_data_area", response_model=List[DataResponseHour])
 async def get_data_area(
     section_code: int,
     line_id: int,
@@ -147,7 +155,7 @@ async def send_to_line_notify(message: str):
 
     headers = {
         "Content-Type": "application/x-www-form-urlencoded",
-        "Authorization": f"Bearer {line_notify_token}"
+        "Authorization": f"Bearer {line_notify_token}",
     }
 
     payload = {"message": message}
@@ -155,6 +163,9 @@ async def send_to_line_notify(message: str):
     response = requests.post(line_notify_api, headers=headers, data=payload)
 
     if response.status_code != 200:
-        raise HTTPException(status_code=response.status_code, detail="Failed to send message to Line Notify")
+        raise HTTPException(
+            status_code=response.status_code,
+            detail="Failed to send message to Line Notify",
+        )
 
     return {"message": "Message sent successfully"}

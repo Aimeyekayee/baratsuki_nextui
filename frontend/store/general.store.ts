@@ -1,5 +1,6 @@
 import { VoidFunctionComponent } from "react";
 import { create } from "zustand";
+import { DataBaratsuki } from "./interfaces/baratsuki.fetch.interface";
 
 interface IMode {
   zone1: any[];
@@ -11,12 +12,14 @@ interface IMode {
   targetNotRealTimeMC2: number;
   openModal: boolean;
   shift: string;
+  dataBaratsuki: DataBaratsuki[];
   setShift: (shift: string) => void;
   setOpenModal: (openModal: boolean) => void;
   setTargetNotRealTimeMC1: (targetNotRealTimeMC1: number) => void;
   setTargetNotRealTimeMC2: (targetNotRealTimeMC2: number) => void;
   setActualNotRealTimeMC1: (actualNotRealTimeMC1: number) => void;
   setActualNotRealTimeMC2: (actualNotRealTimeMC1: number) => void;
+  setDataBaratsuki: (newDataArray: DataBaratsuki[]) => void;
   setZone1: (newDataArray: any[]) => void;
   setZone2: (newDataArray: any[]) => void;
   setDateStrings: (dateStrings: string | string[]) => void;
@@ -25,6 +28,7 @@ interface IMode {
 export const GeneralStore = create<IMode>((...args) => {
   const [set, get] = args;
   return {
+    dataBaratsuki: [],
     zone1: [],
     zone2: [],
     shift: "",
@@ -54,6 +58,9 @@ export const GeneralStore = create<IMode>((...args) => {
     },
     setDateStrings(dateStrings) {
       set({ dateStrings });
+    },
+    setDataBaratsuki(newDataArray) {
+      set({ dataBaratsuki: newDataArray });
     },
     setZone1(newDataArray) {
       set({ zone1: newDataArray });
