@@ -6,7 +6,7 @@ import LinePlot from "@/components/chart/line";
 import { GeneralStore } from "@/store/general.store";
 import MonitorData from "@/components/monitor/monitor.data";
 import { ConfigProvider, Empty } from "antd";
-import LinePlotTest from "@/components/chart/line.test";
+import ColumnPlotTest from "@/components/chart/line.test";
 import dayjs from "dayjs";
 import {
   Card,
@@ -84,7 +84,7 @@ export default function Home() {
               gap: "1rem",
             }}
           >
-            <LinePlot parameter={zone1} />
+            <ColumnPlotTest parameter={zone1} />
             <MonitorData
               actual={actualNotRealTimeMC1}
               target={targetNotRealTimeMC1}
@@ -123,7 +123,7 @@ export default function Home() {
               gap: "1rem",
             }}
           >
-            <LinePlot parameter={zone2} />
+            <ColumnPlotTest parameter={zone2} />
             <MonitorData
               actual={actualNotRealTimeMC2}
               target={targetNotRealTimeMC2}

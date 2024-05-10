@@ -414,6 +414,11 @@ const LinePlot: React.FC<LineProps> = ({ parameter }) => {
     ...item,
     period: updatePeriod(item.period, item.shift),
   }));
+  updatedParameter.forEach((item) => {
+    if (excludedTitles.includes(item.period)) {
+      item.value = 0;
+    }
+  });
 
   const graphData = updatedParameter?.map((update) => {
     const matchingPeriod = period.find(
@@ -787,7 +792,7 @@ const LinePlot: React.FC<LineProps> = ({ parameter }) => {
       return null; // Return null for periods without matching or zero lower values
     })
     .filter((annotation) => annotation !== null);
-    console.log("anupper",annotationsUpper)
+  console.log("anupper", annotationsUpper);
 
   // Modify the last object in annotationsLower array
   if (annotationsUpper.length > 1) {

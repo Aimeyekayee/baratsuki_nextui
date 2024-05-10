@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { Empty, Typography } from "antd";
 import VideoPlayer from "../video/video.player";
-import { updateParamMoc, graphDataMock } from "./datamock";
 import {
   useDisclosure,
   Modal,
@@ -32,7 +31,7 @@ import { GeneralStore } from "@/store/general.store";
 import dayjs from "dayjs";
 
 import dynamic from "next/dynamic";
-import { Line, LineConfig, G2 } from "@ant-design/plots";
+import { Line, LineConfig, G2, Column, ColumnConfig } from "@ant-design/plots";
 import { each, findIndex } from "@antv/util";
 
 // import { Liquid } from "@ant-design/charts";
@@ -53,6 +52,7 @@ interface Data {
 }
 interface DataProps {
   data: Data;
+  date_working: string;
   line_id: number;
   machine_no: string;
   period: string;
@@ -71,11 +71,10 @@ interface LineProps {
 
 if (typeof document !== "undefined") {
   // you are safe to use the "document" object here
-  console.log(document.location.href);
 }
-const LinePlotTest: React.FC<LineProps> = ({ parameter }) => {
-  console.log(parameter);
+const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
   const dateStrings = GeneralStore((state) => state.dateStrings);
+  const setDataBaratsuki = GeneralStore((state) => state.setDataBaratsuki);
   const currentDate = dayjs().format("YYYY-MM-DD");
   const items = [
     {
@@ -112,6 +111,17 @@ const LinePlotTest: React.FC<LineProps> = ({ parameter }) => {
     "16:50",
     "17:50",
     "19:20",
+  ];
+
+  const excludedTitles = [
+    "09:40 - 09:50",
+    "11:30 - 12:30",
+    "14:40 - 14:50",
+    "21:30 - 21:40",
+    "23:30 - 00:20",
+    "02:30 - 02:50",
+    "04:30 - 04:50",
+    "16:30 - 16:50",
   ];
 
   const nightShiftTimes = [
@@ -324,12 +334,64 @@ const LinePlotTest: React.FC<LineProps> = ({ parameter }) => {
       time: "40 minutes",
     },
     {
-      point: "08:30:00",
+      point: "16:30:00",
+      time: "1 hour",
+    },
+    {
+      point: "16:50:00",
+      time: "20 minutes",
+    },
+    {
+      point: "17:50:00",
+      time: "1 hour",
+    },
+    {
+      point: "19:20:00",
+      time: "1 hour 30 minutes",
+    },
+    {
+      point: "20:30:00",
       time: "55 minutes",
     },
     {
-      point: "08:30:00",
-      time: "55 minutes",
+      point: "21:30:00",
+      time: "1 hour",
+    },
+    {
+      point: "21:40:00",
+      time: "10 minutes",
+    },
+    {
+      point: "22:30:00",
+      time: "50 minutes",
+    },
+    {
+      point: "23:30:00",
+      time: "1 hour",
+    },
+    {
+      point: "01:30:00",
+      time: "1 hour 10 minutes",
+    },
+    {
+      point: "02:30:00",
+      time: "1 hour",
+    },
+    {
+      point: "03:30:00",
+      time: "40 minutes",
+    },
+    {
+      point: "04:30:00",
+      time: "1 hour",
+    },
+    {
+      point: "05:50:00",
+      time: "1 hour",
+    },
+    {
+      point: "07:20:00",
+      time: "1 hour 30 minutes",
     },
   ];
   const updatePeriod = (period: string, shift: string): string => {
@@ -352,20 +414,38 @@ const LinePlotTest: React.FC<LineProps> = ({ parameter }) => {
     ...item,
     period: updatePeriod(item.period, item.shift),
   }));
+  updatedParameter.forEach((item) => {
+    if (excludedTitles.includes(item.period)) {
+      item.value = 0;
+    }
+  });
 
-  //   const graphData = updatedParameter?.map((update) => {
-  //     const matchingPeriod = period.find(
-  //       (periodItem) => periodItem.periodTime === update.period
-  //     );
-  //     if (matchingPeriod) {
-  //       update.upper = matchingPeriod.upper;
-  //       update.lower = matchingPeriod.lower;
-  //     }
-  //     return update; // Return the updated object
-  //   });
-  //   console.log(graphData);
+  updatedParameter.forEach((item: any) => {
+    const matchingPeriod = period.find(
+      (periodItem) => periodItem.periodTime === item.period
+    );
+    if (matchingPeriod) {
+      item.upper = matchingPeriod.upper;
+      item.lower = matchingPeriod.lower;
+      if (item.value >= item.lower && item.value <= item.upper) {
+        item.color = "red";
+      } else {
+        item.color = "green";
+      }
+    }
+  });
+  console.log(updatedParameter);
 
-  // console.log("updatedParameter", updatedParameter);
+  const graphData = updatedParameter?.map((update) => {
+    const matchingPeriod = period.find(
+      (periodItem) => periodItem.periodTime === update.period
+    );
+    if (matchingPeriod) {
+      update.upper = matchingPeriod.upper;
+      update.lower = matchingPeriod.lower;
+    }
+    return update; // Return the updated object
+  });
 
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const setModalOpen = ModalOpenStore((state) => state.setOpenModal);
@@ -522,6 +602,22 @@ const LinePlotTest: React.FC<LineProps> = ({ parameter }) => {
     }
   }
 
+  function getModifiedCursor(period: string): string {
+    switch (period) {
+      case "09:40 - 09:50":
+      case "11:30 - 12:30":
+      case "14:40 - 14:50":
+      case "21:30 - 21:40":
+      case "23:30 - 00:20":
+      case "02:30 - 02:50":
+      case "04:30 - 04:50":
+      case "16:30 - 16:50":
+        return "default";
+      default:
+        return "pointer";
+    }
+  }
+
   function getFill(
     period: string,
     value: number,
@@ -542,7 +638,7 @@ const LinePlotTest: React.FC<LineProps> = ({ parameter }) => {
         return value >= upper || value <= lower ? "rgba(255,0,0,0.7)" : "green";
     }
   }
-  const annotations142: any[] = graphDataMock.map((point) => ({
+  const annotations142: any[] = graphData.map((point) => ({
     type: "text",
     content: getModifiedContent(point.period, point.value),
     position: (xScale: any, yScale: any) => {
@@ -554,7 +650,7 @@ const LinePlotTest: React.FC<LineProps> = ({ parameter }) => {
     style: {
       textAlign: "center",
       fill: "white",
-      cursor: "pointer",
+      cursor: getModifiedCursor(point.period),
       fontSize: 22,
     },
     offsetY: -4,
@@ -563,7 +659,7 @@ const LinePlotTest: React.FC<LineProps> = ({ parameter }) => {
       style: {
         z: 0,
         radius: 17,
-        cursor: "pointer",
+        cursor: getModifiedCursor(point.period),
         fill: getFill(point.period, point.value, point.upper, point.lower),
       },
     },
@@ -603,7 +699,7 @@ const LinePlotTest: React.FC<LineProps> = ({ parameter }) => {
     return -60;
   };
 
-  const annotationsLower: any[] = graphDataMock
+  const annotationsLower: any[] = graphData
     .map((update, index, array) => {
       const matchingPeriod = period.find(
         (periodItem) => periodItem.periodTime === update.period
@@ -616,7 +712,7 @@ const LinePlotTest: React.FC<LineProps> = ({ parameter }) => {
           end: nextUpdate
             ? [nextUpdate.period, matchingPeriod.lower]
             : [update.period, matchingPeriod.lower],
-          offsetX: OffsetX(graphDataMock),
+          offsetX: OffsetX(graphData),
           text: {
             content: `${matchingPeriod.lower}`,
             offsetY: 1,
@@ -639,7 +735,6 @@ const LinePlotTest: React.FC<LineProps> = ({ parameter }) => {
       return null; // Return null for periods without matching or zero lower values
     })
     .filter((annotation) => annotation !== null);
-  console.log(annotationsLower);
 
   // Modify the last object in annotationsLower array
   if (annotationsLower.length > 1) {
@@ -648,36 +743,36 @@ const LinePlotTest: React.FC<LineProps> = ({ parameter }) => {
       annotationsLower[annotationsLower.length - 2].start[0];
     lastAnnotation.end[0] =
       annotationsLower[annotationsLower.length - 2].end[0];
-    if (graphDataMock.length === 2) {
+    if (graphData.length === 2) {
       lastAnnotation.offsetX = 375;
-    } else if (graphDataMock.length === 3) {
+    } else if (graphData.length === 3) {
       lastAnnotation.offsetX = 252;
-    } else if (graphDataMock.length === 4) {
+    } else if (graphData.length === 4) {
       lastAnnotation.offsetX = 560;
-    } else if (graphDataMock.length === 5) {
-      lastAnnotation.offsetX = 151;
-    } else if (graphDataMock.length === 6) {
+    } else if (graphData.length === 5) {
+      lastAnnotation.offsetX = 452;
+    } else if (graphData.length === 6) {
       lastAnnotation.offsetX = 128;
-    } else if (graphDataMock.length === 7) {
+    } else if (graphData.length === 7) {
       lastAnnotation.offsetX = 326;
-    } else if (graphDataMock.length === 8) {
+    } else if (graphData.length === 8) {
       lastAnnotation.offsetX = 93;
-    } else if (graphDataMock.length === 9) {
+    } else if (graphData.length === 9) {
       lastAnnotation.offsetX = 84;
-    } else if (graphDataMock.length === 10) {
+    } else if (graphData.length === 10) {
       lastAnnotation.offsetX = 225;
-    } else if (graphDataMock.length === 11) {
+    } else if (graphData.length === 11) {
       lastAnnotation.offsetX = 68;
-    } else if (graphDataMock.length === 12) {
+    } else if (graphData.length === 12) {
       lastAnnotation.offsetX = 65;
-    } else if (graphDataMock.length === 13) {
+    } else if (graphData.length === 13) {
       lastAnnotation.offsetX = 175;
-    } else if (graphDataMock.length === 14) {
+    } else if (graphData.length === 14) {
       lastAnnotation.offsetX = 53;
     }
   }
 
-  const annotationsUpper: any[] = graphDataMock
+  const annotationsUpper: any[] = graphData
     .map((update, index, array) => {
       const matchingPeriod = period.find(
         (periodItem) => periodItem.periodTime === update.period
@@ -690,7 +785,7 @@ const LinePlotTest: React.FC<LineProps> = ({ parameter }) => {
           end: nextUpdate
             ? [nextUpdate.period, matchingPeriod.upper]
             : [update.period, matchingPeriod.upper],
-          offsetX: OffsetX(graphDataMock),
+          offsetX: OffsetX(graphData),
           text: {
             content: `${matchingPeriod.upper}`,
             offsetY: -12,
@@ -713,6 +808,7 @@ const LinePlotTest: React.FC<LineProps> = ({ parameter }) => {
       return null; // Return null for periods without matching or zero lower values
     })
     .filter((annotation) => annotation !== null);
+  console.log("anupper", annotationsUpper);
 
   // Modify the last object in annotationsLower array
   if (annotationsUpper.length > 1) {
@@ -721,36 +817,36 @@ const LinePlotTest: React.FC<LineProps> = ({ parameter }) => {
       annotationsUpper[annotationsUpper.length - 2].start[0];
     lastAnnotation.end[0] =
       annotationsUpper[annotationsUpper.length - 2].end[0];
-    if (graphDataMock.length === 2) {
+    if (graphData.length === 2) {
       lastAnnotation.offsetX = 375;
-    } else if (graphDataMock.length === 3) {
+    } else if (graphData.length === 3) {
       lastAnnotation.offsetX = 252;
-    } else if (graphDataMock.length === 4) {
+    } else if (graphData.length === 4) {
       lastAnnotation.offsetX = 560;
-    } else if (graphDataMock.length === 5) {
-      lastAnnotation.offsetX = 151;
-    } else if (graphDataMock.length === 6) {
+    } else if (graphData.length === 5) {
+      lastAnnotation.offsetX = 452;
+    } else if (graphData.length === 6) {
       lastAnnotation.offsetX = 128;
-    } else if (graphDataMock.length === 7) {
+    } else if (graphData.length === 7) {
       lastAnnotation.offsetX = 326;
-    } else if (graphDataMock.length === 8) {
+    } else if (graphData.length === 8) {
       lastAnnotation.offsetX = 93;
-    } else if (graphDataMock.length === 9) {
+    } else if (graphData.length === 9) {
       lastAnnotation.offsetX = 84;
-    } else if (graphDataMock.length === 10) {
+    } else if (graphData.length === 10) {
       lastAnnotation.offsetX = 225;
-    } else if (graphDataMock.length === 11) {
+    } else if (graphData.length === 11) {
       lastAnnotation.offsetX = 68;
-    } else if (graphDataMock.length === 12) {
+    } else if (graphData.length === 12) {
       lastAnnotation.offsetX = 65;
-    } else if (graphDataMock.length === 13) {
+    } else if (graphData.length === 13) {
       lastAnnotation.offsetX = 175;
-    }else if (graphDataMock.length === 14) {
-        lastAnnotation.offsetX = 53;
-      }
+    } else if (graphData.length === 14) {
+      lastAnnotation.offsetX = 53;
+    }
   }
 
-  const annotationsRegion: any[] = graphDataMock
+  const annotationsRegion: any[] = graphData
     .map((update, index, array) => {
       const matchingPeriod = period.find(
         (periodItem) => periodItem.periodTime === update.period
@@ -763,7 +859,7 @@ const LinePlotTest: React.FC<LineProps> = ({ parameter }) => {
           end: nextUpdate
             ? [nextUpdate.period, matchingPeriod.upper]
             : [update.period, matchingPeriod.upper],
-          offsetX: OffsetX(graphDataMock),
+          offsetX: OffsetX(graphData),
           style: {
             fill: "#2289ff",
             fillOpacity: "0.2",
@@ -774,7 +870,6 @@ const LinePlotTest: React.FC<LineProps> = ({ parameter }) => {
       return null; // Return null for periods without matching or zero lower values
     })
     .filter((annotation) => annotation !== null);
-  console.log(annotationsRegion);
 
   // Modify the last object in annotationsLower array
   if (annotationsRegion.length > 1) {
@@ -783,55 +878,74 @@ const LinePlotTest: React.FC<LineProps> = ({ parameter }) => {
       annotationsRegion[annotationsRegion.length - 2].start[0];
     lastAnnotation.end[0] =
       annotationsRegion[annotationsRegion.length - 2].end[0];
-    if (graphDataMock.length === 2) {
+    if (graphData.length === 2) {
       lastAnnotation.offsetX = 375;
-    } else if (graphDataMock.length === 3) {
+    } else if (graphData.length === 3) {
       lastAnnotation.offsetX = 252;
-    } else if (graphDataMock.length === 4) {
+    } else if (graphData.length === 4) {
       lastAnnotation.offsetX = 560;
-    } else if (graphDataMock.length === 5) {
-      lastAnnotation.offsetX = 151;
-    } else if (graphDataMock.length === 6) {
+    } else if (graphData.length === 5) {
+      lastAnnotation.offsetX = 452;
+    } else if (graphData.length === 6) {
       lastAnnotation.offsetX = 128;
-    } else if (graphDataMock.length === 7) {
+    } else if (graphData.length === 7) {
       lastAnnotation.offsetX = 326;
-    } else if (graphDataMock.length === 8) {
+    } else if (graphData.length === 8) {
       lastAnnotation.offsetX = 93;
-    } else if (graphDataMock.length === 9) {
+    } else if (graphData.length === 9) {
       lastAnnotation.offsetX = 84;
-    } else if (graphDataMock.length === 10) {
+    } else if (graphData.length === 10) {
       lastAnnotation.offsetX = 225;
-    } else if (graphDataMock.length === 11) {
+    } else if (graphData.length === 11) {
       lastAnnotation.offsetX = 68;
-    } else if (graphDataMock.length === 12) {
+    } else if (graphData.length === 12) {
       lastAnnotation.offsetX = 65;
-    } else if (graphDataMock.length === 13) {
+    } else if (graphData.length === 13) {
       lastAnnotation.offsetX = 175;
-    }else if (graphDataMock.length === 14) {
-        lastAnnotation.offsetX = 53;
-      }
+    } else if (graphData.length === 14) {
+      lastAnnotation.offsetX = 53;
+    }
   }
 
   let chart: any;
-  const value = 158;
-  const config: LineConfig = {
-    data: updateParamMoc,
+  const config: ColumnConfig = {
+    data: updatedParameter,
     xField: "period",
     yField: "value",
-    yAxis: { maxLimit: 340 },
-    point: {
-      size: 5,
-      shape: "custom-point",
-      style: {
-        fill: "white",
-        stroke: "#5B8FF9",
-        lineWidth: 2,
+    yAxis: {
+      maxLimit: 340,
+      title: {
+        text: "Pieces per Hour",
+        style: { fontSize: 20, fontWeight: "bold" },
       },
+    },
+    color: (data: any) => {
+      console.log(data);
+      const matchingPeriod = updatedParameter.find(
+        (p) => p.period === data.period
+      );
+      if (matchingPeriod) {
+        console.log(matchingPeriod);
+        const value = matchingPeriod.value; // Access value from the found object in updatedParameter
+        const lower = matchingPeriod.lower ?? 0;
+        const upper = matchingPeriod.upper ?? 0;
+        if (value >= lower && value <= upper) {
+          return "rgba(98, 218, 171, 0.5)";
+        } else {
+          return "rgba(255, 33, 33, 0.5)";
+        }
+      }
+      // Default color if no matching period found
+      return "blue";
+    },
+    xAxis: {
+      title: { text: "Period", style: { fontSize: 20, fontWeight: "bold" } },
     },
     onReady: (plot: any) => {
       chart = plot.chart; // Store chart instance
       chart.render(); // Make sure to render the chart to access the scales
     },
+
     annotations: [
       ...annotations142,
       ...annotationsLower,
@@ -859,7 +973,7 @@ const LinePlotTest: React.FC<LineProps> = ({ parameter }) => {
 
   return (
     <>
-      <Line
+      <Column
         {...config}
         onReady={(plot) => {
           plot.chart.on("plot:click", async (evt: any) => {
@@ -869,142 +983,51 @@ const LinePlotTest: React.FC<LineProps> = ({ parameter }) => {
               y,
             });
             console.log(bigDataFromToolItem);
-            setDataTooltip(bigDataFromToolItem);
-            onOpen();
-            // try {
-            //   const data: DataBaratsuki = bigDataFromToolItem[0];
-            //   const response = await axios(
-            //     "http://localhost:8000/get_data_area",
-            //     {
-            //       params: {
-            //         section_code: data.section_code,
-            //         line_id: data.line_id,
-            //         machine_no: data.machine_no,
-            //         date: data.date,
-            //       },
-            //     }
-            //   );
-            // } catch (err) {
-            //   console.error(err);
-            // }
+            if (
+              bigDataFromToolItem.length > 0 &&
+              !excludedTitles.includes(bigDataFromToolItem[0].title)
+            ) {
+              setDataTooltip(bigDataFromToolItem);
+              onOpen();
+              try {
+                const data: DataBaratsuki = bigDataFromToolItem[0].data;
+                const dateP = bigDataFromToolItem[0].data.date;
+                const formattedTime = dayjs(dateP).format("HH:mm:ss");
+                const matchingInterval = interval.find(
+                  (item: any) => item.point === formattedTime
+                );
+                const timeToSendToAPI = matchingInterval
+                  ? matchingInterval.time
+                  : null;
+                console.log(data);
+                const parameter = {
+                  section_code: data.section_code,
+                  line_id: data.line_id,
+                  machine_no: data.machine_no,
+                  date: data.date,
+                  interval: timeToSendToAPI,
+                };
+                console.log(parameter);
+                const response = await axios(
+                  "http://localhost:8000/get_data_area",
+                  {
+                    params: parameter,
+                  }
+                );
+                if (response.status === 200) {
+                  setDataBaratsuki(response.data);
+                }
+              } catch (err) {
+                console.error(err);
+              }
+            } else {
+            }
           });
         }}
       />
-      <Modal
-        isOpen={isOpen}
-        onOpenChange={onOpenChange}
-        isDismissable={false}
-        isKeyboardDismissDisabled={true}
-        size="full"
-      >
-        <ModalContent>
-          {(onClose) => (
-            <>
-              <ModalHeader className="flex gap-1">
-                {dataTooltip[0].data.machine_no}{" "}
-                {dataTooltip[0].data.machine_name} : {dataTooltip[0].title}{" "}
-                {period.map((periodItem) => {
-                  if (periodItem.periodTime === dataTooltip[0].title) {
-                    let statusText = "";
-                    if (periodItem.status === 1) {
-                      statusText = "Working time";
-                    } else if (periodItem.status === 2) {
-                      statusText = "Rest time";
-                    } else if (periodItem.status === 3) {
-                      statusText = "Lunch time";
-                    }
-                    return (
-                      <Chip
-                        key={periodItem.periodTime}
-                        color="warning"
-                        variant="flat"
-                      >
-                        {statusText} {periodItem.time} sec.
-                      </Chip>
-                    );
-                  }
-                  return null; // Render nothing if periodTime doesn't match
-                })}
-              </ModalHeader>
-              <ModalBody className="flex flex-row">
-                <Card
-                  style={{ width: "50%", height: "100%", padding: "1rem" }}
-                  shadow="sm"
-                  radius="sm"
-                  isBlurred
-                >
-                  <AreaPlot />
-                </Card>
-                <div
-                  className="flex flex-col justify-between gap-4"
-                  style={{ width: "50%", height: "100%" }}
-                >
-                  <div style={{ width: "100%" }} className="flex gap-4">
-                    <div style={{ width: "40%", height: "13rem" }}>
-                      <TableMock />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <p className="font-semibold">Person In-Charge</p>
-                      <ListBoxMember />
-                    </div>
-                  </div>
-                  <div
-                    className="flex justify-between"
-                    style={{ width: "100%" }}
-                  >
-                    <div className="space-y-1">
-                      <h4 className="text-medium font-medium">
-                        Recording and Highlights
-                      </h4>
-                      <p className="text-small text-default-400">
-                        Click on any period to watch alarm.
-                      </p>
-                    </div>
-                    <Tooltip
-                      placement="top-end"
-                      content="Choose to Download clip on period"
-                    >
-                      <Dropdown>
-                        <DropdownTrigger>
-                          <Button variant="bordered">Download Video</Button>
-                        </DropdownTrigger>
-                        <DropdownMenu
-                          aria-label="Dynamic Actions"
-                          items={items}
-                        >
-                          {(item) => (
-                            <DropdownItem
-                              key={item.key}
-                              color={
-                                item.key === "delete" ? "danger" : "default"
-                              }
-                              className={
-                                item.key === "delete" ? "text-danger" : ""
-                              }
-                            >
-                              {item.label}
-                            </DropdownItem>
-                          )}
-                        </DropdownMenu>
-                      </Dropdown>
-                    </Tooltip>
-                  </div>
-                  <div style={{ width: "100%", height: "70%" }}>
-                    <VideoPlayer />
-                  </div>
-                </div>
-              </ModalBody>
-              <ModalFooter>
-                <Button color="danger" variant="light" onPress={onClose}>
-                  Close
-                </Button>
-              </ModalFooter>
-            </>
-          )}
-        </ModalContent>
-      </Modal>
+      <ModalHour isOpen={isOpen} onOpen={onOpen} onOpenChange={onOpenChange} />
     </>
   );
 };
 
-export default LinePlotTest;
+export default ColumnPlotTest;

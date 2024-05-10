@@ -125,14 +125,163 @@ const AreaPlot: React.FC = () => {
     },
   ];
 
+  const period3 = [
+    {
+      periodTime: "08:30",
+      time: 3300,
+      status: 1,
+      upper: 200,
+      lower: 140,
+    },
+    {
+      periodTime: "09:40",
+      time: 4200,
+      status: 1,
+      upper: 255,
+      lower: 178,
+    },
+    {
+      periodTime: "10:30",
+      time: 2400,
+      status: 1,
+      upper: 145,
+      lower: 102,
+    },
+    {
+      periodTime: "11:30",
+      time: 3600,
+      status: 1,
+      upper: 218,
+      lower: 153,
+    },
+    {
+      periodTime: "13:30",
+      time: 3600,
+      status: 1,
+      upper: 218,
+      lower: 153,
+    },
+    {
+      periodTime: "14:40",
+      time: 4200,
+      status: 1,
+      upper: 255,
+      lower: 178,
+    },
+    {
+      periodTime: "15:30",
+      time: 2400,
+      status: 1,
+      upper: 145,
+      lower: 102,
+    },
+    {
+      periodTime: "16:30",
+      time: 3600,
+      status: 1,
+      upper: 218,
+      lower: 153,
+    },
+    {
+      periodTime: "17:50",
+      time: 3600,
+      status: 1,
+      upper: 218,
+      lower: 153,
+    },
+    {
+      periodTime: "19:20",
+      time: 5400,
+      status: 1,
+      upper: 327,
+      lower: 229,
+    },
+    {
+      periodTime: "20:30",
+      time: 3300,
+      status: 1,
+      upper: 200,
+      lower: 140,
+    },
+    {
+      periodTime: "21:30",
+      time: 3600,
+      status: 1,
+      upper: 218,
+      lower: 153,
+    },
+    {
+      periodTime: "22:30",
+      time: 3000,
+      status: 1,
+      upper: 182,
+      lower: 127,
+    },
+    {
+      periodTime: "23:30",
+      time: 3600,
+      status: 1,
+      upper: 218,
+      lower: 153,
+    },
+    {
+      periodTime: "01:30",
+      time: 4200,
+      status: 1,
+      upper: 255,
+      lower: 178,
+    },
+    {
+      periodTime: "02:30",
+      time: 3600,
+      status: 1,
+      upper: 218,
+      lower: 153,
+    },
+    {
+      periodTime: "03:30",
+      time: 2400,
+      status: 1,
+      upper: 145,
+      lower: 102,
+    },
+    {
+      periodTime: "04:30",
+      time: 3600,
+      status: 1,
+      upper: 218,
+      lower: 153,
+    },
+    {
+      periodTime: "05:50",
+      time: 3600,
+      status: 1,
+      upper: 218,
+      lower: 153,
+    },
+    {
+      periodTime: "07:20",
+      time: 5400,
+      status: 1,
+      upper: 327,
+      lower: 229,
+    },
+  ];
+
   const graphLimit = period.find((item) => {
     if (item.periodTime === endTime) {
       return true;
     }
   });
+
+  const graphLimit3 = period3.find((item) => {
+    if (item.periodTime === endTime) {
+      return true;
+    }
+  });
   // If graphLimit is undefined, set upper and lower to 0
-  const upper = graphLimit ? graphLimit.upper : 0;
-  const lower = graphLimit ? graphLimit.lower : 0;
+  const upper = graphLimit3 ? graphLimit3.upper : 0;
+  const lower = graphLimit3 ? graphLimit3.lower : 0;
   const dataBaratsuki = GeneralStore((state) => state.dataBaratsuki);
   dataBaratsuki.sort(
     (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
@@ -154,34 +303,39 @@ const AreaPlot: React.FC = () => {
     };
   });
 
-  const judgePoint = transformedData.map((item: any, index: number) => {
-    const isLastDataPoint = index === transformedData.length - 1;
-    const isAboveUpperLimit =
-      graphLimit &&
-      typeof graphLimit.upper === "number" &&
-      item.prod_actual >= graphLimit.upper;
+  let transformdata2: any[] = [];
 
-    return {
-      size: 8,
-      shape: "point",
-      style: {
-        fill: isAboveUpperLimit && isLastDataPoint ? "red" : "green",
-        stroke: "white",
-        lineWidth: 2,
-      },
-    };
-  });
+  // Perform the transformation
+  transformdata2 = transformedData.map((item: any, index: number) => ({
+    ...item,
+    value:
+      index === 0
+        ? 0
+        : item.prod_actual - transformedData[index - 1]?.prod_actual,
+  }));
+
+  console.log(transformdata2);
+
+  const firstProdActual = transformedData[0]?.prod_actual;
+
+  const transformData3 = transformedData.map((entry: any, index: number) => ({
+    ...entry,
+    value: index === 0 ? 0 : entry.prod_actual - firstProdActual,
+  }));
+
+  console.log("transformData3", transformData3);
 
   const lastDataPoint: number =
-    transformedData[transformedData.length - 1]?.prod_actual;
+    transformData3[transformData3.length - 1]?.value;
   console.log("lower", lower);
   console.log("upper", upper);
   console.log(graphLimit);
+  console.log("graphlimit3", graphLimit3);
 
   const config: AreaConfig = {
-    data: transformedData,
+    data: transformData3,
     xField: "date",
-    yField: "prod_actual",
+    yField: "value",
     label: {
       style: {
         fontSize: 16,
@@ -205,7 +359,7 @@ const AreaPlot: React.FC = () => {
     },
     xAxis: {
       range: [0, 1],
-      tickCount: transformedData.length,
+      tickCount: transformData3.length,
       title: {
         text: "Time",
         style: { fontSize: 20, fontWeight: "bold" },
@@ -214,7 +368,7 @@ const AreaPlot: React.FC = () => {
     yAxis: {
       maxLimit: upper + 10,
       title: {
-        text: "Actual Cycle point",
+        text: "Actual (pcs.)",
         style: { fontSize: 20, fontWeight: "bold" },
       },
     },
@@ -283,22 +437,22 @@ const AreaPlot: React.FC = () => {
           // opacity: 1,
         },
       },
-      {
-        type: "text",
-        content: "Hello",
-        position: [transformedData[0]?.date, (upper + lower) / 2],
-        offsetX: 20,
+      // {
+      //   type: "text",
+      //   content: "Hello",
+      //   position: [transformData3[0]?.date, (upper + lower) / 2],
+      //   offsetX: 20,
 
-        // ✅ 4. 支持直接设置 x,y 坐标 (相对于 canvas 坐标，相对起点在左上方) - 需要外部自我感知画布大小，不建议使用
-        // x: 180,
-        // y: 105,
+      //   // ✅ 4. 支持直接设置 x,y 坐标 (相对于 canvas 坐标，相对起点在左上方) - 需要外部自我感知画布大小，不建议使用
+      //   // x: 180,
+      //   // y: 105,
 
-        /** 图形样式属性 */
-        style: {
-          textAlign: "center",
-          fill: "rgba(0,0,0,0.85)",
-        },
-      },
+      //   /** 图形样式属性 */
+      //   style: {
+      //     textAlign: "center",
+      //     fill: "rgba(0,0,0,0.85)",
+      //   },
+      // },
     ],
   };
 
