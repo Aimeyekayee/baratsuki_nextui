@@ -582,7 +582,7 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
     },
     {
       point: "03:30:00",
-      time: "1 hour",
+      time: "40 minutes",
     },
     {
       point: "04:30:00",
@@ -684,7 +684,7 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
     },
     {
       point: "03:30:00",
-      time: "1 hour",
+      time: "40 minutes",
     },
     {
       point: "04:30:00",

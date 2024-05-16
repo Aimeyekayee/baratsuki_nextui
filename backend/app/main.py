@@ -157,8 +157,8 @@ async def get_data_area(
     return data_area
 
 
-@app.get("/get_dataparameter", response_model=List[DataResponse])
-async def get_dataparameter(
+@app.get("/get_dataparameter_day", response_model=List[DataResponse])
+async def get_dataparameter_day(
     section_code: int,
     line_id: int,
     machine_no1: str,
@@ -170,7 +170,34 @@ async def get_dataparameter(
     db: Session = Depends(get_db),
 ):
     print("fuas")
-    data = crud.get_dataparameter(
+    data = crud.get_dataparameter_day(
+        section_code=section_code,
+        line_id=line_id,
+        machine_no1=machine_no1,
+        machine_no2=machine_no2,
+        date_current=date_current,
+        next_date=next_date,
+        isOdd=isOdd,
+        shift=shift,
+        db=db,
+    )
+    return data
+
+
+@app.get("/get_dataparameter_night", response_model=List[DataResponse])
+async def get_dataparameter_night(
+    section_code: int,
+    line_id: int,
+    machine_no1: str,
+    machine_no2: str,
+    date_current: str,
+    next_date: str,
+    isOdd: bool,
+    shift: str,
+    db: Session = Depends(get_db),
+):
+    print("fuas")
+    data = crud.get_dataparameter_night(
         section_code=section_code,
         line_id=line_id,
         machine_no1=machine_no1,
