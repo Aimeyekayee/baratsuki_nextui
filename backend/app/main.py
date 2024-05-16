@@ -83,36 +83,6 @@ class DataResponseHour(BaseModel):
     data: dict
 
 
-broker = "broker.emqx.io"
-port = 8083
-topic = "6de4ca0a64e44ce3941edaadf1f31635/rotor/linenotify"
-client_id = f"python-mqtt-{random.randint(0, 1000)}"
-
-
-def connect_mqtt():
-    def on_connect(client, userdata, flags, rc):
-        if rc == 0:
-            print("Connected to MQTT Broker!")
-        else:
-            print(f"Failed to connect, return code {rc}")
-
-    client = mqtt_client.Client(client_id)
-    client.on_connect = on_connect
-    client.connect(broker, port)
-    return client
-
-
-def run():
-    print("here")
-    client = connect_mqtt()
-    client.loop_start()
-    client.loop_stop()
-
-
-if __name__ == "__main__":
-    run()
-
-
 # @app.get("/get_data", response_model=List[Data])
 # async def get_data(db: Session = Depends(get_db)):
 #     data = crud.get_data(db=db)

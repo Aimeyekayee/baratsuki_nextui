@@ -525,11 +525,7 @@ const FormSearch = () => {
           0
         );
         console.log(sumOfNumbers1);
-        setActualNotRealTimeMC1(sumOfNumbers1);
-        if (shift === "day") {
-          setZone2(filteredResults2);
-        } else {
-        }
+
         console.log(filteredResults2);
         console.log(filteredResults22);
         const sumOfNumbers2 = filteredResults2.reduce(
@@ -542,7 +538,14 @@ const FormSearch = () => {
           },
           0
         );
-        setActualNotRealTimeMC2(sumOfNumbers2);
+
+        if (shift === "day") {
+          setZone2(filteredResults2);
+          setActualNotRealTimeMC1(sumOfNumbers1);
+          setActualNotRealTimeMC2(sumOfNumbers2);
+        } else {
+        }
+
         console.log("filterRes2", filteredResults2);
 
         console.log("res1", results1);
@@ -855,10 +858,7 @@ const FormSearch = () => {
           0
         );
         console.log(sumOfNumbers1);
-        setActualNotRealTimeMC1(sumOfNumbers1);
-        if (shift === "night") {
-          setZone2(filteredResults2);
-        }
+
         console.log(filteredResults2);
         console.log(filteredResults22);
         const sumOfNumbers2 = filteredResults2.reduce(
@@ -871,7 +871,13 @@ const FormSearch = () => {
           },
           0
         );
-        setActualNotRealTimeMC2(sumOfNumbers2);
+        if (shift === "night") {
+          setZone2(filteredResults2);
+          setActualNotRealTimeMC1(sumOfNumbers1);
+          setActualNotRealTimeMC2(sumOfNumbers2);
+        } else {
+        }
+
         console.log("filterRes2", filteredResults2);
 
         console.log("res1", results1);

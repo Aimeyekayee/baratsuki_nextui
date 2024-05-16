@@ -2,11 +2,10 @@
 import { title, subtitle } from "@/components/primitives";
 
 import FormSearch from "@/components/form/form.search";
-import LinePlot from "@/components/chart/line";
 import { GeneralStore } from "@/store/general.store";
 import MonitorData from "@/components/monitor/monitor.data";
 import { ConfigProvider, Empty } from "antd";
-import ColumnPlotTest from "@/components/chart/line.test";
+import ColumnPlotTest from "@/components/chart/main.column";
 import dayjs from "dayjs";
 import {
   Card,

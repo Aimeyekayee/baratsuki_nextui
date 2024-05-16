@@ -337,7 +337,7 @@ const AreaPlotBy5minutes: React.FC = () => {
   const config: ColumnConfig = {
     data: transformdata2,
     xField: "date",
-    slider:false,
+    // slider: false,
     yField: "value",
     label: {
       style: {
@@ -349,11 +349,12 @@ const AreaPlotBy5minutes: React.FC = () => {
       console.log(value);
       if (value.value >= 18) {
         return "#5cdaab";
-      }else if(value.value < 18){
-        return "red"
+      } else if (value.value < 18) {
+        return "#F4664A";
       }
       return "blue";
     },
+    legend: false,
     xAxis: {
       range: [0, 1],
       tickCount: transformData3.length,
@@ -381,8 +382,9 @@ const AreaPlotBy5minutes: React.FC = () => {
         end: ["max", 18],
         offsetX: 0,
         text: {
-          content: `C.T. Target = ${ctTarget}`,
-          offsetY: -15,
+          content: `(calculated at C.T. Target = ${ctTarget})`,
+          offsetY: -18,
+          offsetX:430,
           style: {
             textAlign: "left",
             fontSize: 12,
@@ -403,12 +405,12 @@ const AreaPlotBy5minutes: React.FC = () => {
         end: ["max", 18],
         offsetX: 0,
         text: {
-          content: `Actual Target = ${accum5min.toFixed(0)}`,
+          content: `Actual Target = ${accum5min.toFixed(0)} pcs. / 5min`,
           offsetY: -30,
 
           style: {
             textAlign: "left",
-            fontSize: 12,
+            fontSize: 30,
             fontWeight: "bold",
             fill: "rgba(86, 191, 150, 1)",
             textBaseline: "top",

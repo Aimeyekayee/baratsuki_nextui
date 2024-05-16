@@ -369,7 +369,7 @@ const ModalHour: React.FC<ModalManagement> = ({
                     onSelectionChange={setSelected}
                   >
                     <Tab key="5min" title="5 minutes" />
-                    <Tab key="1hr" title="1 hour"></Tab>
+                    <Tab key="1hr" title="By Period"></Tab>
                     <Tab key="accum" title="Accumulate"></Tab>
                   </Tabs>
                 </div>

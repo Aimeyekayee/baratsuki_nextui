@@ -13,12 +13,16 @@ RUN echo "building dependencies with node"
 RUN node --version
 ARG BUILD_ENV=.env
 WORKDIR /app
+ENV NEXT_PRIVATE_STANDALONE true
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 RUN find . -type f -name '.env**.*' -delete
 COPY ./$BUILD_ENV .env
 ENV NEXT_TELEMETRY_DISABLED 1
+
+ENV NEXT_PRIVATE_STANDALONE true
+
 
 RUN yarn run build
 

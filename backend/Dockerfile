@@ -1,12 +1,9 @@
-FROM python:3.11.9-slim-bookworm
+FROM python:3.11.4-slim-bookworm
 ENV TZ=Asia/Bangkok
-
 ARG TARGETPLATFORM
-
 COPY . /code
 WORKDIR /code
 COPY requirements.txt .
-
 RUN \
   ARCH=$(case ${TARGETPLATFORM:-linux/amd64} in \
   "linux/amd64")   echo "x86-64bit" ;; \
@@ -36,8 +33,5 @@ RUN \
   # Cleanup build dependencies
   apt-get remove -y curl apt-transport-https debconf-utils g++ gcc rsync unixodbc-dev build-essential gnupg2 && \
   apt-get autoremove -y && apt-get autoclean -y
-
-
-EXPOSE 8002
-
+EXPOSE 8000
 CMD ["uvicorn", "app.main:app","--host","0.0.0.0","--port","8000","--reload"]
