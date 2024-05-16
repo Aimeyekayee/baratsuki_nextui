@@ -1,18 +1,25 @@
 import { Button } from "@nextui-org/button";
-import Reac, { useRef, useState } from "react";
-import ReactPlayer from "react-player";
+import React, { useRef, useState } from "react";
+import { default as _ReactPlayer } from 'react-player';
+import { ReactPlayerProps } from "react-player/types/lib";
 import { TiArrowSortedUp } from "react-icons/ti";
+
+const ReactPlayer = _ReactPlayer as unknown as React.FC<ReactPlayerProps>;
+
 const VideoPlayer = () => {
-  const playerRef = useRef<ReactPlayer>(null);
+  const playerRef = useRef<any>(null); // Adjusted the type to any
   const [isReady, setIsReady] = useState<boolean>(false);
+
   const handleSeek = (seconds: number) => {
     if (isReady && playerRef.current) {
       playerRef.current.seekTo(seconds, "seconds");
     }
   };
+
   const handleReady = () => {
     setIsReady(true);
   };
+
   return (
     <div>
       <ReactPlayer
@@ -36,4 +43,5 @@ const VideoPlayer = () => {
     </div>
   );
 };
+
 export default VideoPlayer;

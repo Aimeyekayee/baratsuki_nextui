@@ -73,6 +73,7 @@ if (typeof document !== "undefined") {
   // you are safe to use the "document" object here
 }
 const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
+  console.log(parameter);
   const dateStrings = GeneralStore((state) => state.dateStrings);
   const setDataBaratsuki = GeneralStore((state) => state.setDataBaratsuki);
   const currentDate = dayjs().format("YYYY-MM-DD");
@@ -91,40 +92,88 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
     },
   ];
   const dataTooltip = ModalOpenStore((state) => state.dataTooltip);
+  const isOdd = GeneralStore((state) => state.isOdd);
   const formattedData = parameter.map((entry) => {
     const period = entry.period.slice(0, -3); // Remove the last three characters (":00")
     return { ...entry, period };
   });
-  const dayShiftTimes = [
+  console.log(formattedData);
+  const dayShiftTimes1 = [
     "07:35",
     "08:30",
+    "09:30",
     "09:40",
-    "09:50",
     "10:30",
-    "11:30",
-    "12:30",
+    "11:15",
+    "12:15",
     "13:30",
+    "14:30",
     "14:40",
-    "14:50",
     "15:30",
     "16:30",
     "16:50",
     "17:50",
     "19:20",
   ];
-
-  const excludedTitles = [
-    "09:40 - 09:50",
+  const dayShiftTimes2 = [
+    "07:35",
+    "08:30",
+    "09:20",
+    "09:30",
+    "10:30",
+    "11:30",
+    "12:30",
+    "13:30",
+    "14:20",
+    "14:30",
+    "15:30",
+    "16:30",
+    "16:50",
+    "17:50",
+    "19:20",
+  ];
+  const dayShiftTimes = isOdd ? dayShiftTimes1 : dayShiftTimes2;
+  const excludedTitles1 = [
+    "09:30 - 09:40",
+    "11:15 - 12:15",
+    "14:30 - 14:40",
+    "21:30 - 21:40",
+    "23:15 - 00:05",
+    "02:30 - 02:50",
+    "04:30 - 04:50",
+    "16:30 - 16:50",
+  ];
+  const excludedTitles2 = [
+    "09:20 - 09:30",
     "11:30 - 12:30",
-    "14:40 - 14:50",
+    "14:20 - 14:30",
     "21:30 - 21:40",
     "23:30 - 00:20",
     "02:30 - 02:50",
     "04:30 - 04:50",
     "16:30 - 16:50",
   ];
+  const excludedTitles = isOdd ? excludedTitles1 : excludedTitles2;
 
-  const nightShiftTimes = [
+  const nightShiftTimes1 = [
+    "19:35",
+    "20:30",
+    "21:30",
+    "21:40",
+    "22:30",
+    "23:15",
+    "00:05",
+    "01:30",
+    "02:30",
+    "02:50",
+    "03:30",
+    "04:30",
+    "04:50",
+    "05:50",
+    "07:20",
+  ];
+
+  const nightShiftTimes2 = [
     "19:35",
     "20:30",
     "21:30",
@@ -141,65 +190,67 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
     "05:50",
     "07:20",
   ];
-  const period = [
+
+  const nightShiftTimes = isOdd ? nightShiftTimes1 : nightShiftTimes2;
+  const period1 = [
     {
       periodTime: "07:35 - 08:30",
       time: 3300,
       status: 1,
       upper: 200,
-      lower: 140,
+      lower: 170,
     },
     {
-      periodTime: "08:30 - 09:40",
-      time: 4200,
-      status: 1,
-      upper: 255,
-      lower: 178,
-    },
-    { periodTime: "09:40 - 09:50", time: 600, status: 2, upper: 0, lower: 0 },
-    {
-      periodTime: "09:50 - 10:30",
-      time: 2400,
-      status: 1,
-      upper: 145,
-      lower: 102,
-    },
-    {
-      periodTime: "10:30 - 11:30",
+      periodTime: "08:30 - 09:30",
       time: 3600,
       status: 1,
       upper: 218,
-      lower: 153,
+      lower: 185,
     },
-    { periodTime: "11:30 - 12:30", time: 3600, status: 3, upper: 0, lower: 0 },
+    { periodTime: "09:30 - 09:40", time: 600, status: 2, upper: 0, lower: 0 },
     {
-      periodTime: "12:30 - 13:30",
+      periodTime: "09:40 - 10:30",
+      time: 3000,
+      status: 1,
+      upper: 182,
+      lower: 155,
+    },
+    {
+      periodTime: "10:30 - 11:15",
+      time: 2700,
+      status: 1,
+      upper: 164,
+      lower: 139,
+    },
+    { periodTime: "11:15 - 12:15", time: 3600, status: 3, upper: 0, lower: 0 },
+    {
+      periodTime: "12:15 - 13:30",
+      time: 4500,
+      status: 1,
+      upper: 273,
+      lower: 232,
+    },
+    {
+      periodTime: "13:30 - 14:30",
       time: 3600,
       status: 1,
       upper: 218,
-      lower: 153,
+      lower: 185,
     },
+    { periodTime: "14:30 - 14:40", time: 600, status: 2, upper: 0, lower: 0 },
     {
-      periodTime: "13:30 - 14:40",
-      time: 4200,
+      periodTime: "14:40 - 15:30",
+      time: 3000,
       status: 1,
-      upper: 255,
-      lower: 178,
-    },
-    { periodTime: "14:40 - 14:50", time: 600, status: 2, upper: 0, lower: 0 },
-    {
-      periodTime: "14:50 - 15:30",
-      time: 2400,
-      status: 1,
-      upper: 145,
-      lower: 102,
+      upper: 182,
+      lower: 155,
     },
     {
       periodTime: "15:30 - 16:30",
       time: 3600,
       status: 1,
       upper: 218,
-      lower: 153,
+      lower: 185,
     },
     { periodTime: "16:30 - 16:50", time: 1200, status: 2, upper: 0, lower: 0 },
     {
@@ -207,28 +258,28 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
       time: 3600,
       status: 1,
       upper: 218,
-      lower: 153,
+      lower: 185,
     },
     {
       periodTime: "17:50 - 19:20",
       time: 5400,
       status: 1,
       upper: 327,
-      lower: 229,
+      lower: 278,
     },
     {
       periodTime: "19:35 - 20:30",
       time: 3300,
       status: 1,
       upper: 200,
-      lower: 140,
+      lower: 170,
     },
     {
       periodTime: "20:30 - 21:30",
       time: 3600,
       status: 1,
       upper: 218,
-      lower: 153,
+      lower: 185,
     },
     { periodTime: "21:30 - 21:40", time: 600, status: 2, upper: 0, lower: 0 },
     {
@@ -236,29 +287,29 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
       time: 3000,
       status: 1,
       upper: 182,
-      lower: 127,
+      lower: 155,
     },
     {
-      periodTime: "22:30 - 23:30",
-      time: 3600,
+      periodTime: "22:30 - 23:15",
+      time: 2700,
       status: 1,
-      upper: 218,
-      lower: 153,
+      upper: 164,
+      lower: 139,
     },
-    { periodTime: "23:30 - 00:20", time: 3000, status: 3, upper: 0, lower: 0 },
+    { periodTime: "23:15 - 00:05", time: 3000, status: 3, upper: 0, lower: 0 },
     {
-      periodTime: "00:20 - 01:30",
-      time: 4200,
+      periodTime: "00:05 - 01:30",
+      time: 5100,
       status: 1,
-      upper: 255,
-      lower: 178,
+      upper: 309,
+      lower: 263,
     },
     {
       periodTime: "01:30 - 02:30",
       time: 3600,
       status: 1,
       upper: 218,
-      lower: 153,
+      lower: 185,
     },
     { periodTime: "02:30 - 02:50", time: 1200, status: 2, upper: 0, lower: 0 },
     {
@@ -266,14 +317,14 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
       time: 2400,
       status: 1,
       upper: 145,
-      lower: 102,
+      lower: 124,
     },
     {
       periodTime: "03:30 - 04:30",
       time: 3600,
       status: 1,
       upper: 218,
-      lower: 153,
+      lower: 185,
     },
     { periodTime: "04:30 - 04:50", time: 1200, status: 2, upper: 0, lower: 0 },
     {
@@ -281,33 +332,287 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
       time: 3600,
       status: 1,
       upper: 218,
-      lower: 153,
+      lower: 185,
     },
     {
       periodTime: "05:50 - 07:20",
       time: 5400,
       status: 1,
       upper: 327,
-      lower: 229,
+      lower: 278,
+    },
+  ];
+  const period2 = [
+    {
+      periodTime: "07:35 - 08:30",
+      time: 3300,
+      status: 1,
+      upper: 200,
+      lower: 170,
+    },
+    {
+      periodTime: "08:30 - 09:20",
+      time: 3000,
+      status: 1,
+      upper: 181,
+      lower: 154,
+    },
+    { periodTime: "09:20 - 09:30", time: 600, status: 2, upper: 0, lower: 0 },
+    {
+      periodTime: "09:30 - 10:30",
+      time: 3600,
+      status: 1,
+      upper: 218,
+      lower: 185,
+    },
+    {
+      periodTime: "10:30 - 11:30",
+      time: 3600,
+      status: 1,
+      upper: 218,
+      lower: 185,
+    },
+    { periodTime: "11:30 - 12:30", time: 3600, status: 3, upper: 0, lower: 0 },
+    {
+      periodTime: "12:30 - 13:30",
+      time: 3600,
+      status: 1,
+      upper: 218,
+      lower: 185,
+    },
+    {
+      periodTime: "13:30 - 14:30",
+      time: 3600,
+      status: 1,
+      upper: 218,
+      lower: 185,
+    },
+    { periodTime: "14:20 - 14:30", time: 600, status: 2, upper: 0, lower: 0 },
+    {
+      periodTime: "14:30 - 15:30",
+      time: 3600,
+      status: 1,
+      upper: 218,
+      lower: 185,
+    },
+    {
+      periodTime: "15:30 - 16:30",
+      time: 3600,
+      status: 1,
+      upper: 218,
+      lower: 185,
+    },
+    { periodTime: "16:30 - 16:50", time: 1200, status: 2, upper: 0, lower: 0 },
+    {
+      periodTime: "16:50 - 17:50",
+      time: 3600,
+      status: 1,
+      upper: 218,
+      lower: 185,
+    },
+    {
+      periodTime: "17:50 - 19:20",
+      time: 5400,
+      status: 1,
+      upper: 327,
+      lower: 278,
+    },
+    {
+      periodTime: "19:35 - 20:30",
+      time: 3300,
+      status: 1,
+      upper: 200,
+      lower: 170,
+    },
+    {
+      periodTime: "20:30 - 21:30",
+      time: 3600,
+      status: 1,
+      upper: 218,
+      lower: 185,
+    },
+    { periodTime: "21:30 - 21:40", time: 600, status: 2, upper: 0, lower: 0 },
+    {
+      periodTime: "21:40 - 22:30",
+      time: 3000,
+      status: 1,
+      upper: 182,
+      lower: 154,
+    },
+    {
+      periodTime: "22:30 - 23:30",
+      time: 3600,
+      status: 1,
+      upper: 218,
+      lower: 185,
+    },
+    { periodTime: "23:30 - 00:20", time: 3000, status: 3, upper: 0, lower: 0 },
+    {
+      periodTime: "00:20 - 01:30",
+      time: 4200,
+      status: 1,
+      upper: 4200 / 16.5,
+      lower: (4200 / 16.5) * 0.85,
+    },
+    {
+      periodTime: "01:30 - 02:30",
+      time: 3600,
+      status: 1,
+      upper: 3600 / 16.5,
+      lower: (3600 / 16.5) * 0.85,
+    },
+    { periodTime: "02:30 - 02:50", time: 1200, status: 2, upper: 0, lower: 0 },
+    {
+      periodTime: "02:50 - 03:30",
+      time: 2400,
+      status: 1,
+      upper: 2400 / 16.5,
+      lower: (2400 / 16.5) * 0.85,
+    },
+    {
+      periodTime: "03:30 - 04:30",
+      time: 3600,
+      status: 1,
+      upper: 3600 / 16.5,
+      lower: (3600 / 16.5) * 0.85,
+    },
+    { periodTime: "04:30 - 04:50", time: 1200, status: 2, upper: 0, lower: 0 },
+    {
+      periodTime: "04:50 - 05:50",
+      time: 3600,
+      status: 1,
+      upper: 3600 / 16.5,
+      lower: (3600 / 16.5) * 0.85,
+    },
+    {
+      periodTime: "05:50 - 07:20",
+      time: 5400,
+      status: 1,
+      upper: 5400 / 16.5,
+      lower: (5400 / 16.5) * 0.85,
     },
   ];
 
-  const interval = [
+  const period = isOdd ? period1 : period2;
+
+  const interval1 = [
     {
       point: "08:30:00",
       time: "55 minutes",
     },
     {
-      point: "09:40:00",
-      time: "1 hour 10 minutes",
+      point: "09:30:00",
+      time: "1 hour",
     },
     {
-      point: "09:50:00",
+      point: "09:40:00",
       time: "10 minutes",
     },
     {
       point: "10:30:00",
-      time: "40 minutes",
+      time: "50 minutes",
+    },
+    {
+      point: "11:15:00",
+      time: "45 minutes",
+    },
+    {
+      point: "12:15:00",
+      time: "1 hour",
+    },
+    {
+      point: "13:30:00",
+      time: "1 hour 15 minutes",
+    },
+    {
+      point: "14:30:00",
+      time: "1 hour",
+    },
+    {
+      point: "14:40:00",
+      time: "10 minutes",
+    },
+    {
+      point: "15:30:00",
+      time: "50 minutes",
+    },
+    {
+      point: "16:30:00",
+      time: "1 hour",
+    },
+    {
+      point: "16:50:00",
+      time: "20 minutes",
+    },
+    {
+      point: "17:50:00",
+      time: "1 hour",
+    },
+    {
+      point: "19:20:00",
+      time: "1 hour 30 minutes",
+    },
+    {
+      point: "20:30:00",
+      time: "55 minutes",
+    },
+    {
+      point: "21:30:00",
+      time: "1 hour",
+    },
+    {
+      point: "21:40:00",
+      time: "10 minutes",
+    },
+    {
+      point: "22:30:00",
+      time: "50 minutes",
+    },
+    {
+      point: "23:15:00",
+      time: "45 minutes",
+    },
+    {
+      point: "01:30:00",
+      time: "1 hour 25 minutes",
+    },
+    {
+      point: "02:30:00",
+      time: "1 hour",
+    },
+    {
+      point: "03:30:00",
+      time: "1 hour",
+    },
+    {
+      point: "04:30:00",
+      time: "1 hour",
+    },
+    {
+      point: "05:50:00",
+      time: "1 hour",
+    },
+    {
+      point: "07:20:00",
+      time: "1 hour 30 minutes",
+    },
+  ];
+  const interval2 = [
+    {
+      point: "08:30:00",
+      time: "55 minutes",
+    },
+    {
+      point: "09:20:00",
+      time: "50 minutes",
+    },
+    {
+      point: "09:30:00",
+      time: "10 minutes",
+    },
+    {
+      point: "10:30:00",
+      time: "1 hour",
     },
     {
       point: "11:30:00",
@@ -322,16 +627,16 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
       time: "1 hour",
     },
     {
-      point: "14:40:00",
-      time: "1 hour 10 minutes",
+      point: "14:20:00",
+      time: "50 minutes",
     },
     {
-      point: "14:50:00",
+      point: "14:30:00",
       time: "10 minutes",
     },
     {
       point: "15:30:00",
-      time: "40 minutes",
+      time: "1 hour",
     },
     {
       point: "16:30:00",
@@ -379,7 +684,7 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
     },
     {
       point: "03:30:00",
-      time: "40 minutes",
+      time: "1 hour",
     },
     {
       point: "04:30:00",
@@ -394,6 +699,307 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
       time: "1 hour 30 minutes",
     },
   ];
+  const interval = isOdd ? interval1 : interval2;
+  // const dayShiftTimes = [
+  //   "07:35",
+  //   "08:30",
+  //   "09:40",
+  //   "09:50",
+  //   "10:30",
+  //   "11:30",
+  //   "12:30",
+  //   "13:30",
+  //   "14:40",
+  //   "14:50",
+  //   "15:30",
+  //   "16:30",
+  //   "16:50",
+  //   "17:50",
+  //   "19:20",
+  // ];
+
+  // const excludedTitles = [
+  //   "09:40 - 09:50",
+  //   "11:30 - 12:30",
+  //   "14:40 - 14:50",
+  //   "21:30 - 21:40",
+  //   "23:30 - 00:20",
+  //   "02:30 - 02:50",
+  //   "04:30 - 04:50",
+  //   "16:30 - 16:50",
+  // ];
+
+  // const nightShiftTimes = [
+  //   "19:35",
+  //   "20:30",
+  //   "21:30",
+  //   "21:40",
+  //   "22:30",
+  //   "23:30",
+  //   "00:20",
+  //   "01:30",
+  //   "02:30",
+  //   "02:50",
+  //   "03:30",
+  //   "04:30",
+  //   "04:50",
+  //   "05:50",
+  //   "07:20",
+  // ];
+  // const period = [
+  //   {
+  //     periodTime: "07:35 - 08:30",
+  //     time: 3300,
+  //     status: 1,
+  //     upper: 200,
+  //     lower: 140,
+  //   },
+  //   {
+  //     periodTime: "08:30 - 09:40",
+  //     time: 4200,
+  //     status: 1,
+  //     upper: 255,
+  //     lower: 178,
+  //   },
+  //   { periodTime: "09:40 - 09:50", time: 600, status: 2, upper: 0, lower: 0 },
+  //   {
+  //     periodTime: "09:50 - 10:30",
+  //     time: 2400,
+  //     status: 1,
+  //     upper: 145,
+  //     lower: 102,
+  //   },
+  //   {
+  //     periodTime: "10:30 - 11:30",
+  //     time: 3600,
+  //     status: 1,
+  //     upper: 218,
+  //     lower: 153,
+  //   },
+  //   { periodTime: "11:30 - 12:30", time: 3600, status: 3, upper: 0, lower: 0 },
+  //   {
+  //     periodTime: "12:30 - 13:30",
+  //     time: 3600,
+  //     status: 1,
+  //     upper: 218,
+  //     lower: 153,
+  //   },
+  //   {
+  //     periodTime: "13:30 - 14:40",
+  //     time: 4200,
+  //     status: 1,
+  //     upper: 255,
+  //     lower: 178,
+  //   },
+  //   { periodTime: "14:40 - 14:50", time: 600, status: 2, upper: 0, lower: 0 },
+  //   {
+  //     periodTime: "14:50 - 15:30",
+  //     time: 2400,
+  //     status: 1,
+  //     upper: 145,
+  //     lower: 102,
+  //   },
+  //   {
+  //     periodTime: "15:30 - 16:30",
+  //     time: 3600,
+  //     status: 1,
+  //     upper: 218,
+  //     lower: 153,
+  //   },
+  //   { periodTime: "16:30 - 16:50", time: 1200, status: 2, upper: 0, lower: 0 },
+  //   {
+  //     periodTime: "16:50 - 17:50",
+  //     time: 3600,
+  //     status: 1,
+  //     upper: 218,
+  //     lower: 153,
+  //   },
+  //   {
+  //     periodTime: "17:50 - 19:20",
+  //     time: 5400,
+  //     status: 1,
+  //     upper: 327,
+  //     lower: 229,
+  //   },
+  //   {
+  //     periodTime: "19:35 - 20:30",
+  //     time: 3300,
+  //     status: 1,
+  //     upper: 200,
+  //     lower: 140,
+  //   },
+  //   {
+  //     periodTime: "20:30 - 21:30",
+  //     time: 3600,
+  //     status: 1,
+  //     upper: 218,
+  //     lower: 153,
+  //   },
+  //   { periodTime: "21:30 - 21:40", time: 600, status: 2, upper: 0, lower: 0 },
+  //   {
+  //     periodTime: "21:40 - 22:30",
+  //     time: 3000,
+  //     status: 1,
+  //     upper: 182,
+  //     lower: 127,
+  //   },
+  //   {
+  //     periodTime: "22:30 - 23:30",
+  //     time: 3600,
+  //     status: 1,
+  //     upper: 218,
+  //     lower: 153,
+  //   },
+  //   { periodTime: "23:30 - 00:20", time: 3000, status: 3, upper: 0, lower: 0 },
+  //   {
+  //     periodTime: "00:20 - 01:30",
+  //     time: 4200,
+  //     status: 1,
+  //     upper: 255,
+  //     lower: 178,
+  //   },
+  //   {
+  //     periodTime: "01:30 - 02:30",
+  //     time: 3600,
+  //     status: 1,
+  //     upper: 218,
+  //     lower: 153,
+  //   },
+  //   { periodTime: "02:30 - 02:50", time: 1200, status: 2, upper: 0, lower: 0 },
+  //   {
+  //     periodTime: "02:50 - 03:30",
+  //     time: 2400,
+  //     status: 1,
+  //     upper: 145,
+  //     lower: 102,
+  //   },
+  //   {
+  //     periodTime: "03:30 - 04:30",
+  //     time: 3600,
+  //     status: 1,
+  //     upper: 218,
+  //     lower: 153,
+  //   },
+  //   { periodTime: "04:30 - 04:50", time: 1200, status: 2, upper: 0, lower: 0 },
+  //   {
+  //     periodTime: "04:50 - 05:50",
+  //     time: 3600,
+  //     status: 1,
+  //     upper: 218,
+  //     lower: 153,
+  //   },
+  //   {
+  //     periodTime: "05:50 - 07:20",
+  //     time: 5400,
+  //     status: 1,
+  //     upper: 327,
+  //     lower: 229,
+  //   },
+  // ];
+
+  // const interval = [
+  //   {
+  //     point: "08:30:00",
+  //     time: "55 minutes",
+  //   },
+  //   {
+  //     point: "09:40:00",
+  //     time: "1 hour 10 minutes",
+  //   },
+  //   {
+  //     point: "09:50:00",
+  //     time: "10 minutes",
+  //   },
+  //   {
+  //     point: "10:30:00",
+  //     time: "40 minutes",
+  //   },
+  //   {
+  //     point: "11:30:00",
+  //     time: "1 hour",
+  //   },
+  //   {
+  //     point: "12:30:00",
+  //     time: "1 hour",
+  //   },
+  //   {
+  //     point: "13:30:00",
+  //     time: "1 hour",
+  //   },
+  //   {
+  //     point: "14:40:00",
+  //     time: "1 hour 10 minutes",
+  //   },
+  //   {
+  //     point: "14:50:00",
+  //     time: "10 minutes",
+  //   },
+  //   {
+  //     point: "15:30:00",
+  //     time: "40 minutes",
+  //   },
+  //   {
+  //     point: "16:30:00",
+  //     time: "1 hour",
+  //   },
+  //   {
+  //     point: "16:50:00",
+  //     time: "20 minutes",
+  //   },
+  //   {
+  //     point: "17:50:00",
+  //     time: "1 hour",
+  //   },
+  //   {
+  //     point: "19:20:00",
+  //     time: "1 hour 30 minutes",
+  //   },
+  //   {
+  //     point: "20:30:00",
+  //     time: "55 minutes",
+  //   },
+  //   {
+  //     point: "21:30:00",
+  //     time: "1 hour",
+  //   },
+  //   {
+  //     point: "21:40:00",
+  //     time: "10 minutes",
+  //   },
+  //   {
+  //     point: "22:30:00",
+  //     time: "50 minutes",
+  //   },
+  //   {
+  //     point: "23:30:00",
+  //     time: "1 hour",
+  //   },
+  //   {
+  //     point: "01:30:00",
+  //     time: "1 hour 10 minutes",
+  //   },
+  //   {
+  //     point: "02:30:00",
+  //     time: "1 hour",
+  //   },
+  //   {
+  //     point: "03:30:00",
+  //     time: "40 minutes",
+  //   },
+  //   {
+  //     point: "04:30:00",
+  //     time: "1 hour",
+  //   },
+  //   {
+  //     point: "05:50:00",
+  //     time: "1 hour",
+  //   },
+  //   {
+  //     point: "07:20:00",
+  //     time: "1 hour 30 minutes",
+  //   },
+  // ];
+
   const updatePeriod = (period: string, shift: string): string => {
     let index = -1;
     if (shift === "day") {
@@ -414,6 +1020,7 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
     ...item,
     period: updatePeriod(item.period, item.shift),
   }));
+  console.log("swe", updatedParameter);
   updatedParameter.forEach((item) => {
     if (excludedTitles.includes(item.period)) {
       item.value = 0;
@@ -435,7 +1042,27 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
     }
   });
   console.log(updatedParameter);
-
+  const periodsRest1 = [
+    "09:30 - 09:40",
+    "11:15 - 12:15",
+    "14:30 - 14:40",
+    "16:30 - 16:50",
+    "21:30 - 21:40",
+    "23:15 - 00:05",
+    "02:30 - 02:50",
+    "04:30 - 04:50",
+  ];
+  const periodsRest2 = [
+    "09:20 - 09:30",
+    "11:30 - 12:30",
+    "14:20 - 14:50",
+    "16:30 - 16:50",
+    "21:30 - 21:40",
+    "23:30 - 00:20",
+    "02:30 - 02:50",
+    "04:30 - 04:50",
+  ];
+  const periodsRest = isOdd ? periodsRest1 : periodsRest2;
   const graphData = updatedParameter?.map((update) => {
     const matchingPeriod = period.find(
       (periodItem) => periodItem.periodTime === update.period
@@ -446,6 +1073,19 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
     }
     return update; // Return the updated object
   });
+  for (let i = 1; i < graphData.length; i++) {
+    const currentPeriod = graphData[i].period;
+    const currentProdActual = graphData[i].data.prod_actual;
+    const previousProdActual = graphData[i - 1].data.prod_actual;
+
+    if (periodsRest.includes(currentPeriod)) {
+      graphData[i].value = 0;
+    } else {
+      graphData[i].value = currentProdActual - previousProdActual;
+    }
+  }
+
+  console.log(graphData);
 
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const setModalOpen = ModalOpenStore((state) => state.setOpenModal);
@@ -588,11 +1228,11 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
   });
   function getModifiedContent(period: string, value: number): string {
     switch (period) {
-      case "09:40 - 09:50":
-      case "11:30 - 12:30":
-      case "14:40 - 14:50":
+      case isOdd ? "09:30 - 09:40" : "09:20 - 09:30":
+      case isOdd ? "11:15 - 12:15" : "11:30 - 12:30":
+      case isOdd ? "14:30 - 14:40" : "14:20 - 14:30":
       case "21:30 - 21:40":
-      case "23:30 - 00:20":
+      case isOdd ? "23:15 - 00:05" : "23:30 - 00:20":
       case "02:30 - 02:50":
       case "04:30 - 04:50":
       case "16:30 - 16:50":
@@ -604,11 +1244,11 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
 
   function getModifiedCursor(period: string): string {
     switch (period) {
-      case "09:40 - 09:50":
-      case "11:30 - 12:30":
-      case "14:40 - 14:50":
+      case isOdd ? "09:30 - 09:40" : "09:20 - 09:30":
+      case isOdd ? "11:15 - 12:15" : "11:30 - 12:30":
+      case isOdd ? "14:30 - 14:40" : "14:20 - 14:30":
       case "21:30 - 21:40":
-      case "23:30 - 00:20":
+      case isOdd ? "23:15 - 00:05" : "23:30 - 00:20":
       case "02:30 - 02:50":
       case "04:30 - 04:50":
       case "16:30 - 16:50":
@@ -625,17 +1265,17 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
     lower: any
   ): string {
     switch (period) {
-      case "09:40 - 09:50":
-      case "11:30 - 12:30":
-      case "14:40 - 14:50":
+      case isOdd ? "09:30 - 09:40" : "09:20 - 09:30":
+      case isOdd ? "11:15 - 12:15" : "11:30 - 12:30":
+      case isOdd ? "14:30 - 14:40" : "14:20 - 14:30":
       case "21:30 - 21:40":
-      case "23:30 - 00:20":
+      case isOdd ? "23:15 - 00:05" : "23:30 - 00:20":
       case "02:30 - 02:50":
       case "04:30 - 04:50":
       case "16:30 - 16:50":
         return "blue";
       default:
-        return value >= upper || value <= lower ? "rgba(255,0,0,0.7)" : "green";
+        return value >= lower && value <= upper ? "green" : "rgba(255,0,0,0.7)";
     }
   }
   const annotations142: any[] = graphData.map((point) => ({
@@ -909,7 +1549,7 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
 
   let chart: any;
   const config: ColumnConfig = {
-    data: updatedParameter,
+    data: graphData,
     xField: "period",
     yField: "value",
     yAxis: {

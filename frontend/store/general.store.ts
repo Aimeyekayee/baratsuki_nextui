@@ -12,7 +12,9 @@ interface IMode {
   targetNotRealTimeMC2: number;
   openModal: boolean;
   shift: string;
+  isOdd: boolean;
   dataBaratsuki: DataBaratsuki[];
+  setIsOdd: (isOdd: number) => void;
   setShift: (shift: string) => void;
   setOpenModal: (openModal: boolean) => void;
   setTargetNotRealTimeMC1: (targetNotRealTimeMC1: number) => void;
@@ -38,6 +40,10 @@ export const GeneralStore = create<IMode>((...args) => {
     targetNotRealTimeMC1: 0,
     targetNotRealTimeMC2: 0,
     openModal: false,
+    isOdd: true,
+    setIsOdd: (number) => {
+      set((state) => ({ isOdd: number % 2 !== 0 }));
+    },
     setShift(shift) {
       set({ shift });
     },

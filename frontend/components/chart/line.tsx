@@ -619,7 +619,7 @@ const LinePlot: React.FC<LineProps> = ({ parameter }) => {
       case "16:30 - 16:50":
         return "blue";
       default:
-        return value >= upper || value <= lower ? "rgba(255,0,0,0.7)" : "green";
+        return value >= lower || value <= upper ? "green" : "rgba(255,0,0,0.7)";
     }
   }
   const annotations142: any[] = graphData.map((point) => ({

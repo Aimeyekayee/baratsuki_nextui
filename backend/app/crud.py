@@ -64,7 +64,7 @@ def get_data_area(
     line_id: int,
     machine_no: str,
     date: Optional[dt.datetime],
-    interval:str,
+    interval: str,
     db: Session,
 ):
     stmt = f"""
@@ -89,8 +89,16 @@ def get_dataparameter(
     machine_no2: str,
     date_current: str,
     next_date: str,
+    isOdd: bool,
     db: Session,
+    shift: str,
 ):
+    minute_values_for_brake1_day = "30, 40" if isOdd else "20, 30"
+    minute_values_for_brakemain_day = "15" if isOdd else "30"
+    minute_values_for_brake2_day = "30, 40" if isOdd else "20, 30"
+
+    minute_values_for_brakemain_night1 = "15" if isOdd else "30"
+    minute_values_for_brakemain_night2 = "05" if isOdd else "20"
     stmt = f"""
         	SELECT db.id, db.section_code, db.line_id, db.machine_no, db.date, db.data,m.machine_name
             FROM public.data_baratsuki db
@@ -100,12 +108,12 @@ def get_dataparameter(
                 AND (
                 (EXTRACT(HOUR FROM db.date) = 7 AND EXTRACT(MINUTE FROM db.date) = 35)
                 OR (EXTRACT(HOUR FROM db.date) = 8 AND EXTRACT(MINUTE FROM db.date) = 30)
-                OR (EXTRACT(HOUR FROM db.date) = 9 AND EXTRACT(MINUTE FROM db.date) IN (40, 50))
+                OR (EXTRACT(HOUR FROM db.date) = 9 AND EXTRACT(MINUTE FROM db.date) IN ({minute_values_for_brake1_day}))
                 OR (EXTRACT(HOUR FROM db.date) = 10 AND EXTRACT(MINUTE FROM db.date) = 30)
-                OR (EXTRACT(HOUR FROM db.date) = 11 AND EXTRACT(MINUTE FROM db.date) = 30)
-                OR (EXTRACT(HOUR FROM db.date) = 12 AND EXTRACT(MINUTE FROM db.date) = 30)
+                OR (EXTRACT(HOUR FROM db.date) = 11 AND EXTRACT(MINUTE FROM db.date) = {minute_values_for_brakemain_day})
+                OR (EXTRACT(HOUR FROM db.date) = 12 AND EXTRACT(MINUTE FROM db.date) = {minute_values_for_brakemain_day})
                 OR (EXTRACT(HOUR FROM db.date) = 13 AND EXTRACT(MINUTE FROM db.date) = 30)
-                OR (EXTRACT(HOUR FROM db.date) = 14 AND EXTRACT(MINUTE FROM db.date) IN (40, 50))
+                OR (EXTRACT(HOUR FROM db.date) = 14 AND EXTRACT(MINUTE FROM db.date) IN ({minute_values_for_brake2_day}))
                 OR (EXTRACT(HOUR FROM db.date) = 15 AND EXTRACT(MINUTE FROM db.date) = 30)
                 OR (EXTRACT(HOUR FROM db.date) = 16 AND EXTRACT(MINUTE FROM db.date) IN (30, 50))
                 OR (EXTRACT(HOUR FROM db.date) = 17 AND EXTRACT(MINUTE FROM db.date) = 50)
@@ -113,8 +121,8 @@ def get_dataparameter(
                 OR (EXTRACT(HOUR FROM db.date) = 20 AND EXTRACT(MINUTE FROM db.date) = 30)
                 OR (EXTRACT(HOUR FROM db.date) = 21 AND EXTRACT(MINUTE FROM db.date) IN (30, 40))
                 OR (EXTRACT(HOUR FROM db.date) = 22 AND EXTRACT(MINUTE FROM db.date) = 30)
-                OR (EXTRACT(HOUR FROM db.date) = 23 AND EXTRACT(MINUTE FROM db.date) = 30)
-                OR (EXTRACT(HOUR FROM db.date) = 0 AND EXTRACT(MINUTE FROM db.date) = 20)
+                OR (EXTRACT(HOUR FROM db.date) = 23 AND EXTRACT(MINUTE FROM db.date) = {minute_values_for_brakemain_night1})
+                OR (EXTRACT(HOUR FROM db.date) = 0 AND EXTRACT(MINUTE FROM db.date) = {minute_values_for_brakemain_night2})
                 OR (EXTRACT(HOUR FROM db.date) = 1 AND EXTRACT(MINUTE FROM db.date) = 30)
                 OR (EXTRACT(HOUR FROM db.date) = 2 AND EXTRACT(MINUTE FROM db.date) IN (30, 50))
                 OR (EXTRACT(HOUR FROM db.date) = 3 AND EXTRACT(MINUTE FROM db.date) = 30)
@@ -124,7 +132,7 @@ def get_dataparameter(
             ) OR (
                 db.date::date = '{next_date}'
                 AND (
-                (EXTRACT(HOUR FROM db.date) = 0 AND EXTRACT(MINUTE FROM db.date) = 20)
+                (EXTRACT(HOUR FROM db.date) = 0 AND EXTRACT(MINUTE FROM db.date) = {minute_values_for_brakemain_night2})
                 OR (EXTRACT(HOUR FROM db.date) = 1 AND EXTRACT(MINUTE FROM db.date) = 30)
                 OR (EXTRACT(HOUR FROM db.date) = 2 AND EXTRACT(MINUTE FROM db.date) IN (30, 50))
                 OR (EXTRACT(HOUR FROM db.date) = 3 AND EXTRACT(MINUTE FROM db.date) = 30)

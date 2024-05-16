@@ -15,307 +15,266 @@ interface TransformData {
   data: DataProductionDetails;
 }
 
-const AreaPlotByHour: React.FC = () => {
+const AreaPlotByAccummulate: React.FC = () => {
   const dataTooltip = ModalOpenStore((state) => state.dataTooltip);
   const periodOfThisGraph = dataTooltip[0].data.period;
   const endTime = periodOfThisGraph?.split("-")[1].trim();
 
-  const period3_1: any = [
+  const period = [
+    {
+      periodTime: "08:30",
+      upper: 200,
+      lower: 140,
+    },
+    {
+      periodTime: "09:40",
+      upper: 455,
+      lower: 318,
+    },
+    {
+      periodTime: "10:30",
+      time: 2400,
+      status: 1,
+      upper: 600,
+      lower: 420,
+    },
+    {
+      periodTime: "11:30",
+      upper: 818,
+      lower: 573,
+    },
+    {
+      periodTime: "13:30",
+      upper: 1036,
+      lower: 726,
+    },
+    {
+      periodTime: "14:40",
+      upper: 1291,
+      lower: 904,
+    },
+    {
+      periodTime: "15:30",
+      upper: 1436,
+      lower: 1006,
+    },
+    {
+      periodTime: "16:30",
+      upper: 1654,
+      lower: 1159,
+    },
+    {
+      periodTime: "17:50",
+      upper: 1872,
+      lower: 1312,
+    },
+    {
+      periodTime: "19:20",
+      upper: 2200,
+      lower: 1541,
+    },
+    {
+      periodTime: "20:30",
+      upper: 200,
+      lower: 140,
+    },
+    {
+      periodTime: "21:30",
+      upper: 418,
+      lower: 293,
+    },
+    {
+      periodTime: "22:30",
+      upper: 600,
+      lower: 420,
+    },
+    {
+      periodTime: "23:30",
+      upper: 818,
+      lower: 573,
+    },
+    {
+      periodTime: "01:30",
+      upper: 1073,
+      lower: 751,
+    },
+    {
+      periodTime: "02:30",
+      upper: 1291,
+      lower: 904,
+    },
+    {
+      periodTime: "03:30",
+      upper: 1436,
+      lower: 1006,
+    },
+    {
+      periodTime: "04:30",
+      upper: 1654,
+      lower: 1159,
+    },
+    {
+      periodTime: "05:50",
+      upper: 1872,
+      lower: 1312,
+    },
+    {
+      periodTime: "07:20",
+      upper: 2200,
+      lower: 1541,
+    },
+  ];
+
+  const period3 = [
     {
       periodTime: "08:30",
       time: 3300,
       status: 1,
-      upper: 3300 / 16.5,
-      lower: (3300 / 16.5) * 0.85,
+      upper: 200,
+      lower: 140,
     },
     {
-      periodTime: "09:30",
-      time: 3600,
+      periodTime: "09:40",
+      time: 4200,
       status: 1,
-      upper: 3600 / 16.5,
-      lower: (3600 / 16.5) * 0.85,
+      upper: 255,
+      lower: 178,
     },
     {
       periodTime: "10:30",
-      time: 3600,
-      status: 1,
-      upper: 3600 / 16.5,
-      lower: (3600 / 16.5) * 0.85,
-    },
-    {
-      periodTime: "11:15",
-      time: 2700,
-      status: 1,
-      upper: 2700 / 16.5,
-      lower: (2700 / 16.5) * 0.85,
-    },
-    {
-      periodTime: "13:30",
-      time: 4500,
-      status: 1,
-      upper: 4500 / 16.5,
-      lower: (4500 / 16.5) * 0.85,
-    },
-    {
-      periodTime: "14:30",
-      time: 3600,
-      status: 1,
-      upper: 3600 / 16.5,
-      lower: (3600 / 16.5) * 0.85,
-    },
-    {
-      periodTime: "15:30",
-      time: 3000,
-      status: 1,
-      upper: 3000 / 16.5,
-      lower: (3000 / 16.5) * 0.85,
-    },
-    {
-      periodTime: "16:30",
-      time: 3600,
-      status: 1,
-      upper: 3600 / 16.5,
-      lower: (3600 / 16.5) * 0.85,
-    },
-    {
-      periodTime: "17:50",
-      time: 3600,
-      status: 1,
-      upper: 3600 / 16.5,
-      lower: (3600 / 16.5) * 0.85,
-    },
-    {
-      periodTime: "19:20",
-      time: 5400,
-      status: 1,
-      upper: 5400 / 16.5,
-      lower: (5400 / 16.5) * 0.85,
-    },
-    {
-      periodTime: "20:30",
-      time: 3600,
-      status: 1,
-      upper: 3600 / 16.5,
-      lower: (3600 / 16.5) * 0.85,
-    },
-    {
-      periodTime: "21:30",
-      time: 3600,
-      status: 1,
-      upper: 3600 / 16.5,
-      lower: (3600 / 16.5) * 0.85,
-    },
-    {
-      periodTime: "22:30",
-      time: 3000,
-      status: 1,
-      upper: 3000 / 16.5,
-      lower: (3000 / 16.5) * 0.85,
-    },
-    {
-      periodTime: "23:15",
-      time: 2700,
-      status: 1,
-      upper: 2700 / 16.5,
-      lower: (2700 / 16.5) * 0.85,
-    },
-    {
-      periodTime: "01:30",
-      time: 5100,
-      status: 1,
-      upper: 5100 / 16.5,
-      lower: (5100 / 16.5) * 0.85,
-    },
-    {
-      periodTime: "02:30",
-      time: 3600,
-      status: 1,
-      upper: 3600 / 16.5,
-      lower: (3600 / 16.5) * 0.85,
-    },
-    {
-      periodTime: "03:30",
       time: 2400,
       status: 1,
-      upper: 2400 / 16.5,
-      lower: (2400 / 16.5) * 0.85,
-    },
-    {
-      periodTime: "04:30",
-      time: 3600,
-      status: 1,
-      upper: 3600 / 16.5,
-      lower: (3600 / 16.5) * 0.85,
-    },
-    {
-      periodTime: "05:50",
-      time: 3600,
-      status: 1,
-      upper: 3600 / 16.5,
-      lower: (3600 / 16.5) * 0.85,
-    },
-    {
-      periodTime: "07:20",
-      time: 5400,
-      status: 1,
-      upper: 5400 / 16.5,
-      lower: (5400 / 16.5) * 0.85,
-    },
-  ];
-  const period3_2: any = [
-    {
-      periodTime: "08:30",
-      time: 3600,
-      status: 1,
-      upper: 3600 / 16.5,
-      lower: (3600 / 16.5) * 0.85,
-    },
-    {
-      periodTime: "09:20",
-      time: 3000,
-      status: 1,
-      upper: 3000 / 16.5,
-      lower: (3000 / 16.5) * 0.85,
-    },
-    {
-      periodTime: "10:30",
-      time: 3600,
-      status: 1,
-      upper: 3600 / 16.5,
-      lower: (3600 / 16.5) * 0.85,
+      upper: 145,
+      lower: 102,
     },
     {
       periodTime: "11:30",
       time: 3600,
       status: 1,
-      upper: 3600 / 16.5,
-      lower: (3600 / 16.5) * 0.85,
+      upper: 218,
+      lower: 153,
     },
     {
       periodTime: "13:30",
       time: 3600,
       status: 1,
-      upper: 3600 / 16.5,
-      lower: (3600 / 16.5) * 0.85,
+      upper: 218,
+      lower: 153,
     },
     {
-      periodTime: "14:20",
-      time: 3000,
+      periodTime: "14:40",
+      time: 4200,
       status: 1,
-      upper: 3000 / 16.5,
-      lower: (3000 / 16.5) * 0.85,
+      upper: 255,
+      lower: 178,
     },
     {
       periodTime: "15:30",
-      time: 3600,
+      time: 2400,
       status: 1,
-      upper: 3600 / 16.5,
-      lower: (3600 / 16.5) * 0.85,
+      upper: 145,
+      lower: 102,
     },
     {
       periodTime: "16:30",
       time: 3600,
       status: 1,
-      upper: 3600 / 16.5,
-      lower: (3600 / 16.5) * 0.85,
+      upper: 218,
+      lower: 153,
     },
     {
       periodTime: "17:50",
       time: 3600,
       status: 1,
-      upper: 3600 / 16.5,
-      lower: (3600 / 16.5) * 0.85,
+      upper: 218,
+      lower: 153,
     },
     {
       periodTime: "19:20",
       time: 5400,
       status: 1,
-      upper: 5400 / 16.5,
-      lower: (5400 / 16.5) * 0.85,
+      upper: 327,
+      lower: 229,
     },
     {
       periodTime: "20:30",
-      time: 3600,
+      time: 3300,
       status: 1,
-      upper: 3600 / 16.5,
-      lower: (3600 / 16.5) * 0.85,
+      upper: 200,
+      lower: 140,
     },
     {
       periodTime: "21:30",
       time: 3600,
       status: 1,
-      upper: 3600 / 16.5,
-      lower: (3600 / 16.5) * 0.85,
+      upper: 218,
+      lower: 153,
     },
     {
       periodTime: "22:30",
       time: 3000,
       status: 1,
-      upper: 3000 / 16.5,
-      lower: (3000 / 16.5) * 0.85,
+      upper: 182,
+      lower: 127,
     },
     {
       periodTime: "23:30",
       time: 3600,
       status: 1,
-      upper: 3600 / 16.5,
-      lower: (3600 / 16.5) * 0.85,
+      upper: 218,
+      lower: 153,
     },
     {
       periodTime: "01:30",
-      time: 3000,
+      time: 4200,
       status: 1,
-      upper: 3000 / 16.5,
-      lower: (3000 / 16.5) * 0.85,
+      upper: 255,
+      lower: 178,
     },
     {
       periodTime: "02:30",
       time: 3600,
       status: 1,
-      upper: 3600 / 16.5,
-      lower: (3600 / 16.5) * 0.85,
+      upper: 218,
+      lower: 153,
     },
     {
       periodTime: "03:30",
       time: 2400,
       status: 1,
-      upper: 2400 / 16.5,
-      lower: (2400 / 16.5) * 0.85,
+      upper: 145,
+      lower: 102,
     },
     {
       periodTime: "04:30",
       time: 3600,
       status: 1,
-      upper: 3600 / 16.5,
-      lower: (3600 / 16.5) * 0.85,
+      upper: 218,
+      lower: 153,
     },
     {
       periodTime: "05:50",
       time: 3600,
       status: 1,
-      upper: 3600 / 16.5,
-      lower: (3600 / 16.5) * 0.85,
+      upper: 218,
+      lower: 153,
     },
     {
       periodTime: "07:20",
       time: 5400,
       status: 1,
-      upper: 5400 / 16.5,
-      lower: (5400 / 16.5) * 0.85,
+      upper: 327,
+      lower: 229,
     },
   ];
-  const isOdd = GeneralStore((state) => state.isOdd);
-  const period3 = isOdd ? period3_1 : period3_2;
 
-  const ceilMinusOne = (value: number): number => Math.ceil(value) - 1;
+  const graphLimit = period.find((item) => {
+    if (item.periodTime === endTime) {
+      return true;
+    }
+  });
 
-  const modifiedPeriod3 = period3.map((item: any) => ({
-    ...item,
-    upper: ceilMinusOne(item.upper),
-    lower: ceilMinusOne(item.lower),
-  }));
-
-  const graphLimit3 = modifiedPeriod3.find((item: any) => {
+  const graphLimit3 = period3.find((item) => {
     if (item.periodTime === endTime) {
       return true;
     }
@@ -344,6 +303,19 @@ const AreaPlotByHour: React.FC = () => {
     };
   });
 
+  let transformdata2: any[] = [];
+
+  // Perform the transformation
+  transformdata2 = transformedData.map((item: any, index: number) => ({
+    ...item,
+    value:
+      index === 0
+        ? 0
+        : item.prod_actual - transformedData[index - 1]?.prod_actual,
+  }));
+
+  console.log(transformdata2);
+
   const firstProdActual = transformedData[0]?.prod_actual;
 
   const transformData3 = transformedData.map((entry: any, index: number) => ({
@@ -355,8 +327,13 @@ const AreaPlotByHour: React.FC = () => {
 
   const lastDataPoint: number =
     transformData3[transformData3.length - 1]?.value;
+  console.log("lower", lower);
+  console.log("upper", upper);
+  console.log(graphLimit);
+  console.log("graphlimit3", graphLimit3);
+
   const config: AreaConfig = {
-    data: transformData3,
+    data: transformdata2,
     xField: "date",
     yField: "value",
     label: {
@@ -482,4 +459,4 @@ const AreaPlotByHour: React.FC = () => {
   return <Area {...config} />;
 };
 
-export default AreaPlotByHour;
+export default AreaPlotByAccummulate;

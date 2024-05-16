@@ -1,7 +1,0 @@
-{
-  "dependencies": {
-    "@nextui-org/react": "^2.3.6",
-    "@react-aria/i18n": "^3.10.2",
-    "react-hook-form": "^7.51.3"
-  }
-}

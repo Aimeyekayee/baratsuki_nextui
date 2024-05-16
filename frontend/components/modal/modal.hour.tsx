@@ -14,14 +14,19 @@ import {
   DropdownItem,
   DropdownMenu,
   DropdownTrigger,
+  Tabs,
+  Tab,
 } from "@nextui-org/react";
+import { QuestionCircleTwoTone } from "@ant-design/icons";
 import ListBoxMember from "../listbox/listbox.member";
 import { GeneralStore } from "@/store/general.store";
 import { modal } from "@nextui-org/theme";
 import { ModalOpenStore } from "@/store/modal.open.store";
-import AreaPlot from "../chart/areaHour";
+import AreaPlotByHour from "../chart/areaHour";
 import TableMock from "../table/table.alarm";
 import VideoPlayer from "../video/video.player";
+import AreaPlotBy5minutes from "../chart/areaHourBy5minute";
+import AreaPlotByAccummulate from "../chart/areaHourByAccummulate";
 
 interface ModalManagement {
   isOpen: boolean;
@@ -35,8 +40,10 @@ const ModalHour: React.FC<ModalManagement> = ({
   onOpenChange,
 }) => {
   const modalOpen = ModalOpenStore((state) => state.openModal);
+  const [selected, setSelected] = React.useState<string | number>("1hr");
   const setDataBaratsuki = GeneralStore((state) => state.setDataBaratsuki);
   const setOpenModal = ModalOpenStore((state) => state.setOpenModal);
+  const isOdd = GeneralStore((state) => state.isOdd);
   const dataTooltip = ModalOpenStore((state) => state.dataTooltip);
   const items = [
     {
@@ -52,70 +59,259 @@ const ModalHour: React.FC<ModalManagement> = ({
       label: "Full",
     },
   ];
-  const dayShiftTimes = [
-    "07:35 - 08:30",
-    "08:30 - 09:40",
-    "09:40 - 09:50",
-    "09:50 - 10:30",
-    "10:30 - 11:30",
-    "11:30 - 12:30",
-    "12:30 - 13:30",
-    "13:30 - 14:40",
-    "14:40 - 14:50",
-    "14:50 - 15:30",
-    "15:30 - 16:30",
-    "16:30 - 16:50",
-    "16:50 - 17:50",
-    "17:50 - 19:20",
+  //status 1=work , 2=rest 3=lunch
+  const period1 = [
+    {
+      periodTime: "07:35 - 08:30",
+      time: 3300,
+      status: 1,
+    },
+    {
+      periodTime: "08:30 - 09:30",
+      time: 3600,
+      status: 1,
+    },
+    { periodTime: "09:30 - 09:40", time: 600, status: 2 },
+    {
+      periodTime: "09:40 - 10:30",
+      time: 3000,
+      status: 1,
+    },
+    {
+      periodTime: "10:30 - 11:15",
+      time: 2700,
+      status: 1,
+    },
+    { periodTime: "11:15 - 12:15", time: 3600, status: 3 },
+    {
+      periodTime: "12:15 - 13:30",
+      time: 4500,
+      status: 1,
+    },
+    {
+      periodTime: "13:30 - 14:30",
+      time: 3600,
+      status: 1,
+    },
+    { periodTime: "14:30 - 14:40", time: 600, status: 2 },
+    {
+      periodTime: "14:40 - 15:30",
+      time: 3000,
+      status: 1,
+    },
+    {
+      periodTime: "15:30 - 16:30",
+      time: 3600,
+      status: 1,
+    },
+    { periodTime: "16:30 - 16:50", time: 1200, status: 2 },
+    {
+      periodTime: "16:50 - 17:50",
+      time: 3600,
+      status: 1,
+    },
+    {
+      periodTime: "17:50 - 19:20",
+      time: 5400,
+      status: 1,
+    },
+    {
+      periodTime: "19:35 - 20:30",
+      time: 3300,
+      status: 1,
+    },
+    {
+      periodTime: "20:30 - 21:30",
+      time: 3600,
+      status: 1,
+    },
+    { periodTime: "21:30 - 21:40", time: 600, status: 2 },
+    {
+      periodTime: "21:40 - 22:30",
+      time: 3000,
+      status: 1,
+    },
+    {
+      periodTime: "22:30 - 23:15",
+      time: 2700,
+      status: 1,
+    },
+    { periodTime: "23:15 - 00:05", time: 3000, status: 3 },
+    {
+      periodTime: "00:05 - 01:30",
+      time: 5100,
+      status: 1,
+    },
+    {
+      periodTime: "01:30 - 02:30",
+      time: 3600,
+      status: 1,
+    },
+    { periodTime: "02:30 - 02:50", time: 1200, status: 2 },
+    {
+      periodTime: "02:50 - 03:30",
+      time: 2400,
+      status: 1,
+    },
+    {
+      periodTime: "03:30 - 04:30",
+      time: 3600,
+      status: 1,
+    },
+    { periodTime: "04:30 - 04:50", time: 1200, status: 2 },
+    {
+      periodTime: "04:50 - 05:50",
+      time: 3600,
+      status: 1,
+    },
+    {
+      periodTime: "05:50 - 07:20",
+      time: 5400,
+      status: 1,
+    },
+  ];
+  const period2 = [
+    {
+      periodTime: "07:35 - 08:30",
+      time: 3300,
+      status: 1,
+    },
+    {
+      periodTime: "08:30 - 09:20",
+      time: 3000,
+      status: 1,
+    },
+    { periodTime: "09:20 - 09:30", time: 600, status: 2 },
+    {
+      periodTime: "09:30 - 10:30",
+      time: 3600,
+      status: 1,
+    },
+    {
+      periodTime: "10:30 - 11:30",
+      time: 3600,
+      status: 1,
+    },
+    { periodTime: "11:30 - 12:30", time: 3600, status: 3 },
+    {
+      periodTime: "12:30 - 13:30",
+      time: 3600,
+      status: 1,
+    },
+    {
+      periodTime: "13:30 - 14:30",
+      time: 3600,
+      status: 1,
+    },
+    { periodTime: "14:20 - 14:30", time: 600, status: 2 },
+    {
+      periodTime: "14:30 - 15:30",
+      time: 3600,
+      status: 1,
+    },
+    {
+      periodTime: "15:30 - 16:30",
+      time: 3600,
+      status: 1,
+    },
+    { periodTime: "16:30 - 16:50", time: 1200, status: 2 },
+    {
+      periodTime: "16:50 - 17:50",
+      time: 3600,
+      status: 1,
+    },
+    {
+      periodTime: "17:50 - 19:20",
+      time: 5400,
+      status: 1,
+    },
+    {
+      periodTime: "19:35 - 20:30",
+      time: 3300,
+      status: 1,
+    },
+    {
+      periodTime: "20:30 - 21:30",
+      time: 3600,
+      status: 1,
+    },
+    { periodTime: "21:30 - 21:40", time: 600, status: 2 },
+    {
+      periodTime: "21:40 - 22:30",
+      time: 3000,
+      status: 1,
+    },
+    {
+      periodTime: "22:30 - 23:30",
+      time: 3600,
+      status: 1,
+    },
+    { periodTime: "23:30 - 00:20", time: 3000, status: 3 },
+    {
+      periodTime: "00:20 - 01:30",
+      time: 4200,
+      status: 1,
+    },
+    {
+      periodTime: "01:30 - 02:30",
+      time: 3600,
+      status: 1,
+    },
+    { periodTime: "02:30 - 02:50", time: 1200, status: 2 },
+    {
+      periodTime: "02:50 - 03:30",
+      time: 2400,
+      status: 1,
+    },
+    {
+      periodTime: "03:30 - 04:30",
+      time: 3600,
+      status: 1,
+    },
+    { periodTime: "04:30 - 04:50", time: 1200, status: 2 },
+    {
+      periodTime: "04:50 - 05:50",
+      time: 3600,
+      status: 1,
+    },
+    {
+      periodTime: "05:50 - 07:20",
+      time: 5400,
+      status: 1,
+    },
   ];
 
-  const nightShiftTimes = [
-    "19:35 - 20:30",
-    "20:30 - 21:30",
-    "21:30 - 21:40",
-    "21:40 - 22:30",
-    "22:30 - 23:30",
-    "23:30 - 00:20",
-    "00:20 - 01:30",
-    "01:30 - 02:30",
-    "02:30 - 02:50",
-    "02:50 - 03:30",
-    "03:30 - 04:30",
-    "04:30 - 04:50",
-    "04:50 - 05:50",
-    "05:50 - 07:20",
-  ];
-  //status 1=work , 2=rest 3=lunch
-  const period = [
-    { periodTime: "07:35 - 08:30", time: 3300, status: 1 },
-    { periodTime: "08:30 - 09:40", time: 4200, status: 1 },
-    { periodTime: "09:40 - 09:50", time: 600, status: 2 },
-    { periodTime: "09:50 - 10:30", time: 2400, status: 1 },
-    { periodTime: "10:30 - 11:30", time: 3600, status: 1 },
-    { periodTime: "11:30 - 12:30", time: 3600, status: 3 },
-    { periodTime: "12:30 - 13:30", time: 3600, status: 1 },
-    { periodTime: "13:30 - 14:40", time: 4200, status: 1 },
-    { periodTime: "14:40 - 14:50", time: 600, status: 2 },
-    { periodTime: "14:50 - 15:30", time: 2400, status: 1 },
-    { periodTime: "15:30 - 16:30", time: 3600, status: 1 },
-    { periodTime: "16:30 - 16:50", time: 1200, status: 2 },
-    { periodTime: "16:50 - 17:50", time: 3600, status: 1 },
-    { periodTime: "17:50 - 19:20", time: 5400, status: 1 },
-    { periodTime: "19:35 - 20:30", time: 3300, status: 1 },
-    { periodTime: "20:30 - 21:30", time: 3600, status: 1 },
-    { periodTime: "21:30 - 21:40", time: 600, status: 2 },
-    { periodTime: "21:40 - 22:30", time: 3000, status: 1 },
-    { periodTime: "22:30 - 23:30", time: 3600, status: 1 },
-    { periodTime: "23:30 - 00:20", time: 3000, status: 3 },
-    { periodTime: "00:20 - 01:30", time: 4200, status: 1 },
-    { periodTime: "01:30 - 02:30", time: 3600, status: 1 },
-    { periodTime: "02:30 - 02:50", time: 1200, status: 2 },
-    { periodTime: "02:50 - 03:30", time: 2400, status: 1 },
-    { periodTime: "03:30 - 04:30", time: 3600, status: 1 },
-    { periodTime: "04:30 - 04:50", time: 1200, status: 2 },
-    { periodTime: "04:50 - 05:50", time: 3600, status: 1 },
-    { periodTime: "05:50 - 07:20", time: 5400, status: 1 },
-  ];
+  const period = isOdd ? period1 : period2;
+  // const period = [
+  //   { periodTime: "07:35 - 08:30", time: 3300, status: 1 },
+  //   { periodTime: "08:30 - 09:40", time: 4200, status: 1 },
+  //   { periodTime: "09:40 - 09:50", time: 600, status: 2 },
+  //   { periodTime: "09:50 - 10:30", time: 2400, status: 1 },
+  //   { periodTime: "10:30 - 11:30", time: 3600, status: 1 },
+  //   { periodTime: "11:30 - 12:30", time: 3600, status: 3 },
+  //   { periodTime: "12:30 - 13:30", time: 3600, status: 1 },
+  //   { periodTime: "13:30 - 14:40", time: 4200, status: 1 },
+  //   { periodTime: "14:40 - 14:50", time: 600, status: 2 },
+  //   { periodTime: "14:50 - 15:30", time: 2400, status: 1 },
+  //   { periodTime: "15:30 - 16:30", time: 3600, status: 1 },
+  //   { periodTime: "16:30 - 16:50", time: 1200, status: 2 },
+  //   { periodTime: "16:50 - 17:50", time: 3600, status: 1 },
+  //   { periodTime: "17:50 - 19:20", time: 5400, status: 1 },
+  //   { periodTime: "19:35 - 20:30", time: 3300, status: 1 },
+  //   { periodTime: "20:30 - 21:30", time: 3600, status: 1 },
+  //   { periodTime: "21:30 - 21:40", time: 600, status: 2 },
+  //   { periodTime: "21:40 - 22:30", time: 3000, status: 1 },
+  //   { periodTime: "22:30 - 23:30", time: 3600, status: 1 },
+  //   { periodTime: "23:30 - 00:20", time: 3000, status: 3 },
+  //   { periodTime: "00:20 - 01:30", time: 4200, status: 1 },
+  //   { periodTime: "01:30 - 02:30", time: 3600, status: 1 },
+  //   { periodTime: "02:30 - 02:50", time: 1200, status: 2 },
+  //   { periodTime: "02:50 - 03:30", time: 2400, status: 1 },
+  //   { periodTime: "03:30 - 04:30", time: 3600, status: 1 },
+  //   { periodTime: "04:30 - 04:50", time: 1200, status: 2 },
+  //   { periodTime: "04:50 - 05:50", time: 3600, status: 1 },
+  //   { periodTime: "05:50 - 07:20", time: 5400, status: 1 },
+  // ];
 
   return (
     <Modal
@@ -155,14 +351,39 @@ const ModalHour: React.FC<ModalManagement> = ({
               })}
             </ModalHeader>
             <ModalBody className="flex flex-row">
-              <Card
-                style={{ width: "50%", height: "100%", padding: "1rem" }}
-                shadow="sm"
-                radius="sm"
-                isBlurred
+              <div
+                className="flex flex-col gap-2"
+                style={{ width: "50%", height: "100%" }}
               >
-                <AreaPlot />
-              </Card>
+                <div
+                  className="flex gap-4"
+                  style={{ display: "flex", justifyContent: "right" }}
+                >
+                  <Tooltip content="asda">
+                    <QuestionCircleTwoTone style={{ fontSize: "1.5rem" }} />
+                  </Tooltip>
+                  <Tabs
+                    size="md"
+                    aria-label="Tabs form"
+                    selectedKey={selected}
+                    onSelectionChange={setSelected}
+                  >
+                    <Tab key="5min" title="5 minutes" />
+                    <Tab key="1hr" title="1 hour"></Tab>
+                    <Tab key="accum" title="Accumulate"></Tab>
+                  </Tabs>
+                </div>
+                <Card
+                  style={{ padding: "1rem", height: "100%" }}
+                  shadow="sm"
+                  radius="sm"
+                  isBlurred
+                >
+                  {selected === "1hr" && <AreaPlotByHour />}
+                  {selected === "5min" && <AreaPlotBy5minutes />}
+                  {selected === "accum" && <AreaPlotByAccummulate />}
+                </Card>
+              </div>
               <div
                 className="flex flex-col justify-between gap-4"
                 style={{ width: "50%", height: "100%" }}
