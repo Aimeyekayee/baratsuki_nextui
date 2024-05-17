@@ -4,7 +4,7 @@ services:
     build: ./frontend
     container_name: baratsuki_fe
     ports:
-      - 3004:3000
+      - 3004:3004
     volumes:
       - ./frontend/:/usr/app/
       - dependencies:/usr/app/node_modules
@@ -13,7 +13,7 @@ services:
     build: ./backend
     container_name: baratsuki_be
     ports:
-      - 8004:8000
+      - 8004:8004
     volumes:
       - ./backend/:/code/
     command: uvicorn app.main:app --host 0.0.0.0 --port 8004
