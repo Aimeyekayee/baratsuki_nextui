@@ -11,11 +11,13 @@ interface IMode {
   targetNotRealTimeMC1: number;
   targetNotRealTimeMC2: number;
   openModal: boolean;
-  shift: string;
   isOdd: boolean;
   dataBaratsuki: DataBaratsuki[];
+  shift: React.Key;
+  disabledTabShift: boolean;
+  setDisabledTabShift: (disabledTabShift: boolean) => void;
+  setShift: (key: React.Key) => void;
   setIsOdd: (isOdd: number) => void;
-  setShift: (shift: string) => void;
   setOpenModal: (openModal: boolean) => void;
   setTargetNotRealTimeMC1: (targetNotRealTimeMC1: number) => void;
   setTargetNotRealTimeMC2: (targetNotRealTimeMC2: number) => void;
@@ -33,8 +35,9 @@ export const GeneralStore = create<IMode>((...args) => {
     dataBaratsuki: [],
     zone1: [],
     zone2: [],
-    shift: "",
+    shift: "day",
     dateStrings: "",
+    disabledTabShift: true,
     actualNotRealTimeMC1: 0,
     actualNotRealTimeMC2: 0,
     targetNotRealTimeMC1: 0,
@@ -44,8 +47,9 @@ export const GeneralStore = create<IMode>((...args) => {
     setIsOdd: (number) => {
       set((state) => ({ isOdd: number % 2 !== 0 }));
     },
-    setShift(shift) {
-      set({ shift });
+    setShift: (key) => set({ shift: key }),
+    setDisabledTabShift(disabledTabShift) {
+      set({ disabledTabShift });
     },
     setOpenModal(openModal) {
       set({ openModal });

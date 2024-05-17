@@ -39,7 +39,11 @@ const FormSearch = () => {
   const sections = SearchRecStore((state) => state.sections);
   const machinename = SearchRecStore((state) => state.name_no_machine);
   const modalOpen = ModalOpenStore((state) => state.openModal);
-
+  useEffect(() => {
+    if (section !== "") {
+      FetchSetting();
+    }
+  }, [shift]);
   const sortedSection = sections
     .slice()
     .sort((a: ISection, b: ISection) =>
@@ -109,6 +113,7 @@ const FormSearch = () => {
     console.log(data); // { selectedOption: 'selected value' }
   };
   const onSectionChange = async (value: Selection | any) => {
+    setSection(value.currentKey);
     try {
       const response = await axios.get(`http://localhost:8000/get_linename`, {
         params: { section_name: value.currentKey },
@@ -187,7 +192,7 @@ const FormSearch = () => {
   const isOdd = GeneralStore((state) => state.isOdd);
   const FetchSetting = async () => {
     const machine_no = getValues(["machine_no"]);
-    const split_machine = machine_no[0].split(",");
+    const split_machine = machine_no[0]?.split(",");
     const modifiedData = split_machine.map((item: any) =>
       item.replace(/-\d+$/, "")
     );
@@ -984,20 +989,6 @@ const FormSearch = () => {
             ))}
           </SelectSection>
         </Select>
-      </div>
-      <div className="flex items-center justify-center">
-        <h2 style={{ color: "red" }}>*</h2>
-        <h2>Shift&nbsp;:&nbsp;</h2>
-        <RadioGroup
-          isRequired
-          orientation="horizontal"
-          value={shift}
-          onValueChange={setShift}
-          {...register("shift", { required: true })}
-        >
-          <Radio value="day">Day</Radio>
-          <Radio value="night">Night</Radio>
-        </RadioGroup>
       </div>
       <div className="flex items-center justify-center">
         <h2 style={{ color: "red" }}>*</h2>

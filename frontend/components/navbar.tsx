@@ -76,7 +76,7 @@ export const Navbar = () => {
           ))}
         </ul>
       </NavbarContent>
-
+          
 
       <NavbarMenu>
         {searchInput}

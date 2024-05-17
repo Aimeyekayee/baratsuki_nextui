@@ -4,6 +4,7 @@ import { title, subtitle } from "@/components/primitives";
 import FormSearch from "@/components/form/form.search";
 import { GeneralStore } from "@/store/general.store";
 import MonitorData from "@/components/monitor/monitor.data";
+import IconMoon from "@/asset/icon/MoonIcon";
 import { ConfigProvider, Empty } from "antd";
 import ColumnPlotTest from "@/components/chart/main.column";
 import dayjs from "dayjs";
@@ -13,9 +14,12 @@ import {
   CardBody,
   CardFooter,
   Chip,
+  Tabs,
+  Tab,
 } from "@nextui-org/react";
 import { configtheme } from "@/config/themeConfig";
 import ModalHour from "@/components/modal/modal.hour";
+import SunIcon from "@/asset/icon/SunIcon";
 
 export default function Home() {
   const dateStrings = GeneralStore((state) => state.dateStrings);
@@ -33,6 +37,9 @@ export default function Home() {
   const targetNotRealTimeMC2 = GeneralStore(
     (state) => state.targetNotRealTimeMC2
   );
+
+  const shift = GeneralStore((state) => state.shift);
+  const setShift = GeneralStore((state) => state.setShift);
 
   const currentDate = dayjs().format("YYYY-MM-DD");
   return (
@@ -55,8 +62,34 @@ export default function Home() {
           </h2>
         </ConfigProvider>
       </div>
+
       <FormSearch />
-      {/* <ModalHour /> */}
+      <Tabs
+        size="lg"
+        aria-label="Tabs form"
+        selectedKey={shift}
+        onSelectionChange={setShift}
+      >
+        <Tab
+          key="day"
+          title={
+            <div className="flex items-center space-x-2">
+              <SunIcon />
+              <span>Day</span>
+            </div>
+          }
+        />
+        <Tab
+          key="night"
+          title={
+            <div className="flex items-center space-x-2">
+              <IconMoon />
+              <span>Night</span>
+            </div>
+          }
+        ></Tab>
+      </Tabs>
+
       <Card
         shadow="md"
         style={{
@@ -71,7 +104,9 @@ export default function Home() {
         }}
       >
         <Chip color="warning" variant="flat" size="lg">
-          Zone 1 : {zone1[0]?.machine_no} - {zone1[0]?.machine_name}
+          <p className="font-semibold">
+            Zone 1 : {zone1[0]?.machine_no} - {zone1[0]?.machine_name}
+          </p>
         </Chip>
         {zone1.length > 0 ? (
           <div
@@ -110,7 +145,9 @@ export default function Home() {
         }}
       >
         <Chip color="warning" variant="flat" size="lg">
-          Zone 2 : {zone2[0]?.machine_no} - {zone2[0]?.machine_name}
+          <p className="font-semibold">
+            Zone 2 : {zone2[0]?.machine_no} - {zone2[0]?.machine_name}
+          </p>
         </Chip>
         {zone2.length > 0 ? (
           <div
