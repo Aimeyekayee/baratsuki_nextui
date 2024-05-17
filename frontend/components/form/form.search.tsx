@@ -115,7 +115,7 @@ const FormSearch = () => {
   const onSectionChange = async (value: Selection | any) => {
     setSection(value.currentKey);
     try {
-      const response = await axios.get(`http://localhost:8000/get_linename`, {
+      const response = await axios.get(`http://10.122.77.1:8004/get_linename`, {
         params: { section_name: value.currentKey },
       });
       if (response.status === 200) {
@@ -199,7 +199,7 @@ const FormSearch = () => {
     console.log(modifiedData);
     try {
       const response_day = await axios.get(
-        "http://localhost:8000/get_dataparameter_day",
+        "http://10.122.77.1:8004/get_dataparameter_day",
         {
           params: {
             section_code: section_code,
@@ -214,7 +214,7 @@ const FormSearch = () => {
         }
       );
       const response_night = await axios.get(
-        "http://localhost:8000/get_dataparameter_night",
+        "http://10.122.77.1:8004/get_dataparameter_night",
         {
           params: {
             section_code: section_code,

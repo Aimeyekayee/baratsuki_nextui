@@ -1649,7 +1649,7 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
                 };
                 console.log(parameter);
                 const response = await axios(
-                  "http://localhost:8000/get_data_area",
+                  "http://10.122.77.1:8004/get_data_area",
                   {
                     params: parameter,
                   }
