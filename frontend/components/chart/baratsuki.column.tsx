@@ -92,7 +92,9 @@ const BaratsukiShiftColumn: React.FC<LineProps> = ({ parameter }) => {
         if (item.actual >= lowerBaratsuki && item.actual <= upperBaratsuki) {
           return null; // Skip periods with zero or invalid ct_actual values
         } else {
-          const gapContent = `Gap = ${target - item.actual} pcs.`;
+          const gapContent = `Gap = ${item.actual < target ? "-" : "+"}${
+            target - item.actual
+          } pcs.`;
           const percentContent = `${item.actual < target ? "-" : "+"}${(
             Math.abs((target - item.actual) / target) * 100
           ).toFixed(2)}%`;
@@ -111,7 +113,14 @@ const BaratsukiShiftColumn: React.FC<LineProps> = ({ parameter }) => {
               },
               style: {
                 textAlign: "center",
-                fill: shift === "day" ? "#C40C0C" : "#FF8F8F",
+                fill:
+                  shift === "day"
+                    ? item.actual < target
+                      ? "#C40C0C"
+                      : item.actual > target
+                      ? "blue"
+                      : "#FF8F8F"
+                    : "#FF8F8F",
                 fontSize: 18,
                 fontWeight: "bold",
               },
@@ -138,7 +147,14 @@ const BaratsukiShiftColumn: React.FC<LineProps> = ({ parameter }) => {
               },
               style: {
                 textAlign: "center",
-                fill: shift === "day" ? "#C40C0C" : "#FF8F8F",
+                fill:
+                  shift === "day"
+                    ? item.actual < target
+                      ? "#C40C0C"
+                      : item.actual > target
+                      ? "blue"
+                      : "#FF8F8F"
+                    : "#FF8F8F",
                 fontSize: 18,
                 fontWeight: "bold",
               },
@@ -184,7 +200,6 @@ const BaratsukiShiftColumn: React.FC<LineProps> = ({ parameter }) => {
         }
       });
     },
-    conversionTag: {},
     seriesField: "actual",
     yAxis: {
       maxLimit: 2200,
@@ -222,7 +237,7 @@ const BaratsukiShiftColumn: React.FC<LineProps> = ({ parameter }) => {
         start: ["start", target],
         end: ["end", target],
         text: {
-          content: `Target = ${target} pcs. (baratsuki at 77%)`,
+          content: `Target = ${target} pcs. (baratsuki at ${baratsukiRate}%)`,
           offsetY: -32,
           //   offsetX: -85,
           //   position: "left",

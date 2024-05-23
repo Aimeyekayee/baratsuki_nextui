@@ -18,6 +18,20 @@ interface TransformData {
 const AreaPlotBy5minutes: React.FC = () => {
   const ctTarget = 16.5;
   const accum5min = (5 * 60) / ctTarget;
+  const baratsukiRate = GeneralStore((state) => state.baratsukiRate);
+  const targetValues: { [key: number]: number } = {
+    70: 12,
+    77: 14,
+    85: 15,
+    100: 18,
+  };
+  const baratsukiRateNumber = Number(baratsukiRate);
+  let target: number = targetValues[baratsukiRateNumber] || 0;
+  console.log(target);
+  console.log(`The target for baratsukiRate ${baratsukiRate} is ${target}`);
+  const upperBaratsuki: number = Math.floor(target * 1.05);
+  const lowerBaratsuki: number = Math.floor(target * 0.95);
+
   const dataTooltip = ModalOpenStore((state) => state.dataTooltip);
   const periodOfThisGraph = dataTooltip[0].data.period;
   const endTime = periodOfThisGraph?.split("-")[1].trim();
@@ -317,23 +331,135 @@ const AreaPlotBy5minutes: React.FC = () => {
   }));
 
   console.log(transformdata2);
-
-  const firstProdActual = transformedData[0]?.prod_actual;
-
-  const transformData3 = transformedData.map((entry: any, index: number) => ({
-    ...entry,
-    value: index === 0 ? 0 : entry.prod_actual - firstProdActual,
-  }));
-
-  console.log("transformData3", transformData3);
-
-  const lastDataPoint: number =
-    transformData3[transformData3.length - 1]?.value;
   console.log("lower", lower);
   console.log("upper", upper);
   console.log(graphLimit);
   console.log("graphlimit3", graphLimit3);
+  const shift = GeneralStore((state) => state.shift);
+  const annotationsArrow: any[] = transformdata2
+    .map((item) => {
+      if (item.value >= lower && item.value <= upper) {
+        return null; // Skip periods with zero or invalid ct_actual values
+      } else {
+        return {
+          type: "line",
+          start: [item.date, item.value], // Start slightly below ct_actual
+          end: [item.date, target], // End slightly above ct_actual
+          style: {
+            stroke:
+              shift === "day"
+                ? item.value < lower
+                  ? "#FF4D4F"
+                  : item.value > upper
+                  ? "blue"
+                  : "#FF8F8F"
+                : "#FF8F8F",
+            lineWidth: 2,
+            endArrow: {
+              path: "M 0,0 L 8,4 L 8,-4 Z", // Arrow pointing right
+              d: 2,
+            },
+            startArrow: {
+              path: "M 0,0 L 8,4 L 8,-4 Z", // Arrow pointing left
+              d: 2,
+            },
+          },
+        };
+      }
+    })
+    .filter((annotation) => annotation !== null);
+  const maxValue = Math.max(...transformdata2.map((item) => item.value));
+  const maxLimit = maxValue > target ? maxValue + 3 : target + 3;
 
+  const generateAnnotations = (processedParameter: any[], target: number) => {
+    const annotations: any[] = processedParameter
+      .map((item) => {
+        if (item.value === target) {
+          return null; // Skip periods with zero or invalid ct_value values
+        } else {
+          const gapContent = `Gap: ${item.value < target ? "-" : "+"}${
+            target - item.value
+          } pcs.`;
+          const percentContent = `${item.value < target ? "-" : "+"}${(
+            Math.abs((target - item.value) / target) * 100
+          ).toFixed(2)}%`;
+          return [
+            {
+              type: "text",
+              content: gapContent,
+              offsetX: 32,
+              position: (xScale: any, yScale: any) => {
+                return [
+                  `${xScale.scale(item.date) * 100}%`,
+                  `${
+                    (1 - yScale.value.scale((target + item.value) / 2)) * 100
+                  }%`,
+                ];
+              },
+              style: {
+                textAlign: "center",
+                fill:
+                  shift === "day"
+                    ? item.value < target
+                      ? "#C40C0C"
+                      : item.value > target
+                      ? "blue"
+                      : "#FF8F8F"
+                    : "#FF8F8F",
+                fontSize: 10,
+                fontWeight: "bold",
+              },
+              background: {
+                padding: 10,
+                style: {
+                  z: 0,
+                  radius: 17,
+                },
+              },
+            },
+            {
+              type: "text",
+              content: percentContent,
+              offsetX: 25,
+              offsetY: 15,
+              position: (xScale: any, yScale: any) => {
+                return [
+                  `${xScale.scale(item.date) * 100}%`,
+                  `${
+                    (1 - yScale.value.scale((target + item.value) / 2)) * 100
+                  }%`,
+                ];
+              },
+              style: {
+                textAlign: "center",
+                fill:
+                  shift === "day"
+                    ? item.value < target
+                      ? "#C40C0C"
+                      : item.value > target
+                      ? "blue"
+                      : "#FF8F8F"
+                    : "#FF8F8F",
+                fontSize: 10,
+                fontWeight: "bold",
+              },
+              background: {
+                padding: 10,
+                style: {
+                  z: 0,
+                  radius: 17,
+                },
+              },
+            },
+          ];
+        }
+      })
+      .filter((annotation) => annotation !== null)
+      .flat(); // Flatten the array of arrays into a single array
+
+    return annotations;
+  };
+  const annotations: any[] = generateAnnotations(transformdata2, target);
   const config: ColumnConfig = {
     data: transformdata2,
     xField: "date",
@@ -347,9 +473,9 @@ const AreaPlotBy5minutes: React.FC = () => {
     seriesField: "value",
     color: (value) => {
       console.log(value);
-      if (value.value >= 18) {
+      if (value.value >= target) {
         return "#5cdaab";
-      } else if (value.value < 18) {
+      } else if (value.value < target) {
         return "#F4664A";
       }
       return "blue";
@@ -357,14 +483,14 @@ const AreaPlotBy5minutes: React.FC = () => {
     legend: false,
     xAxis: {
       range: [0, 1],
-      tickCount: transformData3.length,
+      tickCount: transformdata2.length,
       title: {
         text: "Time",
         style: { fontSize: 20, fontWeight: "bold" },
       },
     },
     yAxis: {
-      maxLimit: 22,
+      maxLimit: maxLimit,
       title: {
         text: "Actual (pcs.)",
         style: { fontSize: 20, fontWeight: "bold" },
@@ -376,10 +502,12 @@ const AreaPlotBy5minutes: React.FC = () => {
     //   };
     // },
     annotations: [
+      ...annotations,
+      ...annotationsArrow,
       {
         type: "line",
-        start: ["min", 18],
-        end: ["max", 18],
+        start: ["min", target],
+        end: ["max", target],
         offsetX: 0,
         text: {
           content: `(calculated at C.T. Target = ${ctTarget})`,
@@ -394,18 +522,18 @@ const AreaPlotBy5minutes: React.FC = () => {
           },
         },
         style: {
-          stroke: "rgba(98, 218, 171, 1)",
+          stroke: "rgba(98, 218, 171, 0.2)",
           lineDash: [4, 4],
           lineWidth: 2.5,
         },
       },
       {
         type: "line",
-        start: ["min", 18],
-        end: ["max", 18],
+        start: ["min", target],
+        end: ["max", target],
         offsetX: 0,
         text: {
-          content: `Actual Target = ${accum5min.toFixed(0)} pcs. / 5min`,
+          content: `Actual Target = ${target} pcs. / 5min`,
           offsetY: -30,
 
           style: {

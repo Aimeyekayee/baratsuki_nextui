@@ -930,7 +930,7 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
     content: getModifiedContent(point.period, point.value),
     position: (xScale: any, yScale: any) => {
       const content = getModifiedContent(point.period, point.value);
-      if (showGap === "on" && content === "Brake") {
+      if (showGap === "on" && content !== "Brake") {
         return ["0", "0"];
       } else {
         return [
@@ -1211,7 +1211,14 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
           start: [item.period, item.value], // Start slightly below ct_actual
           end: [item.period, (upper + lower) / 2], // End slightly above ct_actual
           style: {
-            stroke: "#FF4D4F",
+            stroke:
+              shift === "day"
+                ? item.value < lower
+                  ? "#FF4D4F"
+                  : item.value > upper
+                  ? "blue"
+                  : "#FF8F8F"
+                : "#FF8F8F",
             lineWidth: 2,
             endArrow: {
               path: "M 0,0 L 8,4 L 8,-4 Z", // Arrow pointing right
@@ -1236,7 +1243,9 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
         if (item.value >= lowerBaratsuki && item.value <= upperBaratsuki) {
           return null; // Skip periods with zero or invalid ct_value values
         } else {
-          const gapContent = `Gap = ${Math.floor(target - item.value)} pcs.`;
+          const gapContent = `Gap = ${
+            item.value < target ? "-" : "+"
+          }${Math.abs(Math.floor(target - item.value))} pcs.`;
           const percentContent = `${item.value < target ? "-" : "+"}${(
             Math.abs((target - item.value) / target) * 100
           ).toFixed(2)}%`;
@@ -1255,7 +1264,14 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
               },
               style: {
                 textAlign: "center",
-                fill: shift === "day" ? "#C40C0C" : "#FF8F8F",
+                fill:
+                  shift === "day"
+                    ? item.value < target
+                      ? "#C40C0C"
+                      : item.value > target
+                      ? "blue"
+                      : "#FF8F8F"
+                    : "#FF8F8F",
                 fontSize: 14,
                 fontWeight: "bold",
               },
@@ -1282,7 +1298,14 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
               },
               style: {
                 textAlign: "center",
-                fill: shift === "day" ? "#C40C0C" : "#FF8F8F",
+                fill:
+                  shift === "day"
+                    ? item.value < target
+                      ? "#C40C0C"
+                      : item.value > target
+                      ? "blue"
+                      : "#FF8F8F"
+                    : "#FF8F8F",
                 fontSize: 14,
                 fontWeight: "bold",
               },
@@ -1345,7 +1368,7 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
     yAxis: {
       maxLimit: 340,
       title: {
-        text: "Pieces per Hour",
+        text: "Pieces per Period",
         style: {
           fontSize: 16,
           // fontWeight: "bold",
@@ -1365,7 +1388,7 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
           return "rgba(98, 218, 171, 0.5)";
         } else if (value <= lower) {
           return "rgba(255, 33, 33, 0.5)";
-        } else if (value >= upper) {
+        } else if (value > upper) {
           return "rgba(99,149,250, 0.5)";
         }
       }
@@ -1402,7 +1425,10 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
     },
     interactions: [
       {
-        type: "custom-marker-interaction",
+        type: "element-highlight-by-color",
+      },
+      {
+        type: "element-link",
       },
     ],
   };
