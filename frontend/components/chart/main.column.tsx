@@ -73,7 +73,7 @@ if (typeof document !== "undefined") {
   // you are safe to use the "document" object here
 }
 const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
-  console.log(parameter);
+  const shift = GeneralStore((state) => state.shift);
   const dateStrings = GeneralStore((state) => state.dateStrings);
   const setDataBaratsuki = GeneralStore((state) => state.setDataBaratsuki);
   const currentDate = dayjs().format("YYYY-MM-DD");
@@ -97,7 +97,6 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
     const period = entry.period.slice(0, -3); // Remove the last three characters (":00")
     return { ...entry, period };
   });
-  console.log(formattedData);
   const dayShiftTimes1 = [
     "07:35",
     "08:30",
@@ -192,308 +191,257 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
   ];
 
   const nightShiftTimes = isOdd ? nightShiftTimes1 : nightShiftTimes2;
+  const baratsukiRate = GeneralStore((state) => state.baratsukiRate);
+  const targetValues: { [key: number]: number } = {
+    70: 1540,
+    77: 1694,
+    85: 1870,
+    100: 2200,
+  };
+  const baratsukiRateNumber = Number(baratsukiRate);
+  let targetUpper = (baratsukiRateNumber / 100) * 1.05;
+  let targetLower = (baratsukiRateNumber / 100) * 0.95;
   const period1 = [
     {
       periodTime: "07:35 - 08:30",
       time: 3300,
       status: 1,
-      upper: 200,
-      lower: 170,
     },
     {
       periodTime: "08:30 - 09:30",
       time: 3600,
       status: 1,
-      upper: 218,
-      lower: 185,
     },
-    { periodTime: "09:30 - 09:40", time: 600, status: 2, upper: 0, lower: 0 },
+    { periodTime: "09:30 - 09:40", time: 600, status: 2 },
     {
       periodTime: "09:40 - 10:30",
       time: 3000,
-      status: 1,
-      upper: 182,
-      lower: 155,
     },
     {
       periodTime: "10:30 - 11:15",
       time: 2700,
       status: 1,
-      upper: 164,
-      lower: 139,
     },
-    { periodTime: "11:15 - 12:15", time: 3600, status: 3, upper: 0, lower: 0 },
+    { periodTime: "11:15 - 12:15", time: 3600, status: 3 },
     {
       periodTime: "12:15 - 13:30",
       time: 4500,
       status: 1,
-      upper: 273,
-      lower: 232,
     },
     {
       periodTime: "13:30 - 14:30",
       time: 3600,
       status: 1,
-      upper: 218,
-      lower: 185,
     },
-    { periodTime: "14:30 - 14:40", time: 600, status: 2, upper: 0, lower: 0 },
+    { periodTime: "14:30 - 14:40", time: 600, status: 2 },
     {
       periodTime: "14:40 - 15:30",
       time: 3000,
       status: 1,
-      upper: 182,
-      lower: 155,
     },
     {
       periodTime: "15:30 - 16:30",
       time: 3600,
       status: 1,
-      upper: 218,
-      lower: 185,
     },
-    { periodTime: "16:30 - 16:50", time: 1200, status: 2, upper: 0, lower: 0 },
+    { periodTime: "16:30 - 16:50", time: 1200, status: 2 },
     {
       periodTime: "16:50 - 17:50",
       time: 3600,
       status: 1,
-      upper: 218,
-      lower: 185,
     },
     {
       periodTime: "17:50 - 19:20",
       time: 5400,
       status: 1,
-      upper: 327,
-      lower: 278,
     },
     {
       periodTime: "19:35 - 20:30",
       time: 3300,
       status: 1,
-      upper: 200,
-      lower: 170,
     },
     {
       periodTime: "20:30 - 21:30",
       time: 3600,
       status: 1,
-      upper: 218,
-      lower: 185,
     },
-    { periodTime: "21:30 - 21:40", time: 600, status: 2, upper: 0, lower: 0 },
+    { periodTime: "21:30 - 21:40", time: 600, status: 2 },
     {
       periodTime: "21:40 - 22:30",
       time: 3000,
       status: 1,
-      upper: 182,
-      lower: 155,
     },
     {
       periodTime: "22:30 - 23:15",
       time: 2700,
       status: 1,
-      upper: 164,
-      lower: 139,
     },
-    { periodTime: "23:15 - 00:05", time: 3000, status: 3, upper: 0, lower: 0 },
+    { periodTime: "23:15 - 00:05", time: 3000, status: 3 },
     {
       periodTime: "00:05 - 01:30",
       time: 5100,
       status: 1,
-      upper: 309,
-      lower: 263,
     },
     {
       periodTime: "01:30 - 02:30",
       time: 3600,
       status: 1,
-      upper: 218,
-      lower: 185,
     },
-    { periodTime: "02:30 - 02:50", time: 1200, status: 2, upper: 0, lower: 0 },
+    { periodTime: "02:30 - 02:50", time: 1200, status: 2 },
     {
       periodTime: "02:50 - 03:30",
       time: 2400,
       status: 1,
-      upper: 145,
-      lower: 124,
     },
     {
       periodTime: "03:30 - 04:30",
       time: 3600,
       status: 1,
-      upper: 218,
-      lower: 185,
     },
-    { periodTime: "04:30 - 04:50", time: 1200, status: 2, upper: 0, lower: 0 },
+    { periodTime: "04:30 - 04:50", time: 1200, status: 2 },
     {
       periodTime: "04:50 - 05:50",
       time: 3600,
       status: 1,
-      upper: 218,
-      lower: 185,
     },
     {
       periodTime: "05:50 - 07:20",
       time: 5400,
       status: 1,
-      upper: 327,
-      lower: 278,
     },
   ];
+  const period1_aftermap = period1.map((item) => {
+    if (item.status === 2 || item.status === 3) {
+      return { ...item, upper: 0, lower: 0 };
+    } else {
+      return {
+        ...item,
+        upper: Math.floor((item.time / 16.5) * targetUpper),
+        lower: Math.floor((item.time / 16.5) * targetLower),
+      };
+    }
+  });
   const period2 = [
     {
       periodTime: "07:35 - 08:30",
       time: 3300,
       status: 1,
-      upper: 200,
-      lower: 170,
     },
     {
       periodTime: "08:30 - 09:20",
       time: 3000,
       status: 1,
-      upper: 181,
-      lower: 154,
     },
-    { periodTime: "09:20 - 09:30", time: 600, status: 2, upper: 0, lower: 0 },
+    { periodTime: "09:20 - 09:30", time: 600, status: 2 },
     {
       periodTime: "09:30 - 10:30",
       time: 3600,
       status: 1,
-      upper: 218,
-      lower: 185,
     },
     {
       periodTime: "10:30 - 11:30",
       time: 3600,
-      status: 1,
-      upper: 218,
-      lower: 185,
     },
-    { periodTime: "11:30 - 12:30", time: 3600, status: 3, upper: 0, lower: 0 },
+    { periodTime: "11:30 - 12:30", time: 3600, status: 3 },
     {
       periodTime: "12:30 - 13:30",
       time: 3600,
       status: 1,
-      upper: 218,
-      lower: 185,
     },
     {
       periodTime: "13:30 - 14:30",
       time: 3600,
       status: 1,
-      upper: 218,
-      lower: 185,
     },
-    { periodTime: "14:20 - 14:30", time: 600, status: 2, upper: 0, lower: 0 },
+    { periodTime: "14:20 - 14:30", time: 600, status: 2 },
     {
       periodTime: "14:30 - 15:30",
       time: 3600,
       status: 1,
-      upper: 218,
-      lower: 185,
     },
     {
       periodTime: "15:30 - 16:30",
       time: 3600,
       status: 1,
-      upper: 218,
-      lower: 185,
     },
-    { periodTime: "16:30 - 16:50", time: 1200, status: 2, upper: 0, lower: 0 },
+    { periodTime: "16:30 - 16:50", time: 1200, status: 2 },
     {
       periodTime: "16:50 - 17:50",
       time: 3600,
       status: 1,
-      upper: 218,
-      lower: 185,
     },
     {
       periodTime: "17:50 - 19:20",
       time: 5400,
       status: 1,
-      upper: 327,
-      lower: 278,
     },
     {
       periodTime: "19:35 - 20:30",
       time: 3300,
-      status: 1,
-      upper: 200,
-      lower: 170,
     },
     {
       periodTime: "20:30 - 21:30",
       time: 3600,
       status: 1,
-      upper: 218,
-      lower: 185,
     },
-    { periodTime: "21:30 - 21:40", time: 600, status: 2, upper: 0, lower: 0 },
+    { periodTime: "21:30 - 21:40", time: 600, status: 2 },
     {
       periodTime: "21:40 - 22:30",
       time: 3000,
       status: 1,
-      upper: 182,
-      lower: 154,
     },
     {
       periodTime: "22:30 - 23:30",
       time: 3600,
       status: 1,
-      upper: 218,
-      lower: 185,
     },
-    { periodTime: "23:30 - 00:20", time: 3000, status: 3, upper: 0, lower: 0 },
+    { periodTime: "23:30 - 00:20", time: 3000, status: 3 },
     {
       periodTime: "00:20 - 01:30",
       time: 4200,
       status: 1,
-      upper: 4200 / 16.5,
-      lower: (4200 / 16.5) * 0.85,
     },
     {
       periodTime: "01:30 - 02:30",
       time: 3600,
       status: 1,
-      upper: 3600 / 16.5,
-      lower: (3600 / 16.5) * 0.85,
     },
-    { periodTime: "02:30 - 02:50", time: 1200, status: 2, upper: 0, lower: 0 },
+    { periodTime: "02:30 - 02:50", time: 1200, status: 2 },
     {
       periodTime: "02:50 - 03:30",
       time: 2400,
       status: 1,
-      upper: 2400 / 16.5,
-      lower: (2400 / 16.5) * 0.85,
     },
     {
       periodTime: "03:30 - 04:30",
       time: 3600,
       status: 1,
-      upper: 3600 / 16.5,
-      lower: (3600 / 16.5) * 0.85,
     },
-    { periodTime: "04:30 - 04:50", time: 1200, status: 2, upper: 0, lower: 0 },
+    { periodTime: "04:30 - 04:50", time: 1200, status: 2 },
     {
       periodTime: "04:50 - 05:50",
       time: 3600,
       status: 1,
-      upper: 3600 / 16.5,
-      lower: (3600 / 16.5) * 0.85,
     },
     {
       periodTime: "05:50 - 07:20",
       time: 5400,
       status: 1,
-      upper: 5400 / 16.5,
-      lower: (5400 / 16.5) * 0.85,
     },
   ];
+  const period2_aftermap = period2.map((item: any) => {
+    if (item.status === 2 || item.status === 3) {
+      return { ...item, upper: 0, lower: 0 };
+    } else {
+      return {
+        ...item,
+        upper: Math.floor((item.time / 16.5) * targetUpper),
+        lower: Math.floor((item.time / 16.5) * targetLower),
+      };
+    }
+  });
 
-  const period = isOdd ? period1 : period2;
+  const period = isOdd ? period1_aftermap : period2_aftermap;
 
   const interval1 = [
     {
@@ -700,305 +648,6 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
     },
   ];
   const interval = isOdd ? interval1 : interval2;
-  // const dayShiftTimes = [
-  //   "07:35",
-  //   "08:30",
-  //   "09:40",
-  //   "09:50",
-  //   "10:30",
-  //   "11:30",
-  //   "12:30",
-  //   "13:30",
-  //   "14:40",
-  //   "14:50",
-  //   "15:30",
-  //   "16:30",
-  //   "16:50",
-  //   "17:50",
-  //   "19:20",
-  // ];
-
-  // const excludedTitles = [
-  //   "09:40 - 09:50",
-  //   "11:30 - 12:30",
-  //   "14:40 - 14:50",
-  //   "21:30 - 21:40",
-  //   "23:30 - 00:20",
-  //   "02:30 - 02:50",
-  //   "04:30 - 04:50",
-  //   "16:30 - 16:50",
-  // ];
-
-  // const nightShiftTimes = [
-  //   "19:35",
-  //   "20:30",
-  //   "21:30",
-  //   "21:40",
-  //   "22:30",
-  //   "23:30",
-  //   "00:20",
-  //   "01:30",
-  //   "02:30",
-  //   "02:50",
-  //   "03:30",
-  //   "04:30",
-  //   "04:50",
-  //   "05:50",
-  //   "07:20",
-  // ];
-  // const period = [
-  //   {
-  //     periodTime: "07:35 - 08:30",
-  //     time: 3300,
-  //     status: 1,
-  //     upper: 200,
-  //     lower: 140,
-  //   },
-  //   {
-  //     periodTime: "08:30 - 09:40",
-  //     time: 4200,
-  //     status: 1,
-  //     upper: 255,
-  //     lower: 178,
-  //   },
-  //   { periodTime: "09:40 - 09:50", time: 600, status: 2, upper: 0, lower: 0 },
-  //   {
-  //     periodTime: "09:50 - 10:30",
-  //     time: 2400,
-  //     status: 1,
-  //     upper: 145,
-  //     lower: 102,
-  //   },
-  //   {
-  //     periodTime: "10:30 - 11:30",
-  //     time: 3600,
-  //     status: 1,
-  //     upper: 218,
-  //     lower: 153,
-  //   },
-  //   { periodTime: "11:30 - 12:30", time: 3600, status: 3, upper: 0, lower: 0 },
-  //   {
-  //     periodTime: "12:30 - 13:30",
-  //     time: 3600,
-  //     status: 1,
-  //     upper: 218,
-  //     lower: 153,
-  //   },
-  //   {
-  //     periodTime: "13:30 - 14:40",
-  //     time: 4200,
-  //     status: 1,
-  //     upper: 255,
-  //     lower: 178,
-  //   },
-  //   { periodTime: "14:40 - 14:50", time: 600, status: 2, upper: 0, lower: 0 },
-  //   {
-  //     periodTime: "14:50 - 15:30",
-  //     time: 2400,
-  //     status: 1,
-  //     upper: 145,
-  //     lower: 102,
-  //   },
-  //   {
-  //     periodTime: "15:30 - 16:30",
-  //     time: 3600,
-  //     status: 1,
-  //     upper: 218,
-  //     lower: 153,
-  //   },
-  //   { periodTime: "16:30 - 16:50", time: 1200, status: 2, upper: 0, lower: 0 },
-  //   {
-  //     periodTime: "16:50 - 17:50",
-  //     time: 3600,
-  //     status: 1,
-  //     upper: 218,
-  //     lower: 153,
-  //   },
-  //   {
-  //     periodTime: "17:50 - 19:20",
-  //     time: 5400,
-  //     status: 1,
-  //     upper: 327,
-  //     lower: 229,
-  //   },
-  //   {
-  //     periodTime: "19:35 - 20:30",
-  //     time: 3300,
-  //     status: 1,
-  //     upper: 200,
-  //     lower: 140,
-  //   },
-  //   {
-  //     periodTime: "20:30 - 21:30",
-  //     time: 3600,
-  //     status: 1,
-  //     upper: 218,
-  //     lower: 153,
-  //   },
-  //   { periodTime: "21:30 - 21:40", time: 600, status: 2, upper: 0, lower: 0 },
-  //   {
-  //     periodTime: "21:40 - 22:30",
-  //     time: 3000,
-  //     status: 1,
-  //     upper: 182,
-  //     lower: 127,
-  //   },
-  //   {
-  //     periodTime: "22:30 - 23:30",
-  //     time: 3600,
-  //     status: 1,
-  //     upper: 218,
-  //     lower: 153,
-  //   },
-  //   { periodTime: "23:30 - 00:20", time: 3000, status: 3, upper: 0, lower: 0 },
-  //   {
-  //     periodTime: "00:20 - 01:30",
-  //     time: 4200,
-  //     status: 1,
-  //     upper: 255,
-  //     lower: 178,
-  //   },
-  //   {
-  //     periodTime: "01:30 - 02:30",
-  //     time: 3600,
-  //     status: 1,
-  //     upper: 218,
-  //     lower: 153,
-  //   },
-  //   { periodTime: "02:30 - 02:50", time: 1200, status: 2, upper: 0, lower: 0 },
-  //   {
-  //     periodTime: "02:50 - 03:30",
-  //     time: 2400,
-  //     status: 1,
-  //     upper: 145,
-  //     lower: 102,
-  //   },
-  //   {
-  //     periodTime: "03:30 - 04:30",
-  //     time: 3600,
-  //     status: 1,
-  //     upper: 218,
-  //     lower: 153,
-  //   },
-  //   { periodTime: "04:30 - 04:50", time: 1200, status: 2, upper: 0, lower: 0 },
-  //   {
-  //     periodTime: "04:50 - 05:50",
-  //     time: 3600,
-  //     status: 1,
-  //     upper: 218,
-  //     lower: 153,
-  //   },
-  //   {
-  //     periodTime: "05:50 - 07:20",
-  //     time: 5400,
-  //     status: 1,
-  //     upper: 327,
-  //     lower: 229,
-  //   },
-  // ];
-
-  // const interval = [
-  //   {
-  //     point: "08:30:00",
-  //     time: "55 minutes",
-  //   },
-  //   {
-  //     point: "09:40:00",
-  //     time: "1 hour 10 minutes",
-  //   },
-  //   {
-  //     point: "09:50:00",
-  //     time: "10 minutes",
-  //   },
-  //   {
-  //     point: "10:30:00",
-  //     time: "40 minutes",
-  //   },
-  //   {
-  //     point: "11:30:00",
-  //     time: "1 hour",
-  //   },
-  //   {
-  //     point: "12:30:00",
-  //     time: "1 hour",
-  //   },
-  //   {
-  //     point: "13:30:00",
-  //     time: "1 hour",
-  //   },
-  //   {
-  //     point: "14:40:00",
-  //     time: "1 hour 10 minutes",
-  //   },
-  //   {
-  //     point: "14:50:00",
-  //     time: "10 minutes",
-  //   },
-  //   {
-  //     point: "15:30:00",
-  //     time: "40 minutes",
-  //   },
-  //   {
-  //     point: "16:30:00",
-  //     time: "1 hour",
-  //   },
-  //   {
-  //     point: "16:50:00",
-  //     time: "20 minutes",
-  //   },
-  //   {
-  //     point: "17:50:00",
-  //     time: "1 hour",
-  //   },
-  //   {
-  //     point: "19:20:00",
-  //     time: "1 hour 30 minutes",
-  //   },
-  //   {
-  //     point: "20:30:00",
-  //     time: "55 minutes",
-  //   },
-  //   {
-  //     point: "21:30:00",
-  //     time: "1 hour",
-  //   },
-  //   {
-  //     point: "21:40:00",
-  //     time: "10 minutes",
-  //   },
-  //   {
-  //     point: "22:30:00",
-  //     time: "50 minutes",
-  //   },
-  //   {
-  //     point: "23:30:00",
-  //     time: "1 hour",
-  //   },
-  //   {
-  //     point: "01:30:00",
-  //     time: "1 hour 10 minutes",
-  //   },
-  //   {
-  //     point: "02:30:00",
-  //     time: "1 hour",
-  //   },
-  //   {
-  //     point: "03:30:00",
-  //     time: "40 minutes",
-  //   },
-  //   {
-  //     point: "04:30:00",
-  //     time: "1 hour",
-  //   },
-  //   {
-  //     point: "05:50:00",
-  //     time: "1 hour",
-  //   },
-  //   {
-  //     point: "07:20:00",
-  //     time: "1 hour 30 minutes",
-  //   },
-  // ];
 
   const updatePeriod = (period: string, shift: string): string => {
     let index = -1;
@@ -1020,7 +669,6 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
     ...item,
     period: updatePeriod(item.period, item.shift),
   }));
-  console.log("swe", updatedParameter);
   updatedParameter.forEach((item) => {
     if (excludedTitles.includes(item.period)) {
       item.value = 0;
@@ -1041,7 +689,7 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
       }
     }
   });
-  console.log(updatedParameter);
+
   const periodsRest1 = [
     "09:30 - 09:40",
     "11:15 - 12:15",
@@ -1084,8 +732,6 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
       graphData[i].value = currentProdActual - previousProdActual;
     }
   }
-
-  console.log(graphData);
 
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const setModalOpen = ModalOpenStore((state) => state.setOpenModal);
@@ -1278,14 +924,20 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
         return value >= lower && value <= upper ? "green" : "rgba(255,0,0,0.7)";
     }
   }
+  //!brake หาย
   const annotations142: any[] = graphData.map((point) => ({
     type: "text",
     content: getModifiedContent(point.period, point.value),
     position: (xScale: any, yScale: any) => {
-      return [
-        `${xScale.scale(point.period.toString()) * 100}%`,
-        `${(1 - yScale.value.scale(point.value)) * 100 - 5}%`,
-      ];
+      const content = getModifiedContent(point.period, point.value);
+      if (showGap === "on" && content === "Brake") {
+        return ["0", "0"];
+      } else {
+        return [
+          `${xScale.scale(point.period.toString()) * 100}%`,
+          `${(1 - yScale.value.scale(point.value)) * 100 - 5}%`,
+        ];
+      }
     },
     style: {
       textAlign: "center",
@@ -1306,6 +958,7 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
   }));
 
   const OffsetX = (graphData: DataProps[]): number => {
+    console.log(graphData.length);
     if (graphData.length === 1) {
       return -60; // Or any default number value you prefer
     } else if (graphData.length === 2) {
@@ -1321,19 +974,19 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
     } else if (graphData.length === 7) {
       return -108; // Or any default number value you prefer
     } else if (graphData.length === 8) {
-      return -94; // Or any default number value you prefer
+      return -54; // Or any default number value you prefer
     } else if (graphData.length === 9) {
       return -84; // Or any default number value you prefer
     } else if (graphData.length === 10) {
-      return -75; // Or any default number value you prefer
+      return -48; // Or any default number value you prefer
     } else if (graphData.length === 11) {
-      return -69; // Or any default number value you prefer
+      return -49; // Or any default number value you prefer
     } else if (graphData.length === 12) {
       return -62; // Or any default number value you prefer
     } else if (graphData.length === 13) {
-      return -58; // Or any default number value you prefer
+      return -37; // Or any default number value you prefer
     } else if (graphData.length === 14) {
-      return -54; // Or any default number value you prefer
+      return -35; // Or any default number value you prefer
     }
 
     return -60;
@@ -1361,12 +1014,12 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
               textAlign: "right",
               fontSize: 12,
               fontWeight: "bold",
-              fill: "rgba(34, 137, 255, 1)",
+              fill: "rgba(86, 191, 150, 1)",
               textBaseline: "top",
             },
           },
           style: {
-            stroke: "rgba(34, 137, 255, 1)",
+            stroke: "rgba(86, 191, 150, 1)",
             lineDash: [4, 4],
             lineWidth: 2.5,
           },
@@ -1396,19 +1049,19 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
     } else if (graphData.length === 7) {
       lastAnnotation.offsetX = 326;
     } else if (graphData.length === 8) {
-      lastAnnotation.offsetX = 93;
+      lastAnnotation.offsetX = 165;
     } else if (graphData.length === 9) {
       lastAnnotation.offsetX = 84;
     } else if (graphData.length === 10) {
-      lastAnnotation.offsetX = 225;
+      lastAnnotation.offsetX = 50;
     } else if (graphData.length === 11) {
-      lastAnnotation.offsetX = 68;
+      lastAnnotation.offsetX = 50;
     } else if (graphData.length === 12) {
       lastAnnotation.offsetX = 65;
     } else if (graphData.length === 13) {
-      lastAnnotation.offsetX = 175;
+      lastAnnotation.offsetX = 39;
     } else if (graphData.length === 14) {
-      lastAnnotation.offsetX = 53;
+      lastAnnotation.offsetX = 35;
     }
   }
 
@@ -1434,12 +1087,12 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
               textAlign: "right",
               fontSize: 12,
               fontWeight: "bold",
-              fill: "rgba(34, 137, 255, 1)",
+              fill: "rgba(86, 191, 150, 1)",
               textBaseline: "top",
             },
           },
           style: {
-            stroke: "rgba(34, 137, 255, 1)",
+            stroke: "rgba(86, 191, 150, 1)",
             lineDash: [4, 4],
             lineWidth: 2.5,
           },
@@ -1448,7 +1101,6 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
       return null; // Return null for periods without matching or zero lower values
     })
     .filter((annotation) => annotation !== null);
-  console.log("anupper", annotationsUpper);
 
   // Modify the last object in annotationsLower array
   if (annotationsUpper.length > 1) {
@@ -1470,19 +1122,19 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
     } else if (graphData.length === 7) {
       lastAnnotation.offsetX = 326;
     } else if (graphData.length === 8) {
-      lastAnnotation.offsetX = 93;
+      lastAnnotation.offsetX = 165;
     } else if (graphData.length === 9) {
       lastAnnotation.offsetX = 84;
     } else if (graphData.length === 10) {
-      lastAnnotation.offsetX = 225;
+      lastAnnotation.offsetX = 50;
     } else if (graphData.length === 11) {
-      lastAnnotation.offsetX = 68;
+      lastAnnotation.offsetX = 50;
     } else if (graphData.length === 12) {
       lastAnnotation.offsetX = 65;
     } else if (graphData.length === 13) {
-      lastAnnotation.offsetX = 175;
+      lastAnnotation.offsetX = 39;
     } else if (graphData.length === 14) {
-      lastAnnotation.offsetX = 53;
+      lastAnnotation.offsetX = 35;
     }
   }
 
@@ -1501,7 +1153,7 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
             : [update.period, matchingPeriod.upper],
           offsetX: OffsetX(graphData),
           style: {
-            fill: "#2289ff",
+            fill: "#62daab",
             fillOpacity: "0.2",
             // opacity: 1,
           },
@@ -1531,67 +1183,211 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
     } else if (graphData.length === 7) {
       lastAnnotation.offsetX = 326;
     } else if (graphData.length === 8) {
-      lastAnnotation.offsetX = 93;
+      lastAnnotation.offsetX = 165;
     } else if (graphData.length === 9) {
       lastAnnotation.offsetX = 84;
     } else if (graphData.length === 10) {
-      lastAnnotation.offsetX = 225;
+      lastAnnotation.offsetX = 50;
     } else if (graphData.length === 11) {
-      lastAnnotation.offsetX = 68;
+      lastAnnotation.offsetX = 50;
     } else if (graphData.length === 12) {
       lastAnnotation.offsetX = 65;
     } else if (graphData.length === 13) {
-      lastAnnotation.offsetX = 175;
+      lastAnnotation.offsetX = 39;
     } else if (graphData.length === 14) {
-      lastAnnotation.offsetX = 53;
+      lastAnnotation.offsetX = 35;
     }
   }
 
+  const annotationsArrow: any[] = graphData
+    .map((item) => {
+      const upper = item.upper ?? 0; // Provide a default value if upper is undefined
+      const lower = item.lower ?? 0;
+      if (item.value >= lower && item.value <= upper) {
+        return null; // Skip periods with zero or invalid ct_actual values
+      } else {
+        return {
+          type: "line",
+          start: [item.period, item.value], // Start slightly below ct_actual
+          end: [item.period, (upper + lower) / 2], // End slightly above ct_actual
+          style: {
+            stroke: "#FF4D4F",
+            lineWidth: 2,
+            endArrow: {
+              path: "M 0,0 L 8,4 L 8,-4 Z", // Arrow pointing right
+              d: 2,
+            },
+            startArrow: {
+              path: "M 0,0 L 8,4 L 8,-4 Z", // Arrow pointing left
+              d: 2,
+            },
+          },
+        };
+      }
+    })
+    .filter((annotation) => annotation !== null);
+
+  const generateAnnotations = (processedParameter: any[]) => {
+    const annotations: any[] = processedParameter
+      .map((item) => {
+        const lowerBaratsuki = item.lower;
+        const upperBaratsuki = item.upper;
+        const target = (lowerBaratsuki + upperBaratsuki) / 2;
+        if (item.value >= lowerBaratsuki && item.value <= upperBaratsuki) {
+          return null; // Skip periods with zero or invalid ct_value values
+        } else {
+          const gapContent = `Gap = ${Math.floor(target - item.value)} pcs.`;
+          const percentContent = `${item.value < target ? "-" : "+"}${(
+            Math.abs((target - item.value) / target) * 100
+          ).toFixed(2)}%`;
+          return [
+            {
+              type: "text",
+              content: gapContent,
+              offsetX: 50,
+              position: (xScale: any, yScale: any) => {
+                return [
+                  `${xScale.scale(item.period) * 100}%`,
+                  `${
+                    (1 - yScale.value.scale((target + item.value) / 2)) * 100
+                  }%`,
+                ];
+              },
+              style: {
+                textAlign: "center",
+                fill: shift === "day" ? "#C40C0C" : "#FF8F8F",
+                fontSize: 14,
+                fontWeight: "bold",
+              },
+              background: {
+                padding: 10,
+                style: {
+                  z: 0,
+                  radius: 17,
+                },
+              },
+            },
+            {
+              type: "text",
+              content: percentContent,
+              offsetX: 35,
+              offsetY: 20,
+              position: (xScale: any, yScale: any) => {
+                return [
+                  `${xScale.scale(item.period) * 100}%`,
+                  `${
+                    (1 - yScale.value.scale((target + item.value) / 2)) * 100
+                  }%`,
+                ];
+              },
+              style: {
+                textAlign: "center",
+                fill: shift === "day" ? "#C40C0C" : "#FF8F8F",
+                fontSize: 14,
+                fontWeight: "bold",
+              },
+              background: {
+                padding: 10,
+                style: {
+                  z: 0,
+                  radius: 17,
+                },
+              },
+            },
+          ];
+        }
+      })
+      .filter((annotation) => annotation !== null)
+      .flat(); // Flatten the array of arrays into a single array
+
+    return annotations;
+  };
+  const annotationsGap: any[] = generateAnnotations(graphData);
+  const showGap = GeneralStore((state) => state.showGap);
+  let annotaion = [
+    ...annotations142,
+    ...annotationsLower,
+    ...annotationsUpper,
+    ...annotationsRegion,
+    ...annotationsArrow,
+    ...annotationsGap,
+  ];
+  if (showGap === "off") {
+    annotaion = [
+      ...annotations142,
+      ...annotationsLower,
+      ...annotationsUpper,
+      ...annotationsRegion,
+    ];
+  } else {
+    annotaion = [
+      ...annotations142,
+      ...annotationsLower,
+      ...annotationsUpper,
+      ...annotationsRegion,
+      ...annotationsArrow,
+      ...annotationsGap,
+    ];
+  }
   let chart: any;
+  console.log(graphData);
   const config: ColumnConfig = {
     data: graphData,
     xField: "period",
     yField: "value",
+    columnStyle: {
+      cursor: "pointer",
+    },
+    label:
+      showGap === "off"
+        ? false
+        : { style: { fontSize: 20, fontWeight: "bold" } },
     yAxis: {
       maxLimit: 340,
       title: {
         text: "Pieces per Hour",
-        style: { fontSize: 20, fontWeight: "bold" },
+        style: {
+          fontSize: 16,
+          // fontWeight: "bold",
+          fill: shift === "day" ? "#595959" : "white",
+        },
       },
     },
     color: (data: any) => {
-      console.log(data);
       const matchingPeriod = updatedParameter.find(
         (p) => p.period === data.period
       );
       if (matchingPeriod) {
-        console.log(matchingPeriod);
         const value = matchingPeriod.value; // Access value from the found object in updatedParameter
         const lower = matchingPeriod.lower ?? 0;
         const upper = matchingPeriod.upper ?? 0;
         if (value >= lower && value <= upper) {
           return "rgba(98, 218, 171, 0.5)";
-        } else {
+        } else if (value <= lower) {
           return "rgba(255, 33, 33, 0.5)";
+        } else if (value >= upper) {
+          return "rgba(99,149,250, 0.5)";
         }
       }
       // Default color if no matching period found
       return "blue";
     },
     xAxis: {
-      title: { text: "Period", style: { fontSize: 20, fontWeight: "bold" } },
+      title: {
+        text: "Period",
+        style: {
+          fontSize: 16,
+          // fontWeight: "bold",
+          fill: shift === "day" ? "#595959" : "white",
+        },
+      },
     },
     onReady: (plot: any) => {
       chart = plot.chart; // Store chart instance
       chart.render(); // Make sure to render the chart to access the scales
     },
 
-    annotations: [
-      ...annotations142,
-      ...annotationsLower,
-      ...annotationsUpper,
-      ...annotationsRegion,
-    ],
+    annotations: annotaion,
     tooltip: {
       showMarkers: false,
     },

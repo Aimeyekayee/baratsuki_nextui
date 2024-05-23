@@ -27,6 +27,7 @@ import TableMock from "../table/table.alarm";
 import VideoPlayer from "../video/video.player";
 import AreaPlotBy5minutes from "../chart/areaHourBy5minute";
 import AreaPlotByAccummulate from "../chart/areaHourByAccummulate";
+import BaratsukiChallengeTab from "../tabs/baratsukichallenge.tabs";
 
 interface ModalManagement {
   isOpen: boolean;
@@ -357,21 +358,28 @@ const ModalHour: React.FC<ModalManagement> = ({
               >
                 <div
                   className="flex gap-4"
-                  style={{ display: "flex", justifyContent: "right" }}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
                 >
-                  <Tooltip content="asda">
-                    <QuestionCircleTwoTone style={{ fontSize: "1.5rem" }} />
-                  </Tooltip>
-                  <Tabs
-                    size="md"
-                    aria-label="Tabs form"
-                    selectedKey={selected}
-                    onSelectionChange={setSelected}
-                  >
-                    <Tab key="5min" title="5 minutes" />
-                    <Tab key="1hr" title="By Period"></Tab>
-                    <Tab key="accum" title="Accumulate"></Tab>
-                  </Tabs>
+                  <BaratsukiChallengeTab />
+                  <div className="flex items-center gap-2">
+                    <Tooltip content="asda">
+                      <QuestionCircleTwoTone style={{ fontSize: "1.5rem" }} />
+                    </Tooltip>
+                    <Tabs
+                      size="md"
+                      aria-label="Tabs form"
+                      selectedKey={selected}
+                      onSelectionChange={setSelected}
+                    >
+                      <Tab key="5min" title="5 minutes" />
+                      <Tab key="1hr" title="By Period"></Tab>
+                      <Tab key="accum" title="Accumulate"></Tab>
+                    </Tabs>
+                  </div>
                 </div>
                 <Card
                   style={{ padding: "1rem", height: "100%" }}

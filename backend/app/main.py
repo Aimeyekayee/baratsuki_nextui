@@ -181,6 +181,29 @@ async def get_dataparameter_night(
     return data
 
 
+@app.get("/get_dataparameter_by_shift_column", response_model=List[DataResponse])
+async def get_dataparameter_by_shift_column(
+    section_code: int,
+    line_id: int,
+    machine_no1: str,
+    machine_no2: str,
+    date_current: str,
+    next_date: str,
+    db: Session = Depends(get_db),
+):
+    print("fuas")
+    data = crud.get_dataparameter_by_shift_column(
+        section_code=section_code,
+        line_id=line_id,
+        machine_no1=machine_no1,
+        machine_no2=machine_no2,
+        date_current=date_current,
+        next_date=next_date,
+        db=db,
+    )
+    return data
+
+
 @app.post("/send")
 async def send_to_line_notify(message: str):
     line_notify_token = "i3OfFdxy7kdqOesvoCFqjwrRjtYKO3ucCdbIdU86OsB"

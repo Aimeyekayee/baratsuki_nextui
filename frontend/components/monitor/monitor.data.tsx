@@ -8,6 +8,7 @@ import {
   CardFooter,
   Input,
 } from "@nextui-org/react";
+import { GeneralStore } from "@/store/general.store";
 
 interface IProps {
   target: number;
@@ -26,11 +27,21 @@ const MonitorData: React.FC<IProps> = ({
 }) => {
   const mqttDataMachine1 = MQTTStore((state) => state.mqttDataMachine1);
   const mqttDataMachine2 = MQTTStore((state) => state.mqttDataMachine2);
-
+  const shift = GeneralStore((state) => state.shift);
+  const baratsukiRate = GeneralStore((state) => state.baratsukiRate);
   const targetMqtt = target;
   const targetNotRealtime = 2200;
   const actualMqtt1 = mqttDataMachine1.prod_actual;
   const actualMqtt2 = mqttDataMachine2.prod_actual;
+
+  const targetValues: { [key: number]: number } = {
+    70: 1540,
+    77: 1694,
+    85: 1870,
+    100: 2200,
+  };
+  const baratsukiRateNumber = Number(baratsukiRate);
+  let targets: number = targetValues[baratsukiRateNumber] || 0;
 
   return (
     <Flex
@@ -40,7 +51,13 @@ const MonitorData: React.FC<IProps> = ({
       justify="center"
     >
       <Flex justify="center" align="center">
-        <Typography style={{ textAlign: "center", fontSize: "1.5rem" }}>
+        <Typography
+          style={{
+            textAlign: "center",
+            fontSize: "1.5rem",
+            color: shift === "day" ? "black" : "white",
+          }}
+        >
           Target : &nbsp;
         </Typography>
         <Card
@@ -62,12 +79,18 @@ const MonitorData: React.FC<IProps> = ({
               fontSize: "2rem",
             }}
           >
-            {dateString === currentDate ? target.toFixed(0) : 2200}
+            {dateString === currentDate ? target.toFixed(0) : targets}
           </Typography>
         </Card>
       </Flex>
       <Flex justify="center" align="center">
-        <Typography style={{ textAlign: "center", fontSize: "1.5rem" }}>
+        <Typography
+          style={{
+            textAlign: "center",
+            fontSize: "1.5rem",
+            color: shift === "day" ? "black" : "white",
+          }}
+        >
           Actual :&nbsp;&nbsp;
         </Typography>
         <Card
@@ -98,7 +121,13 @@ const MonitorData: React.FC<IProps> = ({
         </Card>
       </Flex>
       <Flex justify="center" align="center">
-        <Typography style={{ textAlign: "center", fontSize: "1.5rem" }}>
+        <Typography
+          style={{
+            textAlign: "center",
+            fontSize: "1.5rem",
+            color: shift === "day" ? "black" : "white",
+          }}
+        >
           OA : &nbsp;
         </Typography>
         <Card

@@ -384,7 +384,7 @@ const AreaPlotBy5minutes: React.FC = () => {
         text: {
           content: `(calculated at C.T. Target = ${ctTarget})`,
           offsetY: -18,
-          offsetX:430,
+          offsetX: 430,
           style: {
             textAlign: "left",
             fontSize: 12,

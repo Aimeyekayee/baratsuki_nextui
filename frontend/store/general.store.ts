@@ -5,6 +5,8 @@ import { DataBaratsuki } from "./interfaces/baratsuki.fetch.interface";
 interface IMode {
   zone1: any[];
   zone2: any[];
+  dataByShiftColumnMC1: any[];
+  dataByShiftColumnMC2: any[];
   dateStrings: string | string[];
   actualNotRealTimeMC1: number;
   actualNotRealTimeMC2: number;
@@ -15,6 +17,10 @@ interface IMode {
   dataBaratsuki: DataBaratsuki[];
   shift: React.Key;
   disabledTabShift: boolean;
+  baratsukiRate: React.Key;
+  showGap: React.Key;
+  setShowGap: (key: React.Key) => void;
+  setBaratsukiRate: (key: React.Key) => void;
   setDisabledTabShift: (disabledTabShift: boolean) => void;
   setShift: (key: React.Key) => void;
   setIsOdd: (isOdd: number) => void;
@@ -26,6 +32,8 @@ interface IMode {
   setDataBaratsuki: (newDataArray: DataBaratsuki[]) => void;
   setZone1: (newDataArray: any[]) => void;
   setZone2: (newDataArray: any[]) => void;
+  setDataByShiftColumnMC1: (newDataArray: any[]) => void;
+  setDataByShiftColumnMC2: (newDataArray: any[]) => void;
   setDateStrings: (dateStrings: string | string[]) => void;
 }
 
@@ -36,17 +44,23 @@ export const GeneralStore = create<IMode>((...args) => {
     zone1: [],
     zone2: [],
     shift: "day",
+    baratsukiRate: "77",
     dateStrings: "",
     disabledTabShift: true,
     actualNotRealTimeMC1: 0,
     actualNotRealTimeMC2: 0,
     targetNotRealTimeMC1: 0,
     targetNotRealTimeMC2: 0,
+    showGap: "off",
     openModal: false,
     isOdd: true,
+    dataByShiftColumnMC1: [],
+    dataByShiftColumnMC2: [],
     setIsOdd: (number) => {
       set((state) => ({ isOdd: number % 2 !== 0 }));
     },
+    setShowGap: (key) => set({ showGap: key }),
+    setBaratsukiRate: (key) => set({ baratsukiRate: key }),
     setShift: (key) => set({ shift: key }),
     setDisabledTabShift(disabledTabShift) {
       set({ disabledTabShift });
@@ -77,6 +91,12 @@ export const GeneralStore = create<IMode>((...args) => {
     },
     setZone2(newDataArray) {
       set({ zone2: newDataArray });
+    },
+    setDataByShiftColumnMC1(newDataArray) {
+      set({ dataByShiftColumnMC1: newDataArray });
+    },
+    setDataByShiftColumnMC2(newDataArray) {
+      set({ dataByShiftColumnMC2: newDataArray });
     },
   };
 });

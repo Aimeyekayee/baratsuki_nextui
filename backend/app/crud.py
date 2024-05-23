@@ -198,3 +198,46 @@ def get_dataparameter_night(
         return parsed_result
     except Exception as e:
         raise HTTPException(400, "Error get dataparameter :" + str(e))
+
+
+def get_dataparameter_by_shift_column(
+    section_code: int,
+    line_id: int,
+    machine_no1: str,
+    machine_no2: str,
+    date_current: str,
+    next_date: str,
+    db: Session,
+):
+    stmt = f"""
+        	SELECT db.id, db.section_code, db.line_id, db.machine_no, db.date, db.data,m.machine_name
+            FROM public.data_baratsuki db
+            JOIN public.machines m ON db.machine_no = m.machine_no
+            WHERE (
+                db.date::date = '{date_current}'
+                AND (
+                (EXTRACT(HOUR FROM db.date) = 19 AND EXTRACT(MINUTE FROM db.date) = 20)
+            )
+            ) OR (
+                db.date::date = '{next_date}'
+                AND (
+                (EXTRACT(HOUR FROM db.date) = 7 AND EXTRACT(MINUTE FROM db.date) = 20)
+            )
+                AND db.section_code = {section_code} AND db.line_id = {line_id} AND db.machine_no in ('{machine_no1}','{machine_no2}')
+            )
+            ORDER BY db.id ASC;
+	
+    """
+    try:
+        result = db.execute(text(stmt)).mappings().all()
+        parsed_result = []
+        for row in result:
+            parsed_row = dict(row)  # Convert RowMapping to dictionary
+            parsed_row["data"] = parsed_row[
+                "data"
+            ]  # Convert JSONB to Python dictionary
+            parsed_result.append(parsed_row)
+
+        return parsed_result
+    except Exception as e:
+        raise HTTPException(400, "Error get dataparameter :" + str(e))

@@ -27,23 +27,23 @@ import {
 import { ISection } from "@/types/section.type";
 import { ZonedDateTime } from "@internationalized/date";
 import { ModalOpenStore } from "@/store/modal.open.store";
+import {
+  requestDataByShiftColumn,
+  requestDataDay,
+  requestDataNight,
+} from "@/action/requrest.data";
 
 const FormSearch = () => {
   let formatter = useDateFormatter({ dateStyle: "medium" });
 
   const shift = GeneralStore((state) => state.shift);
-  const setShift = GeneralStore((state) => state.setShift);
   const [section, setSection] = useState("");
   const [lineName, setLineName] = useState("");
   const [machineNames, setMachineNames] = useState([]);
   const sections = SearchRecStore((state) => state.sections);
   const machinename = SearchRecStore((state) => state.name_no_machine);
   const modalOpen = ModalOpenStore((state) => state.openModal);
-  useEffect(() => {
-    if (section !== "") {
-      FetchSetting();
-    }
-  }, [shift]);
+
   const sortedSection = sections
     .slice()
     .sort((a: ISection, b: ISection) =>
@@ -132,7 +132,6 @@ const FormSearch = () => {
   const onLineNameChange = async (value: Selection | any) => {
     console.log(value);
     const parts: string[] = value.currentKey.split("-");
-    // const line_id: number = parseInt(parts[1].trim());
     const line_id = parseInt(parts[2]);
     console.log(line_id);
     setLineID(line_id);
@@ -156,19 +155,51 @@ const FormSearch = () => {
     })();
   }, []);
 
+  useEffect(() => {
+    if (section !== "") {
+      const machine_no = getValues(["machine_no"]);
+      const split_machine = machine_no[0]?.split(",");
+      const modifiedData = split_machine.map((item: any) =>
+        item.replace(/-\d+$/, "")
+      );
+      const paramsDay = {
+        section_code: section_code,
+        line_id: lineId,
+        machine_no1: modifiedData[0],
+        machine_no2: modifiedData[1],
+        date_current: dateStrings,
+        next_date: nextDate,
+        isOdd: isOdd,
+        shift: "day",
+      };
+      const paramsNight = {
+        section_code: section_code,
+        line_id: lineId,
+        machine_no1: modifiedData[0],
+        machine_no2: modifiedData[1],
+        date_current: dateStrings,
+        next_date: nextDate,
+        isOdd: isOdd,
+        shift: "night",
+      };
+      const paramsByColumn = {
+        section_code: section_code,
+        line_id: lineId,
+        machine_no1: modifiedData[0],
+        machine_no2: modifiedData[1],
+        date_current: dateStrings,
+        next_date: nextDate,
+      };
+      if (shift === "day") {
+        requestDataDay(paramsDay);
+      } else {
+        requestDataNight(paramsNight);
+      }
+      requestDataByShiftColumn(paramsByColumn);
+    }
+  }, [shift]);
+
   const [lineId, setLineID] = useState<number | undefined>(0);
-  const setTargetNotRealTimeMC1 = GeneralStore(
-    (state) => state.setTargetNotRealTimeMC1
-  );
-  const setTargetNotRealTimeMC2 = GeneralStore(
-    (state) => state.setTargetNotRealTimeMC2
-  );
-  const setActualNotRealTimeMC1 = GeneralStore(
-    (state) => state.setActualNotRealTimeMC1
-  );
-  const setActualNotRealTimeMC2 = GeneralStore(
-    (state) => state.setActualNotRealTimeMC2
-  );
   const setIsOdd = GeneralStore((state) => state.setIsOdd);
   const onMultiChange = (value: Selection | any) => {};
 
@@ -187,8 +218,6 @@ const FormSearch = () => {
     const nextDate = selectDate.toISOString().split("T")[0];
     setNextDate(nextDate);
   };
-  const setZone1 = GeneralStore((state) => state.setZone1);
-  const setZone2 = GeneralStore((state) => state.setZone2);
   const isOdd = GeneralStore((state) => state.isOdd);
   const FetchSetting = async () => {
     const machine_no = getValues(["machine_no"]);
@@ -198,696 +227,40 @@ const FormSearch = () => {
     );
     console.log(modifiedData);
     try {
-      const response_day = await axios.get(
-        "http://10.122.77.1:8004/get_dataparameter_day",
-        {
-          params: {
-            section_code: section_code,
-            line_id: lineId,
-            machine_no1: modifiedData[0],
-            machine_no2: modifiedData[1],
-            date_current: dateStrings,
-            next_date: nextDate,
-            isOdd: isOdd,
-            shift: "day",
-          },
-        }
-      );
-      const response_night = await axios.get(
-        "http://10.122.77.1:8004/get_dataparameter_night",
-        {
-          params: {
-            section_code: section_code,
-            line_id: lineId,
-            machine_no1: modifiedData[0],
-            machine_no2: modifiedData[1],
-            date_current: dateStrings,
-            next_date: nextDate,
-            isOdd: isOdd,
-            shift: "night",
-          },
-        }
-      );
-
-      if (response_day.status === 200) {
-        console.log(response_day.data);
-        const result = response_day.data;
-        console.log(result);
-        const dayShiftTimes1 = [
-          "07:35:00",
-          "08:30:00",
-          "09:30:00",
-          "09:40:00",
-          "10:30:00",
-          "11:15:00",
-          "12:15:00",
-          "13:30:00",
-          "14:30:00",
-          "14:40:00",
-          "15:30:00",
-          "16:30:00",
-          "16:50:00",
-          "17:50:00",
-          "19:20:00",
-        ];
-        const dayShiftTimes2 = [
-          "07:35:00",
-          "08:30:00",
-          "09:20:00",
-          "09:30:00",
-          "10:30:00",
-          "11:30:00",
-          "12:30:00",
-          "13:30:00",
-          "14:20:00",
-          "14:30:00",
-          "15:30:00",
-          "16:30:00",
-          "16:50:00",
-          "17:50:00",
-          "19:20:00",
-        ];
-
-        const nightShiftTimes1 = [
-          "19:35:00",
-          "20:30:00",
-          "21:30:00",
-          "21:40:00",
-          "22:30:00",
-          "23:15:00",
-          "00:05:00",
-          "01:30:00",
-          "02:30:00",
-          "02:50:00",
-          "03:30:00",
-          "04:30:00",
-          "04:50:00",
-          "05:50:00",
-          "07:20:00",
-        ];
-
-        const nightShiftTimes2 = [
-          "19:35:00",
-          "20:30:00",
-          "21:30:00",
-          "21:40:00",
-          "22:30:00",
-          "23:30:00",
-          "00:20:00",
-          "01:30:00",
-          "02:30:00",
-          "02:50:00",
-          "03:30:00",
-          "04:30:00",
-          "04:50:00",
-          "05:50:00",
-          "07:20:00",
-        ];
-
-        const uniqueMachines = Array.from(
-          new Set(result.map((item: any) => item.machine_no))
-        );
-        console.log(uniqueMachines);
-        const machineNo1Results: any[] = [];
-        const machineNo2Results: any[] = [];
-
-        result.forEach((item: any) => {
-          if (item.machine_no === uniqueMachines.at(0)) {
-            machineNo1Results.push(item);
-          } else if (item.machine_no === uniqueMachines.at(1)) {
-            machineNo2Results.push(item);
-          }
-        });
-        let previousDayValueMc1 = 0;
-        let previousNightValueMc1 = 0;
-        let previousDayValueMc2 = 0;
-        let previousNightValueMc2 = 0;
-
-        console.log(machineNo1Results);
-
-        machineNo1Results.forEach((entry, index) => {
-          const time = new Date(entry.date).toLocaleTimeString("en-US", {
-            hour12: false,
-          });
-          const dayShiftTimes = isOdd ? dayShiftTimes1 : dayShiftTimes2;
-          const nightShiftTimes = isOdd ? nightShiftTimes1 : nightShiftTimes2;
-          const isDayShift = dayShiftTimes.includes(time);
-          const isNightShift = nightShiftTimes.includes(time);
-          entry.shift = isDayShift ? "day" : "night";
-
-          if (isDayShift) {
-            if (
-              time === (isOdd ? "09:40:00" : "09:30:00") ||
-              time === (isOdd ? "12:15:00" : "12:30:00") ||
-              time === (isOdd ? "14:40:00" : "14:30:00") ||
-              time === "16:50:00"
-            ) {
-              entry.value = index > 0 ? machineNo1Results[index - 1].value : 0;
-            } else {
-              entry.value = entry.data.prod_actual - previousDayValueMc1;
-              previousDayValueMc1 = entry.data.prod_actual;
-            }
-          }
-          entry.period = time;
-          entry.type = "actual";
-          console.log(entry);
-        });
-        console.log(machineNo1Results);
-
-        machineNo2Results.forEach((entry, index) => {
-          const time = new Date(entry.date).toLocaleTimeString("en-US", {
-            hour12: false,
-          });
-          const dayShiftTimes = isOdd ? dayShiftTimes1 : dayShiftTimes2;
-          const isDayShift = dayShiftTimes.includes(time);
-          const nightShiftTimes = isOdd ? nightShiftTimes1 : nightShiftTimes2;
-          const isNightShift = nightShiftTimes.includes(time);
-
-          entry.shift = isDayShift ? "day" : "night";
-
-          if (isDayShift) {
-            if (
-              time === (isOdd ? "09:40:00" : "09:30:00") ||
-              time === (isOdd ? "12:15:00" : "12:30:00") ||
-              time === (isOdd ? "14:40:00" : "14:30:00") ||
-              time === "16:50:00"
-            ) {
-              entry.value = index > 0 ? machineNo2Results[index - 1].value : 0;
-            } else {
-              entry.value = entry.data.prod_actual - previousDayValueMc2;
-              previousDayValueMc2 = entry.data.prod_actual;
-            }
-          }
-
-          entry.period = time;
-          entry.type = "actual";
-          console.log(entry);
-        });
-
-        const results1 = machineNo1Results.filter(
-          (item: any) => item.shift === shift
-        );
-        const results2 = machineNo2Results.filter(
-          (item: any) => item.shift === shift
-        );
-        console.log("result1", results1);
-        console.log("result2", results2);
-        const resultTest1 = results1
-          .map((item: any, index: any, array: any) => {
-            if (index < array.length - 1) {
-              const beginDate = new Date(item.date);
-              const endDate = new Date(array[index + 1].date);
-              const deltaTime =
-                (endDate.getTime() - beginDate.getTime()) / 1000;
-              return {
-                begin: item.date,
-                end: array[index + 1].date,
-                time: deltaTime,
-              };
-            }
-            return null;
-          })
-          .filter((item: any) => item !== null); // Filter out nulls
-
-        const resultTest2 = results2
-          .map((item: any, index: any, array: any) => {
-            if (index < array.length - 1) {
-              const beginDate = new Date(item.date);
-              const endDate = new Date(array[index + 1].date);
-              const deltaTime =
-                (endDate.getTime() - beginDate.getTime()) / 1000;
-              return {
-                begin: item.date,
-                end: array[index + 1].date,
-                time: deltaTime,
-              };
-            }
-            return null;
-          })
-          .filter((item: any) => item !== null); // Filter out nulls
-        const timesToRemove1 = [
-          "09:30:00",
-          "11:15:00",
-          "14:30:00",
-          "16:30:00",
-          "21:30:00",
-          "23:15:00",
-          "02:30:00",
-          "04:30:00",
-        ];
-
-        const timesToRemove2 = [
-          "09:20:00",
-          "11:30:00",
-          "14:20:00",
-          "16:30:00",
-          "21:30:00",
-          "23:30:00",
-          "02:30:00",
-          "04:30:00",
-        ];
-
-        const timesToRemove = isOdd ? timesToRemove1 : timesToRemove2;
-
-        // const timesToRemove = [
-        //   "09:40:00",
-        //   "11:30:00",
-        //   "14:40:00",
-        //   "16:30:00",
-        //   "21:30:00",
-        //   "23:30:00",
-        //   "02:30:00",
-        //   "04:30:00",
-        // ];
-
-        const filteredResults11 = resultTest1.filter((item) => {
-          const timePart = item?.begin.split("T")[1];
-          return !timesToRemove.includes(timePart);
-        });
-
-        const filteredResults22 = resultTest2.filter((item) => {
-          const timePart = item?.begin.split("T")[1];
-          return !timesToRemove.includes(timePart);
-        });
-
-        console.log(filteredResults11);
-        const sumTimeTarget1 =
-          filteredResults11.reduce((total, item: any) => total + item.time, 0) /
-          16.5;
-        setTargetNotRealTimeMC1(sumTimeTarget1);
-
-        const sumTimeTarget2 =
-          filteredResults22.reduce((total, item: any) => total + item.time, 0) /
-          16.5;
-        setTargetNotRealTimeMC2(sumTimeTarget2);
-
-        const excludedPeriods = ["07:35:00", "19:35:00"];
-
-        const filteredResults1 = results1.filter(
-          (item: any) => !excludedPeriods.includes(item.period)
-        );
-        const filteredResults2 = results2.filter(
-          (item: any) => !excludedPeriods.includes(item.period)
-        );
-        console.log(filteredResults1);
-
-        if (shift === "day") {
-          setZone1(filteredResults1);
-        } else {
-        }
-
-        const periodsToExclude1 = [
-          "21:40:00",
-          "00:05:00",
-          "02:50:00",
-          "04:50:00",
-          "09:40:00",
-          "12:15:00",
-          "14:40:00",
-          "16:50:00",
-        ];
-        const periodsToExclude2 = [
-          "21:40:00",
-          "00:20:00",
-          "02:50:00",
-          "04:50:00",
-          "09:30:00",
-          "12:30:00",
-          "14:30:00",
-          "16:50:00",
-        ];
-
-        const periodsToExclude = isOdd ? periodsToExclude1 : periodsToExclude2;
-
-        const sumOfNumbers1 = filteredResults1.reduce(
-          (accumulator, currentValue) => {
-            if (!periodsToExclude.includes(currentValue.period)) {
-              return accumulator + currentValue.value;
-            } else {
-              return accumulator;
-            }
-          },
-          0
-        );
-        console.log(sumOfNumbers1);
-
-        console.log(filteredResults2);
-        console.log(filteredResults22);
-        const sumOfNumbers2 = filteredResults2.reduce(
-          (accumulator, currentValue) => {
-            if (!periodsToExclude.includes(currentValue.period)) {
-              return accumulator + currentValue.value;
-            } else {
-              return accumulator;
-            }
-          },
-          0
-        );
-
-        if (shift === "day") {
-          setZone2(filteredResults2);
-          setActualNotRealTimeMC1(sumOfNumbers1);
-          setActualNotRealTimeMC2(sumOfNumbers2);
-        } else {
-        }
-
-        console.log("filterRes2", filteredResults2);
-
-        console.log("res1", results1);
-        console.log("res2", results2);
+      const paramsDay = {
+        section_code: section_code,
+        line_id: lineId,
+        machine_no1: modifiedData[0],
+        machine_no2: modifiedData[1],
+        date_current: dateStrings,
+        next_date: nextDate,
+        isOdd: isOdd,
+        shift: "day",
+      };
+      const paramsNight = {
+        section_code: section_code,
+        line_id: lineId,
+        machine_no1: modifiedData[0],
+        machine_no2: modifiedData[1],
+        date_current: dateStrings,
+        next_date: nextDate,
+        isOdd: isOdd,
+        shift: "night",
+      };
+      const paramsByColumn = {
+        section_code: section_code,
+        line_id: lineId,
+        machine_no1: modifiedData[0],
+        machine_no2: modifiedData[1],
+        date_current: dateStrings,
+        next_date: nextDate,
+      };
+      if (shift === "day") {
+        await requestDataDay(paramsDay);
+      } else {
+        await requestDataNight(paramsNight);
       }
-      if (response_night.status === 200) {
-        console.log(response_night.data);
-        const result = response_night.data;
-        console.log(result);
-        const dayShiftTimes1 = [
-          "07:35:00",
-          "08:30:00",
-          "09:30:00",
-          "09:40:00",
-          "10:30:00",
-          "11:15:00",
-          "12:15:00",
-          "13:30:00",
-          "14:30:00",
-          "14:40:00",
-          "15:30:00",
-          "16:30:00",
-          "16:50:00",
-          "17:50:00",
-          "19:20:00",
-        ];
-        const dayShiftTimes2 = [
-          "07:35:00",
-          "08:30:00",
-          "09:20:00",
-          "09:30:00",
-          "10:30:00",
-          "11:30:00",
-          "12:30:00",
-          "13:30:00",
-          "14:20:00",
-          "14:30:00",
-          "15:30:00",
-          "16:30:00",
-          "16:50:00",
-          "17:50:00",
-          "19:20:00",
-        ];
-
-        const nightShiftTimes1 = [
-          "19:35:00",
-          "20:30:00",
-          "21:30:00",
-          "21:40:00",
-          "22:30:00",
-          "23:15:00",
-          "00:05:00",
-          "01:30:00",
-          "02:30:00",
-          "02:50:00",
-          "03:30:00",
-          "04:30:00",
-          "04:50:00",
-          "05:50:00",
-          "07:20:00",
-        ];
-
-        const nightShiftTimes2 = [
-          "19:35:00",
-          "20:30:00",
-          "21:30:00",
-          "21:40:00",
-          "22:30:00",
-          "23:30:00",
-          "00:20:00",
-          "01:30:00",
-          "02:30:00",
-          "02:50:00",
-          "03:30:00",
-          "04:30:00",
-          "04:50:00",
-          "05:50:00",
-          "07:20:00",
-        ];
-
-        const uniqueMachines = Array.from(
-          new Set(result.map((item: any) => item.machine_no))
-        );
-        console.log(uniqueMachines);
-        const machineNo1Results: any[] = [];
-        const machineNo2Results: any[] = [];
-
-        result.forEach((item: any) => {
-          if (item.machine_no === uniqueMachines.at(0)) {
-            machineNo1Results.push(item);
-          } else if (item.machine_no === uniqueMachines.at(1)) {
-            machineNo2Results.push(item);
-          }
-        });
-        let previousDayValueMc1 = 0;
-        let previousNightValueMc1 = 0;
-        let previousDayValueMc2 = 0;
-        let previousNightValueMc2 = 0;
-
-        console.log(machineNo1Results);
-
-        machineNo1Results.forEach((entry, index) => {
-          const time = new Date(entry.date).toLocaleTimeString("en-US", {
-            hour12: false,
-          });
-          const dayShiftTimes = isOdd ? dayShiftTimes1 : dayShiftTimes2;
-          const nightShiftTimes = isOdd ? nightShiftTimes1 : nightShiftTimes2;
-          const isDayShift = dayShiftTimes.includes(time);
-          const isNightShift = nightShiftTimes.includes(time);
-          entry.shift = isDayShift ? "day" : "night";
-
-          if (isNightShift) {
-            if (
-              time === "21:40:00" ||
-              time === (isOdd ? "00:05:00" : "00:20:00") ||
-              time === "02:50:00" ||
-              time === "04:50:00"
-            ) {
-              entry.value = index > 0 ? machineNo1Results[index - 1].value : 0;
-            } else {
-              entry.value =
-                time === "19:35:00"
-                  ? 0
-                  : entry.data.prod_actual - previousNightValueMc1;
-              previousNightValueMc1 = entry.data.prod_actual;
-            }
-          }
-          entry.period = time;
-          entry.type = "actual";
-          console.log(entry);
-        });
-        console.log(machineNo1Results);
-
-        machineNo2Results.forEach((entry, index) => {
-          const time = new Date(entry.date).toLocaleTimeString("en-US", {
-            hour12: false,
-          });
-          const dayShiftTimes = isOdd ? dayShiftTimes1 : dayShiftTimes2;
-          const isDayShift = dayShiftTimes.includes(time);
-          const nightShiftTimes = isOdd ? nightShiftTimes1 : nightShiftTimes2;
-          const isNightShift = nightShiftTimes.includes(time);
-
-          entry.shift = isDayShift ? "day" : "night";
-
-          if (isNightShift) {
-            if (
-              time === "21:40:00" ||
-              time === (isOdd ? "00:05:00" : "00:20:00") ||
-              time === "02:50:00" ||
-              time === "04:50:00"
-            ) {
-              entry.value = index > 0 ? machineNo2Results[index - 1].value : 0;
-            } else {
-              entry.value =
-                time === "19:35:00"
-                  ? 0
-                  : entry.data.prod_actual - previousNightValueMc2;
-              previousNightValueMc2 = entry.data.prod_actual;
-            }
-          }
-
-          entry.period = time;
-          entry.type = "actual";
-          console.log(entry);
-        });
-
-        const results1 = machineNo1Results.filter(
-          (item: any) => item.shift === shift
-        );
-        const results2 = machineNo2Results.filter(
-          (item: any) => item.shift === shift
-        );
-        console.log("result1", results1);
-        console.log("result2", results2);
-        const resultTest1 = results1
-          .map((item: any, index: any, array: any) => {
-            if (index < array.length - 1) {
-              const beginDate = new Date(item.date);
-              const endDate = new Date(array[index + 1].date);
-              const deltaTime =
-                (endDate.getTime() - beginDate.getTime()) / 1000;
-              return {
-                begin: item.date,
-                end: array[index + 1].date,
-                time: deltaTime,
-              };
-            }
-            return null;
-          })
-          .filter((item: any) => item !== null); // Filter out nulls
-
-        const resultTest2 = results2
-          .map((item: any, index: any, array: any) => {
-            if (index < array.length - 1) {
-              const beginDate = new Date(item.date);
-              const endDate = new Date(array[index + 1].date);
-              const deltaTime =
-                (endDate.getTime() - beginDate.getTime()) / 1000;
-              return {
-                begin: item.date,
-                end: array[index + 1].date,
-                time: deltaTime,
-              };
-            }
-            return null;
-          })
-          .filter((item: any) => item !== null); // Filter out nulls
-        const timesToRemove1 = [
-          "09:30:00",
-          "11:15:00",
-          "14:30:00",
-          "16:30:00",
-          "21:30:00",
-          "23:15:00",
-          "02:30:00",
-          "04:30:00",
-        ];
-
-        const timesToRemove2 = [
-          "09:20:00",
-          "11:30:00",
-          "14:20:00",
-          "16:30:00",
-          "21:30:00",
-          "23:30:00",
-          "02:30:00",
-          "04:30:00",
-        ];
-
-        const timesToRemove = isOdd ? timesToRemove1 : timesToRemove2;
-
-        // const timesToRemove = [
-        //   "09:40:00",
-        //   "11:30:00",
-        //   "14:40:00",
-        //   "16:30:00",
-        //   "21:30:00",
-        //   "23:30:00",
-        //   "02:30:00",
-        //   "04:30:00",
-        // ];
-
-        const filteredResults11 = resultTest1.filter((item) => {
-          const timePart = item?.begin.split("T")[1];
-          return !timesToRemove.includes(timePart);
-        });
-
-        const filteredResults22 = resultTest2.filter((item) => {
-          const timePart = item?.begin.split("T")[1];
-          return !timesToRemove.includes(timePart);
-        });
-
-        console.log(filteredResults11);
-        const sumTimeTarget1 =
-          filteredResults11.reduce((total, item: any) => total + item.time, 0) /
-          16.5;
-        setTargetNotRealTimeMC1(sumTimeTarget1);
-
-        const sumTimeTarget2 =
-          filteredResults22.reduce((total, item: any) => total + item.time, 0) /
-          16.5;
-        setTargetNotRealTimeMC2(sumTimeTarget2);
-
-        const excludedPeriods = ["07:35:00", "19:35:00"];
-
-        const filteredResults1 = results1.filter(
-          (item: any) => !excludedPeriods.includes(item.period)
-        );
-        const filteredResults2 = results2.filter(
-          (item: any) => !excludedPeriods.includes(item.period)
-        );
-        console.log(filteredResults1);
-
-        if (shift === "night") {
-          setZone1(filteredResults1);
-        } else {
-        }
-
-        const periodsToExclude1 = [
-          "21:40:00",
-          "00:05:00",
-          "02:50:00",
-          "04:50:00",
-          "09:40:00",
-          "12:15:00",
-          "14:40:00",
-          "16:50:00",
-        ];
-        const periodsToExclude2 = [
-          "21:40:00",
-          "00:20:00",
-          "02:50:00",
-          "04:50:00",
-          "09:30:00",
-          "12:30:00",
-          "14:30:00",
-          "16:50:00",
-        ];
-
-        const periodsToExclude = isOdd ? periodsToExclude1 : periodsToExclude2;
-
-        const sumOfNumbers1 = filteredResults1.reduce(
-          (accumulator, currentValue) => {
-            if (!periodsToExclude.includes(currentValue.period)) {
-              return accumulator + currentValue.value;
-            } else {
-              return accumulator;
-            }
-          },
-          0
-        );
-        console.log(sumOfNumbers1);
-
-        console.log(filteredResults2);
-        console.log(filteredResults22);
-        const sumOfNumbers2 = filteredResults2.reduce(
-          (accumulator, currentValue) => {
-            if (!periodsToExclude.includes(currentValue.period)) {
-              return accumulator + currentValue.value;
-            } else {
-              return accumulator;
-            }
-          },
-          0
-        );
-        if (shift === "night") {
-          setZone2(filteredResults2);
-          setActualNotRealTimeMC1(sumOfNumbers1);
-          setActualNotRealTimeMC2(sumOfNumbers2);
-        } else {
-        }
-
-        console.log("filterRes2", filteredResults2);
-
-        console.log("res1", results1);
-        console.log("res2", results2);
-      }
+      await requestDataByShiftColumn(paramsByColumn);
     } catch (err) {
       console.error(err);
     }
