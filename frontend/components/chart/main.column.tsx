@@ -55,6 +55,7 @@ interface DataProps {
   date_working: string;
   line_id: number;
   machine_no: string;
+  machine_name?: string;
   period: string;
   section_code: number;
   shift: string;
@@ -733,6 +734,8 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
     }
   }
 
+  console.log(graphData);
+
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const setModalOpen = ModalOpenStore((state) => state.setOpenModal);
   const setDataTooltip = ModalOpenStore((state) => state.setDataTooltip);
@@ -919,9 +922,13 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
       case "02:30 - 02:50":
       case "04:30 - 04:50":
       case "16:30 - 16:50":
-        return "blue";
+        return "black";
       default:
-        return value >= lower && value <= upper ? "green" : "rgba(255,0,0,0.7)";
+        return value >= lower && value <= upper
+          ? "green"
+          : value > upper
+          ? "#0B60B0"
+          : "rgba(255,0,0,0.7)";
     }
   }
   //!brake หาย
@@ -972,13 +979,13 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
     } else if (graphData.length === 6) {
       return -125; // Or any default number value you prefer
     } else if (graphData.length === 7) {
-      return -108; // Or any default number value you prefer
+      return -71; // Or any default number value you prefer
     } else if (graphData.length === 8) {
       return -54; // Or any default number value you prefer
     } else if (graphData.length === 9) {
-      return -84; // Or any default number value you prefer
+      return -55; // Or any default number value you prefer
     } else if (graphData.length === 10) {
-      return -48; // Or any default number value you prefer
+      return -43; // Or any default number value you prefer
     } else if (graphData.length === 11) {
       return -49; // Or any default number value you prefer
     } else if (graphData.length === 12) {
@@ -986,7 +993,7 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
     } else if (graphData.length === 13) {
       return -37; // Or any default number value you prefer
     } else if (graphData.length === 14) {
-      return -35; // Or any default number value you prefer
+      return -31; // Or any default number value you prefer
     }
 
     return -60;
@@ -1047,13 +1054,13 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
     } else if (graphData.length === 6) {
       lastAnnotation.offsetX = 128;
     } else if (graphData.length === 7) {
-      lastAnnotation.offsetX = 326;
+      lastAnnotation.offsetX = 215;
     } else if (graphData.length === 8) {
       lastAnnotation.offsetX = 165;
     } else if (graphData.length === 9) {
-      lastAnnotation.offsetX = 84;
+      lastAnnotation.offsetX = 60;
     } else if (graphData.length === 10) {
-      lastAnnotation.offsetX = 50;
+      lastAnnotation.offsetX = 130;
     } else if (graphData.length === 11) {
       lastAnnotation.offsetX = 50;
     } else if (graphData.length === 12) {
@@ -1061,7 +1068,7 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
     } else if (graphData.length === 13) {
       lastAnnotation.offsetX = 39;
     } else if (graphData.length === 14) {
-      lastAnnotation.offsetX = 35;
+      lastAnnotation.offsetX = 33;
     }
   }
 
@@ -1120,13 +1127,13 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
     } else if (graphData.length === 6) {
       lastAnnotation.offsetX = 128;
     } else if (graphData.length === 7) {
-      lastAnnotation.offsetX = 326;
+      lastAnnotation.offsetX = 215;
     } else if (graphData.length === 8) {
       lastAnnotation.offsetX = 165;
     } else if (graphData.length === 9) {
-      lastAnnotation.offsetX = 84;
+      lastAnnotation.offsetX = 60;
     } else if (graphData.length === 10) {
-      lastAnnotation.offsetX = 50;
+      lastAnnotation.offsetX = 130;
     } else if (graphData.length === 11) {
       lastAnnotation.offsetX = 50;
     } else if (graphData.length === 12) {
@@ -1134,7 +1141,7 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
     } else if (graphData.length === 13) {
       lastAnnotation.offsetX = 39;
     } else if (graphData.length === 14) {
-      lastAnnotation.offsetX = 35;
+      lastAnnotation.offsetX = 33;
     }
   }
 
@@ -1181,13 +1188,13 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
     } else if (graphData.length === 6) {
       lastAnnotation.offsetX = 128;
     } else if (graphData.length === 7) {
-      lastAnnotation.offsetX = 326;
+      lastAnnotation.offsetX = 215;
     } else if (graphData.length === 8) {
       lastAnnotation.offsetX = 165;
     } else if (graphData.length === 9) {
-      lastAnnotation.offsetX = 84;
+      lastAnnotation.offsetX = 60;
     } else if (graphData.length === 10) {
-      lastAnnotation.offsetX = 50;
+      lastAnnotation.offsetX = 130;
     } else if (graphData.length === 11) {
       lastAnnotation.offsetX = 50;
     } else if (graphData.length === 12) {
@@ -1195,7 +1202,7 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
     } else if (graphData.length === 13) {
       lastAnnotation.offsetX = 39;
     } else if (graphData.length === 14) {
-      lastAnnotation.offsetX = 35;
+      lastAnnotation.offsetX = 33;
     }
   }
 

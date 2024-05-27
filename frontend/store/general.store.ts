@@ -25,8 +25,8 @@ interface IMode {
   setShift: (key: React.Key) => void;
   setIsOdd: (isOdd: number) => void;
   setOpenModal: (openModal: boolean) => void;
-  setTargetNotRealTimeMC1: (targetNotRealTimeMC1: number) => void;
-  setTargetNotRealTimeMC2: (targetNotRealTimeMC2: number) => void;
+  setTargetNotRealTimeMC1: () => void;
+  setTargetNotRealTimeMC2: () => void;
   setActualNotRealTimeMC1: (actualNotRealTimeMC1: number) => void;
   setActualNotRealTimeMC2: (actualNotRealTimeMC1: number) => void;
   setDataBaratsuki: (newDataArray: DataBaratsuki[]) => void;
@@ -68,11 +68,52 @@ export const GeneralStore = create<IMode>((...args) => {
     setOpenModal(openModal) {
       set({ openModal });
     },
-    setTargetNotRealTimeMC1(targetNotRealTimeMC1) {
-      set({ targetNotRealTimeMC1 });
+    setTargetNotRealTimeMC1: () => {
+      const zone1 = get().zone1;
+      console.log("storezone1", zone1);
+      const shift = get().shift;
+      if (zone1.length > 0) {
+        if (shift === "day") {
+          const targetValue = zone1.some(
+            (item) => item.period === "19:20:00" && item.value === 0
+          )
+            ? Math.floor(27300 / 16.5)
+            : Math.floor(36300 / 16.5);
+          set({ targetNotRealTimeMC1: targetValue });
+        } else {
+          const targetValue = zone1.some(
+            (item) => item.period === "07:20:00" && item.value === 0
+          )
+            ? Math.floor(27300 / 16.5)
+            : Math.floor(36300 / 16.5);
+          set({ targetNotRealTimeMC1: targetValue });
+        }
+      } else {
+        set({ targetNotRealTimeMC1: 0 });
+      }
     },
-    setTargetNotRealTimeMC2(targetNotRealTimeMC2) {
-      set({ targetNotRealTimeMC2 });
+    setTargetNotRealTimeMC2: () => {
+      const zone2 = get().zone2;
+      const shift = get().shift;
+      if (zone2.length > 0) {
+        if (shift === "day") {
+          const targetValue = zone2.some(
+            (item) => item.period === "19:20:00" && item.value === 0
+          )
+            ? Math.floor(27300 / 16.5)
+            : Math.floor(36300 / 16.5);
+          set({ targetNotRealTimeMC2: targetValue });
+        } else {
+          const targetValue = zone2.some(
+            (item) => item.period === "07:20:00" && item.value === 0
+          )
+            ? Math.floor(27300 / 16.5)
+            : Math.floor(36300 / 16.5);
+          set({ targetNotRealTimeMC2: targetValue });
+        }
+      } else {
+        set({ targetNotRealTimeMC2: 0 });
+      }
     },
     setActualNotRealTimeMC1(actualNotRealTimeMC1) {
       set({ actualNotRealTimeMC1 });

@@ -1,5 +1,6 @@
 "use client";
 import { GeneralStore } from "@/store/general.store";
+import { MQTTStore } from "@/store/mqttStore";
 import { Column, ColumnConfig } from "@ant-design/plots";
 
 interface Data {
@@ -27,6 +28,11 @@ if (typeof document !== "undefined") {
   // you are safe to use the "document" object here
 }
 const BaratsukiShiftColumn: React.FC<LineProps> = ({ parameter }) => {
+  const isConnected = MQTTStore((state) => state.isConnected);
+  console.log(isConnected);
+  const targetNotRealTimeMC1 = GeneralStore(
+    (state) => state.targetNotRealTimeMC1
+  );
   const baratsukiRate = GeneralStore((state) => state.baratsukiRate);
   const setShift = GeneralStore((state) => state.setShift);
   const shift = GeneralStore((state) => state.shift);
@@ -43,12 +49,17 @@ const BaratsukiShiftColumn: React.FC<LineProps> = ({ parameter }) => {
     };
   });
   console.log(processedParameter);
+  //!กรณีนี้เป็นกรณีที่ตั้ง target ที่ท้ายไลน์อย่างเดียว ไม่ได้เป็น target ตายตัว
+  //!ถ้าในอนาคตเป็น mc อื่นที่ไม่ใช่ท้ายไลน์ จะต้องมี target ของงตัวเอง ในกรณีนั้น
+  //!อาจจะต้อง fetch ข้อมูลมาใหม่ทั้งหมดในช่วง shift เพื่อมาคำนวณ target การทำงาน
+
   const targetValues: { [key: number]: number } = {
-    70: 1540,
-    77: 1694,
-    85: 1870,
-    100: 2200,
+    70: Math.floor(targetNotRealTimeMC1 * 0.7),
+    77: Math.floor(targetNotRealTimeMC1 * 0.77),
+    85: Math.floor(targetNotRealTimeMC1 * 0.85),
+    100: Math.floor(targetNotRealTimeMC1 * 1),
   };
+
   const baratsukiRateNumber = Number(baratsukiRate);
   let target: number = targetValues[baratsukiRateNumber] || 0;
   console.log(`The target for baratsukiRate ${baratsukiRate} is ${target}`);

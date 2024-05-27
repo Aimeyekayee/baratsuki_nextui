@@ -53,12 +53,12 @@ export const MqttConnectingSlice: StateCreator<IMqttConnectingState> = (
     set({
       mqttDataMachine1: response,
     });
-    console.log("mqttData = ", get().mqttDataMachine1);
+    // console.log("mqttData = ", get().mqttDataMachine1);
   },
   setMqttDataMachine2(response) {
     set({
       mqttDataMachine2: response,
     });
-    console.log("mqttData = ", get().mqttDataMachine2);
+    // console.log("mqttData = ", get().mqttDataMachine2);
   },
 });

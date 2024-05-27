@@ -4,8 +4,6 @@ import {
   dayShiftTimes1,
   dayShiftTimes2,
   nightShiftTimes2,
-  timesToRemove1,
-  timesToRemove2,
   periodsToExclude1,
   periodsToExclude2,
 } from "@/utils/period";
@@ -35,7 +33,7 @@ export async function requestDataDay(params: Params): Promise<any[]> {
   } = GeneralStore.getState();
   //!   "http://10.122.77.1:8004/get_dataparameter_day"
   const response = await axios.get(
-    "http://10.122.77.1:8004/get_dataparameter_day",
+    "http://127.0.0.1:8000/get_dataparameter_day",
     {
       params: params,
     }
@@ -49,16 +47,24 @@ export async function requestDataDay(params: Params): Promise<any[]> {
       new Set(result.map((item: any) => item.machine_no))
     );
     console.log(uniqueMachines);
+
+    uniqueMachines.sort((a: any, b: any) =>
+      a.toString().localeCompare(b.toString())
+    );
     const machineNo1Results: any[] = [];
     const machineNo2Results: any[] = [];
 
     result.forEach((item: any) => {
-      if (item.machine_no === uniqueMachines.at(0)) {
+      if (item.machine_no === uniqueMachines[0]) {
         machineNo1Results.push(item);
-      } else if (item.machine_no === uniqueMachines.at(1)) {
+      } else if (item.machine_no === uniqueMachines[1]) {
         machineNo2Results.push(item);
       }
     });
+
+    console.log("mc1_result_day", machineNo1Results);
+    console.log("mc2_result_day", machineNo2Results);
+
     let previousDayValueMc1 = 0;
     let previousNightValueMc1 = 0;
     let previousDayValueMc2 = 0;
@@ -131,74 +137,21 @@ export async function requestDataDay(params: Params): Promise<any[]> {
     const results2 = machineNo2Results.filter(
       (item: any) => item.shift === shift
     );
-    console.log("result1", results1);
-    console.log("result2", results2);
-    const resultTest1 = results1
-      .map((item: any, index: any, array: any) => {
-        if (index < array.length - 1) {
-          const beginDate = new Date(item.date);
-          const endDate = new Date(array[index + 1].date);
-          const deltaTime = (endDate.getTime() - beginDate.getTime()) / 1000;
-          return {
-            begin: item.date,
-            end: array[index + 1].date,
-            time: deltaTime,
-          };
-        }
-        return null;
-      })
-      .filter((item: any) => item !== null); // Filter out nulls
-
-    const resultTest2 = results2
-      .map((item: any, index: any, array: any) => {
-        if (index < array.length - 1) {
-          const beginDate = new Date(item.date);
-          const endDate = new Date(array[index + 1].date);
-          const deltaTime = (endDate.getTime() - beginDate.getTime()) / 1000;
-          return {
-            begin: item.date,
-            end: array[index + 1].date,
-            time: deltaTime,
-          };
-        }
-        return null;
-      })
-      .filter((item: any) => item !== null); // Filter out nulls
-
-    const timesToRemove = isOdd ? timesToRemove1 : timesToRemove2;
-    const filteredResults11 = resultTest1.filter((item) => {
-      const timePart = item?.begin.split("T")[1];
-      return !timesToRemove.includes(timePart);
-    });
-
-    const filteredResults22 = resultTest2.filter((item) => {
-      const timePart = item?.begin.split("T")[1];
-      return !timesToRemove.includes(timePart);
-    });
-
-    console.log(filteredResults11);
-    const sumTimeTarget1 =
-      filteredResults11.reduce((total, item: any) => total + item.time, 0) /
-      16.5;
-    setTargetNotRealTimeMC1(sumTimeTarget1);
-
-    const sumTimeTarget2 =
-      filteredResults22.reduce((total, item: any) => total + item.time, 0) /
-      16.5;
-    setTargetNotRealTimeMC2(sumTimeTarget2);
 
     const excludedPeriods = ["07:35:00", "19:35:00"];
 
     const filteredResults1 = results1.filter(
       (item: any) => !excludedPeriods.includes(item.period)
     );
+    console.log(filteredResults1);
     const filteredResults2 = results2.filter(
       (item: any) => !excludedPeriods.includes(item.period)
     );
-    console.log(filteredResults1);
+    console.log(filteredResults2);
 
     if (shift === "day") {
       setZone1(filteredResults1);
+      setTargetNotRealTimeMC1();
     } else {
     }
 
@@ -214,10 +167,7 @@ export async function requestDataDay(params: Params): Promise<any[]> {
       },
       0
     );
-    console.log(sumOfNumbers1);
 
-    console.log(filteredResults2);
-    console.log(filteredResults22);
     const sumOfNumbers2 = filteredResults2.reduce(
       (accumulator, currentValue) => {
         if (!periodsToExclude.includes(currentValue.period)) {
@@ -233,6 +183,7 @@ export async function requestDataDay(params: Params): Promise<any[]> {
       setZone2(filteredResults2);
       setActualNotRealTimeMC1(sumOfNumbers1);
       setActualNotRealTimeMC2(sumOfNumbers2);
+      setTargetNotRealTimeMC2();
     } else {
     }
 
@@ -257,7 +208,7 @@ export async function requestDataNight(params: Params): Promise<any[]> {
   } = GeneralStore.getState();
 
   const response = await axios.get(
-    "http://10.122.77.1:8004/get_dataparameter_night",
+    "http://127.0.0.1:8000/get_dataparameter_night",
     {
       params: params,
     }
@@ -271,16 +222,24 @@ export async function requestDataNight(params: Params): Promise<any[]> {
       new Set(result.map((item: any) => item.machine_no))
     );
     console.log(uniqueMachines);
+
+    uniqueMachines.sort((a: any, b: any) =>
+      a.toString().localeCompare(b.toString())
+    );
     const machineNo1Results: any[] = [];
     const machineNo2Results: any[] = [];
 
     result.forEach((item: any) => {
-      if (item.machine_no === uniqueMachines.at(0)) {
+      if (item.machine_no === uniqueMachines[0]) {
         machineNo1Results.push(item);
-      } else if (item.machine_no === uniqueMachines.at(1)) {
+      } else if (item.machine_no === uniqueMachines[1]) {
         machineNo2Results.push(item);
       }
     });
+
+    console.log("mc1_result_night", machineNo1Results);
+    console.log("mc2_result_night", machineNo2Results);
+
     let previousDayValueMc1 = 0;
     let previousNightValueMc1 = 0;
     let previousDayValueMc2 = 0;
@@ -359,61 +318,6 @@ export async function requestDataNight(params: Params): Promise<any[]> {
     const results2 = machineNo2Results.filter(
       (item: any) => item.shift === shift
     );
-    console.log("result1", results1);
-    console.log("result2", results2);
-    const resultTest1 = results1
-      .map((item: any, index: any, array: any) => {
-        if (index < array.length - 1) {
-          const beginDate = new Date(item.date);
-          const endDate = new Date(array[index + 1].date);
-          const deltaTime = (endDate.getTime() - beginDate.getTime()) / 1000;
-          return {
-            begin: item.date,
-            end: array[index + 1].date,
-            time: deltaTime,
-          };
-        }
-        return null;
-      })
-      .filter((item: any) => item !== null); // Filter out nulls
-
-    const resultTest2 = results2
-      .map((item: any, index: any, array: any) => {
-        if (index < array.length - 1) {
-          const beginDate = new Date(item.date);
-          const endDate = new Date(array[index + 1].date);
-          const deltaTime = (endDate.getTime() - beginDate.getTime()) / 1000;
-          return {
-            begin: item.date,
-            end: array[index + 1].date,
-            time: deltaTime,
-          };
-        }
-        return null;
-      })
-      .filter((item: any) => item !== null); // Filter out nulls
-
-    const timesToRemove = isOdd ? timesToRemove1 : timesToRemove2;
-    const filteredResults11 = resultTest1.filter((item) => {
-      const timePart = item?.begin.split("T")[1];
-      return !timesToRemove.includes(timePart);
-    });
-
-    const filteredResults22 = resultTest2.filter((item) => {
-      const timePart = item?.begin.split("T")[1];
-      return !timesToRemove.includes(timePart);
-    });
-
-    console.log(filteredResults11);
-    const sumTimeTarget1 =
-      filteredResults11.reduce((total, item: any) => total + item.time, 0) /
-      16.5;
-    setTargetNotRealTimeMC1(sumTimeTarget1);
-
-    const sumTimeTarget2 =
-      filteredResults22.reduce((total, item: any) => total + item.time, 0) /
-      16.5;
-    setTargetNotRealTimeMC2(sumTimeTarget2);
 
     const excludedPeriods = ["07:35:00", "19:35:00"];
 
@@ -424,7 +328,6 @@ export async function requestDataNight(params: Params): Promise<any[]> {
       (item: any) => !excludedPeriods.includes(item.period)
     );
     console.log(filteredResults1);
-
     if (shift === "night") {
       setZone1(filteredResults1);
     } else {
@@ -442,9 +345,6 @@ export async function requestDataNight(params: Params): Promise<any[]> {
       0
     );
     console.log(sumOfNumbers1);
-
-    console.log(filteredResults2);
-    console.log(filteredResults22);
     const sumOfNumbers2 = filteredResults2.reduce(
       (accumulator, currentValue) => {
         if (!periodsToExclude.includes(currentValue.period)) {
@@ -474,7 +374,7 @@ export async function requestDataByShiftColumn(params: Params): Promise<any[]> {
   const { setDataByShiftColumnMC1, setDataByShiftColumnMC2 } =
     GeneralStore.getState();
   const response = await axios.get(
-    "http://10.122.77.1:8004/get_dataparameter_by_shift_column",
+    "http://127.0.0.1:8000/get_dataparameter_by_shift_column",
     {
       params: params,
     }
@@ -487,13 +387,17 @@ export async function requestDataByShiftColumn(params: Params): Promise<any[]> {
       new Set(result.map((item: any) => item.machine_no))
     );
     console.log(uniqueMachines);
+
+    uniqueMachines.sort((a: any, b: any) =>
+      a.toString().localeCompare(b.toString())
+    );
     const machineNo1Results: any[] = [];
     const machineNo2Results: any[] = [];
 
     result.forEach((item: any) => {
-      if (item.machine_no === uniqueMachines.at(0)) {
+      if (item.machine_no === uniqueMachines[0]) {
         machineNo1Results.push(item);
-      } else if (item.machine_no === uniqueMachines.at(1)) {
+      } else if (item.machine_no === uniqueMachines[1]) {
         machineNo2Results.push(item);
       }
     });

@@ -28,6 +28,8 @@ import VideoPlayer from "../video/video.player";
 import AreaPlotBy5minutes from "../chart/areaHourBy5minute";
 import AreaPlotByAccummulate from "../chart/areaHourByAccummulate";
 import BaratsukiChallengeTab from "../tabs/baratsukichallenge.tabs";
+import AlarmHistoryTable from "../table/table.alarmhistory";
+import AlarmCountColumn from "../chart/alarmfreq.column";
 
 interface ModalManagement {
   isOpen: boolean;
@@ -321,6 +323,7 @@ const ModalHour: React.FC<ModalManagement> = ({
       isDismissable={false}
       isKeyboardDismissDisabled={true}
       size="full"
+      style={{ overflowY: "auto" }}
     >
       <ModalContent>
         {(onClose) => (
@@ -396,7 +399,9 @@ const ModalHour: React.FC<ModalManagement> = ({
                 className="flex flex-col justify-between gap-4"
                 style={{ width: "50%", height: "100%" }}
               >
-                <div style={{ width: "100%" }} className="flex gap-4">
+                <AlarmHistoryTable />
+                <AlarmCountColumn />
+                {/* <div style={{ width: "100%" }} className="flex gap-4">
                   <div style={{ width: "40%", height: "13rem" }}>
                     <TableMock />
                   </div>
@@ -430,13 +435,13 @@ const ModalHour: React.FC<ModalManagement> = ({
                       )}
                     </DropdownMenu>
                   </Dropdown>
-                </div>
-                <div style={{ width: "100%", height: "70%" }}>
+                </div> */}
+                {/* <div style={{ width: "100%", height: "70%" }}>
                   <VideoPlayer />
-                </div>
+                </div> */}
               </div>
             </ModalBody>
-            <ModalFooter>
+            {/* <ModalFooter>
               <Button
                 color="danger"
                 variant="light"
@@ -447,7 +452,7 @@ const ModalHour: React.FC<ModalManagement> = ({
               >
                 Close
               </Button>
-            </ModalFooter>
+            </ModalFooter> */}
           </>
         )}
       </ModalContent>

@@ -10,8 +10,6 @@ import { GeneralStore } from "@/store/general.store";
 import { MQTTStore } from "@/store/mqttStore";
 import {
   Button,
-  RadioGroup,
-  Radio,
   Select,
   SelectItem,
   SelectSection,
@@ -19,14 +17,8 @@ import {
   DatePicker,
 } from "@nextui-org/react";
 import { SearchRecStore } from "@/store/search.store";
-import {
-  DateValue,
-  parseDate,
-  getLocalTimeZone,
-} from "@internationalized/date";
+import { DateValue, getLocalTimeZone } from "@internationalized/date";
 import { ISection } from "@/types/section.type";
-import { ZonedDateTime } from "@internationalized/date";
-import { ModalOpenStore } from "@/store/modal.open.store";
 import {
   requestDataByShiftColumn,
   requestDataDay,
@@ -35,28 +27,15 @@ import {
 
 const FormSearch = () => {
   let formatter = useDateFormatter({ dateStyle: "medium" });
-
+  const currentDate = dayjs().format("YYYY-MM-DD");
   const shift = GeneralStore((state) => state.shift);
-  const [section, setSection] = useState("");
-  const [lineName, setLineName] = useState("");
-  const [machineNames, setMachineNames] = useState([]);
+  const dateStrings = GeneralStore((state) => state.dateStrings);
+  const setDateString = GeneralStore((state) => state.setDateStrings);
+  const setIsOdd = GeneralStore((state) => state.setIsOdd);
   const sections = SearchRecStore((state) => state.sections);
   const machinename = SearchRecStore((state) => state.name_no_machine);
-  const modalOpen = ModalOpenStore((state) => state.openModal);
-
-  const sortedSection = sections
-    .slice()
-    .sort((a: ISection, b: ISection) =>
-      a.section_name.localeCompare(b.section_name)
-    );
-  const set_linename = SearchRecStore((state) => state.setLinename);
   const linename = SearchRecStore((state) => state.line_name);
-  const sortByFirstNumber = (a: any, b: any) => {
-    const numA = parseInt(a.line_name.match(/\d+/)?.[0] || 0);
-    const numB = parseInt(b.line_name.match(/\d+/)?.[0] || 0);
-    return numA - numB;
-  };
-  const sortedLinename = linename.slice().sort(sortByFirstNumber);
+  const set_linename = SearchRecStore((state) => state.setLinename);
   const {
     client,
     isConnected,
@@ -68,33 +47,11 @@ const FormSearch = () => {
     mqttDataMachine2,
   } = MQTTStore();
 
-  const machine_no_from_form = ["6EW-0040", "6TM-0315"];
+  const [section, setSection] = useState("");
+  const [section_code, setSection_code] = useState<number>(0);
+  const [nextDate, setNextDate] = useState<string>("");
+  const [lineId, setLineID] = useState<number | undefined>(0);
 
-  useEffect(() => {
-    if (!client) return;
-
-    client.on("connect", () => {
-      console.log("connected!");
-      //!อาจจะพิจารณาแค่ 2 อันตาม form ที่เก็บจาก select
-      client.subscribe([
-        "414273/86/baratsuki/+/raw",
-        // "test1emqxmqtt414272/A220/AddOn_Zone2/faultcode/Raw",
-      ]);
-      client.on("message", async (topic, payload) => {
-        const data = JSON.parse(payload.toString());
-        if (data.machine_no === machine_no_from_form.at(0)) {
-          console.log(data);
-          setMqttDataMachine1(data);
-        } else if (data.machine_no === machine_no_from_form.at(1)) {
-          setMqttDataMachine2(data);
-        }
-      });
-    }); //ดึงจาก environment
-
-    return () => {
-      console.log("run before change page");
-    };
-  }, [client, setMqttDataMachine1, setMqttDataMachine2]);
   const {
     register,
     handleSubmit,
@@ -102,12 +59,19 @@ const FormSearch = () => {
     reset,
     getValues,
   } = useForm();
+  const machine_no_from_form = ["6EW-0040", "6TM-0315"];
+  const sortedSection = sections
+    .slice()
+    .sort((a: ISection, b: ISection) =>
+      a.section_name.localeCompare(b.section_name)
+    );
 
-  const options = [
-    { value: "option1", label: "Option 1" },
-    { value: "option2", label: "Option 2" },
-    { value: "option3", label: "Option 3" },
-  ];
+  const sortByFirstNumber = (a: any, b: any) => {
+    const numA = parseInt(a.line_name.match(/\d+/)?.[0] || 0);
+    const numB = parseInt(b.line_name.match(/\d+/)?.[0] || 0);
+    return numA - numB;
+  };
+  const sortedLinename = linename.slice().sort(sortByFirstNumber);
 
   const onSubmit = async (data: FieldValues) => {
     console.log(data); // { selectedOption: 'selected value' }
@@ -127,8 +91,6 @@ const FormSearch = () => {
     }
   };
 
-  const [section_code, setSection_code] = useState<number>(0);
-
   const onLineNameChange = async (value: Selection | any) => {
     console.log(value);
     const parts: string[] = value.currentKey.split("-");
@@ -140,71 +102,8 @@ const FormSearch = () => {
     setSection_code(section_code);
     await requestMachinename(section_code);
   };
-  const setDateString = GeneralStore((state) => state.setDateStrings);
-  const dateStrings = GeneralStore((state) => state.dateStrings);
-  const [nextDate, setNextDate] = useState<string>("");
-  const currentDate = dayjs().format("YYYY-MM-DD");
-
-  useEffect(() => {
-    (async () => {
-      try {
-        await requestSection();
-      } catch (err) {
-        console.error(err);
-      }
-    })();
-  }, []);
-
-  useEffect(() => {
-    if (section !== "") {
-      const machine_no = getValues(["machine_no"]);
-      const split_machine = machine_no[0]?.split(",");
-      const modifiedData = split_machine.map((item: any) =>
-        item.replace(/-\d+$/, "")
-      );
-      const paramsDay = {
-        section_code: section_code,
-        line_id: lineId,
-        machine_no1: modifiedData[0],
-        machine_no2: modifiedData[1],
-        date_current: dateStrings,
-        next_date: nextDate,
-        isOdd: isOdd,
-        shift: "day",
-      };
-      const paramsNight = {
-        section_code: section_code,
-        line_id: lineId,
-        machine_no1: modifiedData[0],
-        machine_no2: modifiedData[1],
-        date_current: dateStrings,
-        next_date: nextDate,
-        isOdd: isOdd,
-        shift: "night",
-      };
-      const paramsByColumn = {
-        section_code: section_code,
-        line_id: lineId,
-        machine_no1: modifiedData[0],
-        machine_no2: modifiedData[1],
-        date_current: dateStrings,
-        next_date: nextDate,
-      };
-      if (shift === "day") {
-        requestDataDay(paramsDay);
-      } else {
-        requestDataNight(paramsNight);
-      }
-      requestDataByShiftColumn(paramsByColumn);
-    }
-  }, [shift]);
-
-  const [lineId, setLineID] = useState<number | undefined>(0);
-  const setIsOdd = GeneralStore((state) => state.setIsOdd);
-  const onMultiChange = (value: Selection | any) => {};
 
   const onDateChange = (value: DateValue | any) => {
-    // console.log(value.month);
     setIsOdd(value.month);
     const date = formatter.format(value.toDate(getLocalTimeZone()));
     const orginalDate = new Date(date);
@@ -288,6 +187,88 @@ const FormSearch = () => {
       disconnect();
     }
   };
+
+  useEffect(() => {
+    if (!client) return;
+
+    client.on("connect", () => {
+      console.log("connected!");
+      //!อาจจะพิจารณาแค่ 2 อันตาม form ที่เก็บจาก select
+      client.subscribe([
+        "414273/86/baratsuki/+/raw",
+        // "test1emqxmqtt414272/A220/AddOn_Zone2/faultcode/Raw",
+      ]);
+      client.on("message", async (topic, payload) => {
+        const data = JSON.parse(payload.toString());
+        if (data.machine_no === machine_no_from_form.at(0)) {
+          console.log(data);
+          setMqttDataMachine1(data);
+        } else if (data.machine_no === machine_no_from_form.at(1)) {
+          setMqttDataMachine2(data);
+        }
+      });
+    }); //ดึงจาก environment
+
+    return () => {
+      console.log("run before change page");
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [client, setMqttDataMachine1, setMqttDataMachine2]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        await requestSection();
+      } catch (err) {
+        console.error(err);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (section !== "") {
+      const machine_no = getValues(["machine_no"]);
+      const split_machine = machine_no[0]?.split(",");
+      const modifiedData = split_machine.map((item: any) =>
+        item.replace(/-\d+$/, "")
+      );
+      const paramsDay = {
+        section_code: section_code,
+        line_id: lineId,
+        machine_no1: modifiedData[0],
+        machine_no2: modifiedData[1],
+        date_current: dateStrings,
+        next_date: nextDate,
+        isOdd: isOdd,
+        shift: "day",
+      };
+      const paramsNight = {
+        section_code: section_code,
+        line_id: lineId,
+        machine_no1: modifiedData[0],
+        machine_no2: modifiedData[1],
+        date_current: dateStrings,
+        next_date: nextDate,
+        isOdd: isOdd,
+        shift: "night",
+      };
+      const paramsByColumn = {
+        section_code: section_code,
+        line_id: lineId,
+        machine_no1: modifiedData[0],
+        machine_no2: modifiedData[1],
+        date_current: dateStrings,
+        next_date: nextDate,
+      };
+      if (shift === "day") {
+        requestDataDay(paramsDay);
+      } else {
+        requestDataNight(paramsNight);
+      }
+      requestDataByShiftColumn(paramsByColumn);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shift]);
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex gap-4">
       <div className="flex items-center justify-center">
@@ -296,7 +277,6 @@ const FormSearch = () => {
         <Select
           isRequired
           label="Select Section"
-          // value={section}
           onSelectionChange={onSectionChange}
           {...register("section", { required: true })}
           style={{ width: "15rem" }}
@@ -317,7 +297,6 @@ const FormSearch = () => {
         <Select
           isRequired
           label="Select Line Name"
-          // value={lineName}
           onSelectionChange={onLineNameChange}
           {...register("line_name", { required: true })}
           style={{ width: "15rem" }}
@@ -342,8 +321,6 @@ const FormSearch = () => {
           isRequired
           label="Select Machine Name"
           selectionMode="multiple"
-          // value={machineNames}
-          onSelectionChange={onMultiChange}
           style={{ width: "15rem" }}
           variant="faded"
           {...register("machine_no", {

@@ -330,11 +330,6 @@ const AreaPlotBy5minutes: React.FC = () => {
         : item.prod_actual - transformedData[index - 1]?.prod_actual,
   }));
 
-  console.log(transformdata2);
-  console.log("lower", lower);
-  console.log("upper", upper);
-  console.log(graphLimit);
-  console.log("graphlimit3", graphLimit3);
   const shift = GeneralStore((state) => state.shift);
   const annotationsArrow: any[] = transformdata2
     .map((item) => {
@@ -348,20 +343,28 @@ const AreaPlotBy5minutes: React.FC = () => {
           style: {
             stroke:
               shift === "day"
-                ? item.value < lower
-                  ? "#FF4D4F"
-                  : item.value > upper
+                ? item.value < target
+                  ? "red"
+                  : item.value > target
                   ? "blue"
-                  : "#FF8F8F"
-                : "#FF8F8F",
+                  : "green"
+                : item.value < target
+                ? "red"
+                : item.value > target
+                ? "blue"
+                : "green",
             lineWidth: 2,
             endArrow: {
-              path: "M 0,0 L 8,4 L 8,-4 Z", // Arrow pointing right
-              d: 2,
+              path: "M 1,0 L 8,4 L 8,-4 Z", // Arrow pointing right
+              d: 0,
+              opacity: 0.5,
+              fillOpacity: 0.5,
             },
             startArrow: {
-              path: "M 0,0 L 8,4 L 8,-4 Z", // Arrow pointing left
-              d: 2,
+              path: "M 1,0 L 8,4 L 8,-4 Z", // Arrow pointing left
+              d: 0,
+              opacity: 0.5,
+              fillOpacity: 0.5,
             },
           },
         };
@@ -369,7 +372,8 @@ const AreaPlotBy5minutes: React.FC = () => {
     })
     .filter((annotation) => annotation !== null);
   const maxValue = Math.max(...transformdata2.map((item) => item.value));
-  const maxLimit = maxValue > target ? maxValue + 3 : target + 3;
+  const maxLimit =
+    maxValue > target ? Math.floor(maxValue + 3) : Math.floor(target + 3);
 
   const generateAnnotations = (processedParameter: any[], target: number) => {
     const annotations: any[] = processedParameter
@@ -473,12 +477,12 @@ const AreaPlotBy5minutes: React.FC = () => {
     seriesField: "value",
     color: (value) => {
       console.log(value);
-      if (value.value >= target) {
+      if (value.value === target) {
         return "#5cdaab";
       } else if (value.value < target) {
         return "#F4664A";
       }
-      return "blue";
+      return "#A0DEFF";
     },
     legend: false,
     xAxis: {
@@ -522,7 +526,7 @@ const AreaPlotBy5minutes: React.FC = () => {
           },
         },
         style: {
-          stroke: "rgba(98, 218, 171, 0.2)",
+          stroke: "rgba(86, 191, 150, 1)",
           lineDash: [4, 4],
           lineWidth: 2.5,
         },
@@ -534,7 +538,7 @@ const AreaPlotBy5minutes: React.FC = () => {
         offsetX: 0,
         text: {
           content: `Actual Target = ${target} pcs. / 5min`,
-          offsetY: -30,
+          offsetY: -150,
 
           style: {
             textAlign: "left",
@@ -545,7 +549,7 @@ const AreaPlotBy5minutes: React.FC = () => {
           },
         },
         style: {
-          stroke: "rgba(98, 218, 171, 1)",
+          stroke: "rgba(86, 191, 150, 1)",
           lineDash: [4, 4],
           lineWidth: 2.5,
         },
