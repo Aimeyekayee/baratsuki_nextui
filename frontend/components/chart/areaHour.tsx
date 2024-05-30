@@ -17,6 +17,7 @@ interface TransformData {
 
 const AreaPlotByHour: React.FC = () => {
   const dataTooltip = ModalOpenStore((state) => state.dataTooltip);
+  console.log("datatooltip",dataTooltip);
   const periodOfThisGraph = dataTooltip[0].data.period;
   const endTime = periodOfThisGraph?.split("-")[1].trim();
   const baratsukiRate = GeneralStore((state) => state.baratsukiRate);
@@ -513,7 +514,11 @@ const AreaPlotByHour: React.FC = () => {
       shape: "point",
       style: {
         fill:
-          lastDataPoint >= lower && lastDataPoint <= upper ? "green" : "red",
+          lastDataPoint >= lower && lastDataPoint <= upper
+            ? "green" // Green point
+            : lastDataPoint > upper
+            ? "blue" // Blue point
+            : "red", // Red point
         stroke: "white",
         lineWidth: 2,
       },
@@ -521,7 +526,11 @@ const AreaPlotByHour: React.FC = () => {
     line: {
       style: {
         stroke:
-          lastDataPoint >= lower && lastDataPoint <= upper ? "green" : "red",
+          lastDataPoint >= lower && lastDataPoint <= upper
+            ? "green" // Green line
+            : lastDataPoint > upper
+            ? "blue" // Blue line
+            : "red", // Red line
       },
     },
     xAxis: {
@@ -543,8 +552,10 @@ const AreaPlotByHour: React.FC = () => {
       return {
         fill:
           lastDataPoint >= lower && lastDataPoint <= upper
-            ? "l(270) 0:#ffffff 0.5:#ade0cc 1:#62daab"
-            : "l(270) 0:#ffffff 0.5:#ff9673 1:#ff5218",
+            ? "l(270) 0:#ffffff 0.5:#ade0cc 1:#62daab" // Green gradient
+            : lastDataPoint > upper
+            ? "l(270) 0:#ffffff 0.5:#73c2ff 1:#1890ff" // Blue gradient
+            : "l(270) 0:#ffffff 0.5:#ff9673 1:#ff5218", // Red gradient
       };
     },
     annotations: [

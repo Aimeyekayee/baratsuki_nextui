@@ -2,6 +2,7 @@
 import { GeneralStore } from "@/store/general.store";
 import { MQTTStore } from "@/store/mqttStore";
 import { Column, ColumnConfig } from "@ant-design/plots";
+import dayjs from "dayjs";
 
 interface Data {
   ct_actual: number;
@@ -20,14 +21,25 @@ interface DataProps {
   upper?: number;
   lower?: number;
 }
+interface UnlogicRealtime {
+  shift: string;
+  actual: number;
+}
 interface LineProps {
   parameter: DataProps[];
+  parameter_static_realtime: UnlogicRealtime[];
 }
 
 if (typeof document !== "undefined") {
   // you are safe to use the "document" object here
 }
-const BaratsukiShiftColumn: React.FC<LineProps> = ({ parameter }) => {
+const BaratsukiShiftColumn: React.FC<LineProps> = ({
+  parameter,
+  parameter_static_realtime,
+}) => {
+  const dateStrings = GeneralStore((state) => state.dateStrings);
+
+  const currentDate = dayjs().format("YYYY-MM-DD");
   const isConnected = MQTTStore((state) => state.isConnected);
   console.log(isConnected);
   const targetNotRealTimeMC1 = GeneralStore(
@@ -191,8 +203,9 @@ const BaratsukiShiftColumn: React.FC<LineProps> = ({ parameter }) => {
     lowerBaratsuki,
     upperBaratsuki
   );
+
   const config: ColumnConfig = {
-    data: processedParameter,
+    data: dateStrings === currentDate ? parameter_static_realtime : processedParameter,
     xField: "shift",
     yField: "actual",
     label: { style: { fontSize: 20, fontWeight: "bold" } },

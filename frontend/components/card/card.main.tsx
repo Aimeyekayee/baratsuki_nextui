@@ -33,6 +33,7 @@ interface IProps {
   actual: number;
   target: number;
   zone_number: number;
+  realtimeActual: number;
 }
 
 const CardMainDisplay: React.FC<IProps> = ({
@@ -41,6 +42,7 @@ const CardMainDisplay: React.FC<IProps> = ({
   target,
   dataColumn,
   zone_number,
+  realtimeActual,
 }) => {
   const shift = GeneralStore((state) => state.shift);
   const showGap = GeneralStore((state) => state.showGap);
@@ -50,6 +52,11 @@ const CardMainDisplay: React.FC<IProps> = ({
     String(shift).charAt(0).toUpperCase() + String(shift).slice(1);
 
   const currentDate = dayjs().format("YYYY-MM-DD");
+  //! this is so static please create logic after
+  const dataRealtime = [
+    { shift: "day", actual: realtimeActual },
+    { shift: "night", actual: 0 },
+  ];
   return (
     <Card
       shadow="md"
@@ -102,7 +109,10 @@ const CardMainDisplay: React.FC<IProps> = ({
               </Tooltip>
               &nbsp;By Shift
             </p>
-            <BaratsukiShiftColumn parameter={dataColumn} />
+            <BaratsukiShiftColumn
+              parameter={dataColumn}
+              parameter_static_realtime={dataRealtime}
+            />
           </div>
           <div
             style={{

@@ -184,7 +184,7 @@ const MonitorData: React.FC<IProps> = ({
     const end = dayjs(breakTime.end);
     breakTime.brake_time = end.diff(start, "minute");
   });
-  console.log(now1);
+  // console.log(now1);
   breakTimes.forEach((breakTime) => {
     const end = dayjs(breakTime.end);
     const currentTime = dayjs().add(7, "hour");
@@ -198,7 +198,7 @@ const MonitorData: React.FC<IProps> = ({
   new_brake.forEach((obj) => {
     brake_time_accum += obj.brake_time;
   });
-  console.log(brake_time_accum);
+  // console.log(brake_time_accum);
 
   function getWorkingTime(currentTime: Date, isOdd: boolean): number {
     // Define shift start and end times
@@ -226,11 +226,11 @@ const MonitorData: React.FC<IProps> = ({
     let endTime = currentTime;
     if (shift === "day") {
       startTime = dayShiftStart;
-      console.log("day", startTime);
-      console.log("end", endTime);
+      // console.log("day", startTime);
+      // console.log("end", endTime);
     } else {
       startTime = nightShiftStart;
-      console.log("night", startTime);
+      // console.log("night", startTime);
       // Handle cases where current time is past midnight (night shift)
       if (currentTime < dayShiftStart) {
         startTime.setDate(startTime.getDate() - 1); // Adjust for previous day
@@ -250,7 +250,7 @@ const MonitorData: React.FC<IProps> = ({
   const workingMinutes = getWorkingTime(now, isOdd);
   const workingMinuteExcludeBrake = workingMinutes - brake_time_accum;
   const targetMq = (workingMinuteExcludeBrake * 60) / 16.5;
-  console.log(workingMinuteExcludeBrake);
+  // console.log(workingMinuteExcludeBrake);
   return (
     <Flex
       style={{ height: "20%", width: "100%" }}

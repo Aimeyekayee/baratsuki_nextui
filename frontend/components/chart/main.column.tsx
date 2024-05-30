@@ -969,15 +969,15 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
     if (graphData.length === 1) {
       return -60; // Or any default number value you prefer
     } else if (graphData.length === 2) {
-      return -375; // Or any default number value you prefer
+      return -249; // Or any default number value you prefer
     } else if (graphData.length === 3) {
       return -252; // Or any default number value you prefer
     } else if (graphData.length === 4) {
-      return -188; // Or any default number value you prefer
+      return -109; // Or any default number value you prefer
     } else if (graphData.length === 5) {
-      return -150; // Or any default number value you prefer
+      return -87; // Or any default number value you prefer
     } else if (graphData.length === 6) {
-      return -125; // Or any default number value you prefer
+      return -72; // Or any default number value you prefer
     } else if (graphData.length === 7) {
       return -71; // Or any default number value you prefer
     } else if (graphData.length === 8) {
@@ -1048,11 +1048,11 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
     } else if (graphData.length === 3) {
       lastAnnotation.offsetX = 252;
     } else if (graphData.length === 4) {
-      lastAnnotation.offsetX = 560;
+      lastAnnotation.offsetX = 330;
     } else if (graphData.length === 5) {
-      lastAnnotation.offsetX = 452;
+      lastAnnotation.offsetX = 89;
     } else if (graphData.length === 6) {
-      lastAnnotation.offsetX = 128;
+      lastAnnotation.offsetX = 76;
     } else if (graphData.length === 7) {
       lastAnnotation.offsetX = 215;
     } else if (graphData.length === 8) {
@@ -1121,11 +1121,11 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
     } else if (graphData.length === 3) {
       lastAnnotation.offsetX = 252;
     } else if (graphData.length === 4) {
-      lastAnnotation.offsetX = 560;
+      lastAnnotation.offsetX = 330;
     } else if (graphData.length === 5) {
-      lastAnnotation.offsetX = 452;
+      lastAnnotation.offsetX = 89;
     } else if (graphData.length === 6) {
-      lastAnnotation.offsetX = 128;
+      lastAnnotation.offsetX = 76;
     } else if (graphData.length === 7) {
       lastAnnotation.offsetX = 215;
     } else if (graphData.length === 8) {
@@ -1182,11 +1182,11 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
     } else if (graphData.length === 3) {
       lastAnnotation.offsetX = 252;
     } else if (graphData.length === 4) {
-      lastAnnotation.offsetX = 560;
+      lastAnnotation.offsetX = 330;
     } else if (graphData.length === 5) {
-      lastAnnotation.offsetX = 452;
+      lastAnnotation.offsetX = 89;
     } else if (graphData.length === 6) {
-      lastAnnotation.offsetX = 128;
+      lastAnnotation.offsetX = 76;
     } else if (graphData.length === 7) {
       lastAnnotation.offsetX = 215;
     } else if (graphData.length === 8) {
@@ -1478,7 +1478,7 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
                 };
                 console.log(parameter);
                 const response = await axios(
-                  "http://10.122.77.1:8004/get_data_area",
+                  "http://127.0.0.1:8000/get_data_area",
                   {
                     params: parameter,
                   }

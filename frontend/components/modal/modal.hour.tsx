@@ -10,10 +10,8 @@ import {
   Chip,
   Card,
   Tooltip,
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownTrigger,
+  Select,
+  SelectItem,
   Tabs,
   Tab,
 } from "@nextui-org/react";
@@ -28,8 +26,17 @@ import VideoPlayer from "../video/video.player";
 import AreaPlotBy5minutes from "../chart/areaHourBy5minute";
 import AreaPlotByAccummulate from "../chart/areaHourByAccummulate";
 import BaratsukiChallengeTab from "../tabs/baratsukichallenge.tabs";
-import AlarmHistoryTable from "../table/table.alarmhistory";
+import AlarmHistoryTable from "../table/table.alarmhistoryEach";
 import AlarmCountColumn from "../chart/alarmfreq.column";
+import MixColumn from "../chart/treeColumn.facet";
+import PieAllMachine from "../chart/pieallMc";
+import AlarmCountEachMC from "../chart/alarmEachMc1";
+import AlarmCountEachMC1 from "../chart/alarmEachMc1";
+import AlarmCountEachMC2 from "../chart/alarmEachMc2";
+import AlarmHistoryTableAlls from "../table/table.alarmhistoryAlls";
+import { SortIcon } from "../icon";
+import SortPieSelect from "../select/select.sortPie";
+import AlarmHistoryTableEach from "../table/table.alarmhistoryEach";
 
 interface ModalManagement {
   isOpen: boolean;
@@ -44,10 +51,17 @@ const ModalHour: React.FC<ModalManagement> = ({
 }) => {
   const modalOpen = ModalOpenStore((state) => state.openModal);
   const [selected, setSelected] = React.useState<string | number>("1hr");
+  const [selectedView, setSelectedView] = React.useState<string | number>(
+    "each"
+  );
+  const clickMCinPieGraph = GeneralStore((state) => state.clickMCinPieGraph);
   const setDataBaratsuki = GeneralStore((state) => state.setDataBaratsuki);
   const setOpenModal = ModalOpenStore((state) => state.setOpenModal);
+  const sortPie = GeneralStore((state) => state.sortPie);
+  const setSortPie = GeneralStore((state) => state.setSortPie);
   const isOdd = GeneralStore((state) => state.isOdd);
   const dataTooltip = ModalOpenStore((state) => state.dataTooltip);
+
   const items = [
     {
       key: "code39",
@@ -323,7 +337,7 @@ const ModalHour: React.FC<ModalManagement> = ({
       isDismissable={false}
       isKeyboardDismissDisabled={true}
       size="full"
-      style={{ overflowY: "auto" }}
+      style={{ overflowY: "auto", paddingBottom: "2rem" }}
     >
       <ModalContent>
         {(onClose) => (
@@ -399,8 +413,56 @@ const ModalHour: React.FC<ModalManagement> = ({
                 className="flex flex-col justify-between gap-4"
                 style={{ width: "50%", height: "100%" }}
               >
-                <AlarmHistoryTable />
-                <AlarmCountColumn />
+                <div
+                  className="flex flex-col"
+                  style={{
+                    height: "100%",
+                    width: "100%",
+                    padding: "0 1rem 0 1rem",
+                  }}
+                >
+                  <div style={{ display: "flex" }}>
+                    <Tabs
+                      size="md"
+                      aria-label="Tabs form"
+                      selectedKey={selectedView}
+                      onSelectionChange={setSelectedView}
+                    >
+                      <Tab key="each" title="By Machine" />
+                      <Tab key="all" title="All Machine"></Tab>
+                    </Tabs>
+                  </div>
+                  {selectedView === "all" ? (
+                    <div className="flex gap-4">
+                      <div
+                        style={{ width: "30%" }}
+                        className="flex flex-col items-center justify-center"
+                      >
+                        <SortPieSelect />
+                        <PieAllMachine />
+                      </div>
+                      <div style={{ width: "70%" }}>
+                        {clickMCinPieGraph === "MC1" ? (
+                          <AlarmCountEachMC1 />
+                        ) : (
+                          <AlarmCountEachMC2 />
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <SortPieSelect />
+                      <AlarmCountColumn />
+                    </div>
+                  )}
+                </div>
+                <div style={{ padding: "0 1rem 0 1rem" }}>
+                  {selectedView === "all" ? (
+                    <AlarmHistoryTableAlls />
+                  ) : (
+                    <AlarmHistoryTableEach />
+                  )}
+                </div>
                 {/* <div style={{ width: "100%" }} className="flex gap-4">
                   <div style={{ width: "40%", height: "13rem" }}>
                     <TableMock />

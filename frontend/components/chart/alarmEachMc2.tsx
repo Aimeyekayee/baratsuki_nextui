@@ -14,59 +14,50 @@ interface AlarmTable {
 if (typeof document !== "undefined") {
   // you are safe to use the "document" object here
 }
+const data: AlarmTable[] = [
+  {
+    key: "1",
+    alarm_no: 100,
+    alarm_message: "101_Work None Process",
+    count: 2,
+    waiting_time: 0,
+    recovery_time: 75,
+  },
+  {
+    key: "2",
+    alarm_no: 99,
+    alarm_message: "100_Slip Ring Run Out Check",
+    count: 9,
+    waiting_time: 0,
+    recovery_time: 10,
+  },
+  {
+    key: "3",
+    alarm_no: 11,
+    alarm_message: "012_Robot Loader Emergency",
+    count: 1,
+    waiting_time: 0,
+    recovery_time: 15,
+  },
+  {
+    key: "4",
+    alarm_no: 3,
+    alarm_message: "004_[EX]Air Source Decreased",
+    count: 1,
+    waiting_time: 0,
+    recovery_time: 20,
+  },
+  {
+    key: "5",
+    alarm_no: 8,
+    alarm_message: "EnterNet Unit0 Fault",
+    count: 2,
+    waiting_time: 0,
+    recovery_time: 5,
+  },
+];
 
-const AlarmCountColumn: React.FC = () => {
-  const data: AlarmTable[] = [
-    {
-      key: "1",
-      alarm_no: 100,
-      alarm_message: "101_Work None Process",
-      count: 3,
-      waiting_time: 0,
-      recovery_time: 125.0,
-    },
-    {
-      key: "2",
-      alarm_no: 99,
-      alarm_message: "100_Slip Ring Run Out Check",
-      count: 5,
-      waiting_time: 0,
-      recovery_time: 138.0,
-    },
-    {
-      key: "3",
-      alarm_no: 11,
-      alarm_message: "012_Robot Loader Emergency",
-      count: 16,
-      waiting_time: 0,
-      recovery_time: 1034,
-    },
-    {
-      key: "4",
-      alarm_no: 3,
-      alarm_message: "004_[EX]Air Source Decreased",
-      count: 4,
-      waiting_time: 0,
-      recovery_time: 8554,
-    },
-    {
-      key: "5",
-      alarm_no: 8,
-      alarm_message: "EnterNet Unit0 Fault",
-      count: 15,
-      waiting_time: 0,
-      recovery_time: 39.6,
-    },
-    {
-      key: "6",
-      alarm_no: 16,
-      alarm_message: "017_Ethernet/IP Unit",
-      count: 12,
-      waiting_time: 0,
-      recovery_time: 39.6,
-    },
-  ];
-
+const AlarmCountEachMC2: React.FC = () => {
   const sortPie = GeneralStore((state) => state.sortPie);
   let sortedData: AlarmTable[];
   let total: number;
@@ -96,14 +87,18 @@ const AlarmCountColumn: React.FC = () => {
       sortPie === "1" ? item.count : item.recovery_time
     )
   );
-  const yField = sortPie === "1" ? ["count", "cumulativePercentage"] : ["recovery_time", "cumulativePercentage"];
+  const yField =
+    sortPie === "1"
+      ? ["count", "cumulativePercentage"]
+      : ["recovery_time", "cumulativePercentage"];
 
+  const colorMc4 = GeneralStore((state) => state.colorMc4);
   const config: DualAxesConfig = {
     data: [chartData, chartData],
     legend: {
       title: {
         text: "Alarm Count History By Machine",
-        style: { x: 410, y: 0, fontSize: 18 },
+        style: { x: 300, y: 0, fontSize: 18 },
       },
       itemName: {
         formatter: (text: string, item: any, index: number) => {
@@ -117,7 +112,7 @@ const AlarmCountColumn: React.FC = () => {
     yField: yField,
     yAxis: {
       count: {
-        max: max + 10,
+        max: max + 5,
         tickCount: 5,
         title: {
           text: "Alarm Count",
@@ -139,6 +134,7 @@ const AlarmCountColumn: React.FC = () => {
       {
         geometry: "column",
         label: {},
+        color: colorMc4,
       },
       {
         geometry: "line",
@@ -185,4 +181,4 @@ const AlarmCountColumn: React.FC = () => {
   return <DualAxes {...config} />;
 };
 
-export default AlarmCountColumn;
+export default AlarmCountEachMC2;

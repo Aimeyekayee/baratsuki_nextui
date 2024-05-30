@@ -1,4 +1,5 @@
 import { GeneralStore } from "./general.store";
+import { MQTTStore } from "./mqttStore";
 const useStoreSelectors = () => {
   const zone1 = GeneralStore((state) => state.zone1);
   const zone2 = GeneralStore((state) => state.zone2);
@@ -10,6 +11,12 @@ const useStoreSelectors = () => {
   );
   const targetNotRealTimeMC1 = GeneralStore(
     (state) => state.targetNotRealTimeMC1
+  );
+  const actualRealTimeMC1 = MQTTStore(
+    (state) => state.mqttDataMachine1.prod_actual
+  );
+  const actualRealTimeMC2 = MQTTStore(
+    (state) => state.mqttDataMachine2.prod_actual
   );
   const targetNotRealTimeMC2 = GeneralStore(
     (state) => state.targetNotRealTimeMC2
@@ -30,6 +37,8 @@ const useStoreSelectors = () => {
     targetNotRealTimeMC2,
     dataByShiftColumnMC1,
     dataByShiftColumnMC2,
+    actualRealTimeMC1,
+    actualRealTimeMC2,
   };
 };
 

@@ -19,7 +19,7 @@ interface AlarmTable {
   recovery_time: number;
 }
 
-export default function AlarmHistoryTable() {
+export default function AlarmHistoryTableEach() {
   const [selectedColor, setSelectedColor] = React.useState("default");
   const dateString = GeneralStore((state) => state.dateStrings);
 
@@ -38,8 +38,9 @@ export default function AlarmHistoryTable() {
   }
   const formattedDate = formatDate(dateString);
   console.log(formattedDate);
+  const sortPie = GeneralStore((state) => state.sortPie);
 
-  const data: AlarmTable[] = [
+  let data: AlarmTable[] = [
     {
       key: "1",
       alarm_no: 100,
@@ -89,6 +90,11 @@ export default function AlarmHistoryTable() {
       recovery_time: 39.6,
     },
   ];
+  if (sortPie === "1") {
+    data.sort((a, b) => b.count - a.count);
+  } else {
+    data.sort((a, b) => b.recovery_time - a.recovery_time);
+  }
 
   const renderRows = (data: AlarmTable[]) => {
     return data.map((item: AlarmTable) => (
@@ -105,9 +111,7 @@ export default function AlarmHistoryTable() {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center">
-        <p className="text-xl font-bold">
-          Alarm History Table&nbsp;
-        </p>
+        <p className="text-xl font-bold">Alarm History Table&nbsp;</p>
         <Chip color="warning" variant="dot">
           {formattedDate}
         </Chip>

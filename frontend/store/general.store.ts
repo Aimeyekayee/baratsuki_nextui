@@ -19,6 +19,12 @@ interface IMode {
   disabledTabShift: boolean;
   baratsukiRate: React.Key;
   showGap: React.Key;
+  colorMc4: string;
+  clickMCinPieGraph: string;
+  sortPie: string;
+  setSortPie: (sortPie: string) => void;
+  setClickMCinPieGraph: (clickMCinPieGraph: string) => void;
+  setColorMc4: (colorMc4: string) => void;
   setShowGap: (key: React.Key) => void;
   setBaratsukiRate: (key: React.Key) => void;
   setDisabledTabShift: (disabledTabShift: boolean) => void;
@@ -46,16 +52,22 @@ export const GeneralStore = create<IMode>((...args) => {
     shift: "day",
     baratsukiRate: "77",
     dateStrings: "",
+    colorMc4: "MC1",
     disabledTabShift: true,
     actualNotRealTimeMC1: 0,
     actualNotRealTimeMC2: 0,
     targetNotRealTimeMC1: 0,
     targetNotRealTimeMC2: 0,
+    clickMCinPieGraph: "",
     showGap: "off",
     openModal: false,
     isOdd: true,
+    sortPie: "1",
     dataByShiftColumnMC1: [],
     dataByShiftColumnMC2: [],
+    setSortPie(sortPie) {
+      set({ sortPie });
+    },
     setIsOdd: (number) => {
       set((state) => ({ isOdd: number % 2 !== 0 }));
     },
@@ -120,6 +132,12 @@ export const GeneralStore = create<IMode>((...args) => {
     },
     setActualNotRealTimeMC2(actualNotRealTimeMC2) {
       set({ actualNotRealTimeMC2 });
+    },
+    setClickMCinPieGraph(clickMCinPieGraph) {
+      set({ clickMCinPieGraph });
+    },
+    setColorMc4(colorMc4) {
+      set({ colorMc4 });
     },
     setDateStrings(dateStrings) {
       set({ dateStrings });

@@ -4,7 +4,11 @@ export interface IMqttResponse {
   machine_no: string;
   ct_actual: number;
   prod_actual: number;
-  prod_plan:number
+  prod_plan: number;
+  break_id_1: number;
+  break_id_2: number;
+  break_id_3: number;
+  break_id_4: number;
 }
 
 export type MqttData = {
@@ -13,5 +17,9 @@ export type MqttData = {
   machine_no: string;
   ct_actual: number;
   prod_actual: number;
-  prod_plan:number
-}
+  prod_plan: number;
+  break_id_1: number;
+  break_id_2: number;
+  break_id_3: number;
+  break_id_4: number;
+};

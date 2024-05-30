@@ -16,6 +16,8 @@ export default function Home() {
     targetNotRealTimeMC2,
     dataByShiftColumnMC1,
     dataByShiftColumnMC2,
+    actualRealTimeMC1,
+    actualRealTimeMC2,
   } = useStoreSelectors();
   return (
     <section className="flex flex-col items-center justify-center gap-4 ">
@@ -27,6 +29,7 @@ export default function Home() {
       <CardMainDisplay
         actual={actualNotRealTimeMC1}
         target={targetNotRealTimeMC1}
+        realtimeActual={actualRealTimeMC1}
         zone_number={1}
         zone={zone1}
         dataColumn={dataByShiftColumnMC1}
@@ -35,6 +38,7 @@ export default function Home() {
         actual={actualNotRealTimeMC2}
         target={targetNotRealTimeMC2}
         zone_number={2}
+        realtimeActual={actualRealTimeMC2}
         zone={zone2}
         dataColumn={dataByShiftColumnMC2}
       />

@@ -66,9 +66,10 @@ def get_data_area(
     date: Optional[dt.datetime],
     interval: str,
     db: Session,
-):
+):  
+    print("herety")
     stmt = f"""
-        SELECT section_code, line_id, machine_no, date, data FROM data_baratsuki
+        SELECT section_code, line_id, machine_no, date, data FROM data_baratsuki_2024_05
         WHERE section_code = {section_code}
         AND line_id = {line_id}
         AND machine_no = '{machine_no}'
@@ -101,7 +102,7 @@ def get_dataparameter_day(
     minute_values_for_brakemain_night2 = "05" if isOdd else "20"
     stmt = f"""
         	SELECT db.id, db.section_code, db.line_id, db.machine_no, db.date, db.data,m.machine_name
-            FROM public.data_baratsuki db
+            FROM public.data_baratsuki_2024_05 db
             JOIN public.machines m ON db.machine_no = m.machine_no
             WHERE (
                 db.date::date = '{date_current}'
@@ -158,7 +159,7 @@ def get_dataparameter_night(
     minute_values_for_brakemain_night2 = "05" if isOdd else "20"
     stmt = f"""
         	SELECT db.id, db.section_code, db.line_id, db.machine_no, db.date, db.data,m.machine_name
-            FROM public.data_baratsuki db
+            FROM public.data_baratsuki_2024_05 db
             JOIN public.machines m ON db.machine_no = m.machine_no
             WHERE (
                 db.date::date = '{date_current}'
@@ -211,7 +212,7 @@ def get_dataparameter_by_shift_column(
 ):
     stmt = f"""
         	SELECT db.id, db.section_code, db.line_id, db.machine_no, db.date, db.data,m.machine_name
-            FROM public.data_baratsuki db
+            FROM public.data_baratsuki_2024_05 db
             JOIN public.machines m ON db.machine_no = m.machine_no
             WHERE (
                 db.date::date = '{date_current}'

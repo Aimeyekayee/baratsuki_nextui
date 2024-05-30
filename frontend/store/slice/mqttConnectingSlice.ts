@@ -15,7 +15,11 @@ export const MqttConnectingSlice: StateCreator<IMqttConnectingState> = (
     machine_no: "",
     ct_actual: 0,
     prod_actual: 0,
-    prod_plan:0,
+    prod_plan: 0,
+    break_id_1: 0,
+    break_id_2: 0,
+    break_id_3: 0,
+    break_id_4: 0,
   },
   mqttDataMachine2: {
     section_code: 0,
@@ -23,7 +27,11 @@ export const MqttConnectingSlice: StateCreator<IMqttConnectingState> = (
     machine_no: "",
     ct_actual: 0,
     prod_actual: 0,
-    prod_plan:0
+    prod_plan: 0,
+    break_id_1: 0,
+    break_id_2: 0,
+    break_id_3: 0,
+    break_id_4: 0,
   },
   connect() {
     if (get().client) return;
@@ -53,12 +61,12 @@ export const MqttConnectingSlice: StateCreator<IMqttConnectingState> = (
     set({
       mqttDataMachine1: response,
     });
-    // console.log("mqttData = ", get().mqttDataMachine1);
+    console.log("mqttData1 = ", get().mqttDataMachine1);
   },
   setMqttDataMachine2(response) {
     set({
       mqttDataMachine2: response,
     });
-    // console.log("mqttData = ", get().mqttDataMachine2);
+    console.log("mqttData2 = ", get().mqttDataMachine2);
   },
 });
