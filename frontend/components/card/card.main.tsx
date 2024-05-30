@@ -107,7 +107,7 @@ const CardMainDisplay: React.FC<IProps> = ({
               <Tooltip content="Click at Column to change view to that shift.">
                 <QuestionCircleTwoTone style={{ fontSize: "1.5rem" }} />
               </Tooltip>
-              &nbsp;By Shift
+              &nbsp;By Shift (±5%)
             </p>
             <BaratsukiShiftColumn
               parameter={dataColumn}

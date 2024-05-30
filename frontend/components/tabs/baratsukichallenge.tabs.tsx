@@ -15,14 +15,6 @@ const BaratsukiChallengeTab = () => {
         onSelectionChange={setBaratsukiRate}
       >
         <Tab
-          key="70"
-          title={
-            <div className="flex items-center space-x-2">
-              <span>70%</span>
-            </div>
-          }
-        />
-        <Tab
           key="77"
           title={
             <div className="flex items-center space-x-2">
@@ -30,6 +22,15 @@ const BaratsukiChallengeTab = () => {
             </div>
           }
         ></Tab>
+        <Tab
+          key="81"
+          title={
+            <div className="flex items-center space-x-2">
+              <span>81%</span>
+            </div>
+          }
+        />
+
         <Tab
           key="85"
           title={

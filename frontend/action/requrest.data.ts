@@ -33,7 +33,7 @@ export async function requestDataDay(params: Params): Promise<any[]> {
   } = GeneralStore.getState();
   //!   "http://10.122.77.1:8004/get_dataparameter_day"
   const response = await axios.get(
-    "http://127.0.0.1:8000/get_dataparameter_day",
+    "http://10.122.77.1:8004/get_dataparameter_day",
     {
       params: params,
     }
@@ -208,7 +208,7 @@ export async function requestDataNight(params: Params): Promise<any[]> {
   } = GeneralStore.getState();
 
   const response = await axios.get(
-    "http://127.0.0.1:8000/get_dataparameter_night",
+    "http://10.122.77.1:8004/get_dataparameter_night",
     {
       params: params,
     }
@@ -373,18 +373,60 @@ export async function requestDataNight(params: Params): Promise<any[]> {
 export async function requestDataByShiftColumn(params: Params): Promise<any[]> {
   const { setDataByShiftColumnMC1, setDataByShiftColumnMC2 } =
     GeneralStore.getState();
+  console.log("eie", params);
   const response = await axios.get(
-    "http://127.0.0.1:8000/get_dataparameter_by_shift_column",
+    "http://10.122.77.1:8004/get_dataparameter_by_shift_column",
     {
       params: params,
     }
   );
   if (response.status === 200) {
     const result = response.data;
-    console.log(result);
+
+    const timesToCompare = [
+      { time1: "16:50:00", time2: "19:20:00" },
+      { time1: "04:50:00", time2: "07:20:00" },
+    ];
+    result.forEach((obj: any) => {
+      obj.ot = true; // Default value
+    });
+
+    timesToCompare.forEach((pair) => {
+      const { time1, time2 } = pair;
+
+      const itemsToCompare = result.filter((item: any) => {
+        const itemTime = item.date.split("T")[1];
+        return itemTime === time1 || itemTime === time2;
+      });
+
+      const groupedByDateAndMachine = itemsToCompare.reduce(
+        (acc: any, item: any) => {
+          const key = `${item.date.split("T")[0]}-${item.machine_name}`;
+          if (!acc[key]) {
+            acc[key] = [];
+          }
+          acc[key].push(item);
+          return acc;
+        },
+        {}
+      );
+
+      Object.values(groupedByDateAndMachine).forEach((group: any) => {
+        if (group.length === 2) {
+          const [item1, item2] = group;
+          const isEqual = item1.data.prod_actual === item2.data.prod_actual;
+          item1.ot = item2.ot = !isEqual;
+        }
+      });
+    });
+    const filteredResult = result.filter((item: any) => {
+      const itemTime = item.date.split("T")[1];
+      return itemTime !== "16:50:00" && itemTime !== "04:50:00";
+    });
+    console.log(filteredResult)
 
     const uniqueMachines = Array.from(
-      new Set(result.map((item: any) => item.machine_no))
+      new Set(filteredResult.map((item: any) => item.machine_no))
     );
     console.log(uniqueMachines);
 
@@ -394,14 +436,14 @@ export async function requestDataByShiftColumn(params: Params): Promise<any[]> {
     const machineNo1Results: any[] = [];
     const machineNo2Results: any[] = [];
 
-    result.forEach((item: any) => {
+    filteredResult.forEach((item: any) => {
       if (item.machine_no === uniqueMachines[0]) {
         machineNo1Results.push(item);
       } else if (item.machine_no === uniqueMachines[1]) {
         machineNo2Results.push(item);
       }
     });
-
+    console.log("kek", machineNo1Results);
     setDataByShiftColumnMC1(machineNo1Results);
     setDataByShiftColumnMC2(machineNo2Results);
   }

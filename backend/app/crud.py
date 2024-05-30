@@ -66,7 +66,7 @@ def get_data_area(
     date: Optional[dt.datetime],
     interval: str,
     db: Session,
-):  
+):
     print("herety")
     stmt = f"""
         SELECT section_code, line_id, machine_no, date, data FROM data_baratsuki_2024_05
@@ -217,12 +217,14 @@ def get_dataparameter_by_shift_column(
             WHERE (
                 db.date::date = '{date_current}'
                 AND (
-                (EXTRACT(HOUR FROM db.date) = 19 AND EXTRACT(MINUTE FROM db.date) = 20)
+                (EXTRACT(HOUR FROM db.date) = 16 AND EXTRACT(MINUTE FROM db.date) = 50)
+                 OR (EXTRACT(HOUR FROM db.date) = 19 AND EXTRACT(MINUTE FROM db.date) = 20)
             )
             ) OR (
                 db.date::date = '{next_date}'
                 AND (
-                (EXTRACT(HOUR FROM db.date) = 7 AND EXTRACT(MINUTE FROM db.date) = 20)
+                (EXTRACT(HOUR FROM db.date) = 4 AND EXTRACT(MINUTE FROM db.date) = 50)
+                 OR (EXTRACT(HOUR FROM db.date) = 7 AND EXTRACT(MINUTE FROM db.date) = 20)
             )
                 AND db.section_code = {section_code} AND db.line_id = {line_id} AND db.machine_no in ('{machine_no1}','{machine_no2}')
             )

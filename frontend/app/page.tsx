@@ -19,6 +19,7 @@ export default function Home() {
     actualRealTimeMC1,
     actualRealTimeMC2,
   } = useStoreSelectors();
+  console.log("qwr",dataByShiftColumnMC1)
   return (
     <section className="flex flex-col items-center justify-center gap-4 ">
       <HeaderBaratsuki />

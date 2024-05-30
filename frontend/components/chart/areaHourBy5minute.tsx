@@ -20,8 +20,8 @@ const AreaPlotBy5minutes: React.FC = () => {
   const accum5min = (5 * 60) / ctTarget;
   const baratsukiRate = GeneralStore((state) => state.baratsukiRate);
   const targetValues: { [key: number]: number } = {
-    70: 12,
     77: 14,
+    81: 14,
     85: 15,
     100: 18,
   };

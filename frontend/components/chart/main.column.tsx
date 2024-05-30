@@ -194,8 +194,8 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
   const nightShiftTimes = isOdd ? nightShiftTimes1 : nightShiftTimes2;
   const baratsukiRate = GeneralStore((state) => state.baratsukiRate);
   const targetValues: { [key: number]: number } = {
-    70: 1540,
     77: 1694,
+    81:1782,
     85: 1870,
     100: 2200,
   };
@@ -1478,7 +1478,7 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
                 };
                 console.log(parameter);
                 const response = await axios(
-                  "http://127.0.0.1:8000/get_data_area",
+                  "http://10.122.77.1:8004/get_data_area",
                   {
                     params: parameter,
                   }

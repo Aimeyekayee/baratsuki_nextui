@@ -45,8 +45,8 @@ const MonitorData: React.FC<IProps> = ({
   const actualMqtt2 = mqttDataMachine2.prod_actual;
 
   const targetValues: { [key: number]: number } = {
-    70: 1540,
     77: 1694,
+    81: 1782,
     85: 1870,
     100: 2200,
   };
