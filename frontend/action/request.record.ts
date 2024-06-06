@@ -31,7 +31,7 @@ interface IControlItemResponse {
 export async function requestSection(): Promise<ISection[]> {
   const { setSections } = SearchRecStore.getState();
 
-  const response = await axios.get("http://10.122.77.1:8004/get_section");
+  const response = await axios.get("http://127.0.0.1:8000/get_section");
   if (response.status === 200) {
     console.log(response.data);
     setSections(response.data);
@@ -45,7 +45,7 @@ export async function requestLinename(
   const { setLinename } = SearchRecStore.getState();
 
   const response = await axiosInstance.get(
-    "http://10.122.77.1:8004/get_linename",
+    "http://127.0.0.1:8000/get_linename",
     {
       params: { section_name: section_name },
     }
@@ -71,7 +71,7 @@ export async function requestMachinename(
 ): Promise<IMachinename> {
   const { setMachinename } = SearchRecStore.getState();
   const response = await axiosInstance.get(
-    "http://10.122.77.1:8004/get_machinename",
+    "http://127.0.0.1:8000/get_machinename",
     {
       params: { section_code: section_code },
     }

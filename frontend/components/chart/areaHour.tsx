@@ -17,298 +17,79 @@ interface TransformData {
 
 const AreaPlotByHour: React.FC = () => {
   const dataTooltip = ModalOpenStore((state) => state.dataTooltip);
-  console.log("datatooltip",dataTooltip);
+  console.log("datatooltip", dataTooltip);
   const periodOfThisGraph = dataTooltip[0].data.period;
   const endTime = periodOfThisGraph?.split("-")[1].trim();
   const baratsukiRate = GeneralStore((state) => state.baratsukiRate);
   const baratsukiRateNumber = Number(baratsukiRate) / 100;
+  const zone_number = dataTooltip[0].data.zone_number;
+  const ctTargetZone1 = GeneralStore((state) => state.ctTargetZone1);
+  const ctTargetZone2 = GeneralStore((state) => state.ctTargetZone2);
 
-  const period3_1: any = [
-    {
-      periodTime: "08:30",
-      time: 3300,
-      status: 1,
-      upper: (3300 / 16.5) * baratsukiRateNumber * 1.05,
-      lower: (3300 / 16.5) * baratsukiRateNumber * 0.95,
-    },
-    {
-      periodTime: "09:30",
-      time: 3600,
-      status: 1,
-      upper: (3600 / 16.5) * baratsukiRateNumber * 1.05,
-      lower: (3600 / 16.5) * baratsukiRateNumber * 0.95,
-    },
-    {
-      periodTime: "10:30",
-      time: 3600,
-      status: 1,
-      upper: (3600 / 16.5) * baratsukiRateNumber * 1.05,
-      lower: (3600 / 16.5) * baratsukiRateNumber * 0.95,
-    },
-    {
-      periodTime: "11:15",
-      time: 2700,
-      status: 1,
-      upper: (2700 / 16.5) * baratsukiRateNumber * 1.05,
-      lower: (2700 / 16.5) * baratsukiRateNumber * 0.95,
-    },
-    {
-      periodTime: "13:30",
-      time: 4500,
-      status: 1,
-      upper: (4500 / 16.5) * baratsukiRateNumber * 1.05,
-      lower: (4500 / 16.5) * baratsukiRateNumber * 0.95,
-    },
-    {
-      periodTime: "14:30",
-      time: 3600,
-      status: 1,
-      upper: (3600 / 16.5) * baratsukiRateNumber * 1.05,
-      lower: (3600 / 16.5) * baratsukiRateNumber * 0.95,
-    },
-    {
-      periodTime: "15:30",
-      time: 3000,
-      status: 1,
-      upper: (3000 / 16.5) * baratsukiRateNumber * 1.05,
-      lower: (3000 / 16.5) * baratsukiRateNumber * 0.95,
-    },
-    {
-      periodTime: "16:30",
-      time: 3600,
-      status: 1,
-      upper: (3600 / 16.5) * baratsukiRateNumber * 1.05,
-      lower: (3600 / 16.5) * baratsukiRateNumber * 0.95,
-    },
-    {
-      periodTime: "17:50",
-      time: 3600,
-      status: 1,
-      upper: (3600 / 16.5) * baratsukiRateNumber * 1.05,
-      lower: (3600 / 16.5) * baratsukiRateNumber * 0.95,
-    },
-    {
-      periodTime: "19:20",
-      time: 5400,
-      status: 1,
-      upper: (5400 / 16.5) * baratsukiRateNumber * 1.05,
-      lower: (5400 / 16.5) * baratsukiRateNumber * 0.95,
-    },
-    {
-      periodTime: "20:30",
-      time: 3600,
-      status: 1,
-      upper: (3600 / 16.5) * baratsukiRateNumber * 1.05,
-      lower: (3600 / 16.5) * baratsukiRateNumber * 0.95,
-    },
-    {
-      periodTime: "21:30",
-      time: 3600,
-      status: 1,
-      upper: (3600 / 16.5) * baratsukiRateNumber * 1.05,
-      lower: (3600 / 16.5) * baratsukiRateNumber * 0.95,
-    },
-    {
-      periodTime: "22:30",
-      time: 3000,
-      status: 1,
-      upper: (3000 / 16.5) * baratsukiRateNumber * 1.05,
-      lower: (3000 / 16.5) * baratsukiRateNumber * 0.95,
-    },
-    {
-      periodTime: "23:15",
-      time: 2700,
-      status: 1,
-      upper: (2700 / 16.5) * baratsukiRateNumber * 1.05,
-      lower: (2700 / 16.5) * baratsukiRateNumber * 0.95,
-    },
-    {
-      periodTime: "01:30",
-      time: 5100,
-      status: 1,
-      upper: (5100 / 16.5) * baratsukiRateNumber * 1.05,
-      lower: (5100 / 16.5) * baratsukiRateNumber * 0.95,
-    },
-    {
-      periodTime: "02:30",
-      time: 3600,
-      status: 1,
-      upper: (3600 / 16.5) * baratsukiRateNumber * 1.05,
-      lower: (3600 / 16.5) * baratsukiRateNumber * 0.95,
-    },
-    {
-      periodTime: "03:30",
-      time: 2400,
-      status: 1,
-      upper: (2400 / 16.5) * baratsukiRateNumber * 1.05,
-      lower: (2400 / 16.5) * baratsukiRateNumber * 0.95,
-    },
-    {
-      periodTime: "04:30",
-      time: 3600,
-      status: 1,
-      upper: (3600 / 16.5) * baratsukiRateNumber * 1.05,
-      lower: (3600 / 16.5) * baratsukiRateNumber * 0.95,
-    },
-    {
-      periodTime: "05:50",
-      time: 3600,
-      status: 1,
-      upper: (3600 / 16.5) * baratsukiRateNumber * 1.05,
-      lower: (3600 / 16.5) * baratsukiRateNumber * 0.95,
-    },
-    {
-      periodTime: "07:20",
-      time: 5400,
-      status: 1,
-      upper: (5400 / 16.5) * baratsukiRateNumber * 1.05,
-      lower: (5400 / 16.5) * baratsukiRateNumber * 0.95,
-    },
+  const targetZoneRate = zone_number === 1 ? ctTargetZone1 : ctTargetZone2;
+
+  const calculateBounds = (time: number, rate: number) => ({
+    upper: (time / targetZoneRate) * rate * 1.05,
+    lower: (time / targetZoneRate) * rate * 0.95,
+  });
+
+  const periods1 = [
+    { periodTime: "08:30", time: 3300 },
+    { periodTime: "09:30", time: 3600 },
+    { periodTime: "10:30", time: 3600 },
+    { periodTime: "11:15", time: 2700 },
+    { periodTime: "13:30", time: 4500 },
+    { periodTime: "14:30", time: 3600 },
+    { periodTime: "15:30", time: 3000 },
+    { periodTime: "16:30", time: 3600 },
+    { periodTime: "17:50", time: 3600 },
+    { periodTime: "19:20", time: 5400 },
+    { periodTime: "20:30", time: 3600 },
+    { periodTime: "21:30", time: 3600 },
+    { periodTime: "22:30", time: 3000 },
+    { periodTime: "23:15", time: 2700 },
+    { periodTime: "01:30", time: 5100 },
+    { periodTime: "02:30", time: 3600 },
+    { periodTime: "03:30", time: 2400 },
+    { periodTime: "04:30", time: 3600 },
+    { periodTime: "05:50", time: 3600 },
+    { periodTime: "07:20", time: 5400 },
   ];
-  const period3_2: any = [
-    {
-      periodTime: "08:30",
-      time: 3600,
-      status: 1,
-      upper: (3600 / 16.5) * baratsukiRateNumber * 1.05,
-      lower: (3600 / 16.5) * baratsukiRateNumber * 0.95,
-    },
-    {
-      periodTime: "09:20",
-      time: 3000,
-      status: 1,
-      upper: (3000 / 16.5) * baratsukiRateNumber * 1.05,
-      lower: (3000 / 16.5) * baratsukiRateNumber * 0.95,
-    },
-    {
-      periodTime: "10:30",
-      time: 3600,
-      status: 1,
-      upper: (3600 / 16.5) * baratsukiRateNumber * 1.05,
-      lower: (3600 / 16.5) * baratsukiRateNumber * 0.95,
-    },
-    {
-      periodTime: "11:30",
-      time: 3600,
-      status: 1,
-      upper: (3600 / 16.5) * baratsukiRateNumber * 1.05,
-      lower: (3600 / 16.5) * baratsukiRateNumber * 0.95,
-    },
-    {
-      periodTime: "13:30",
-      time: 3600,
-      status: 1,
-      upper: (3600 / 16.5) * baratsukiRateNumber * 1.05,
-      lower: (3600 / 16.5) * baratsukiRateNumber * 0.95,
-    },
-    {
-      periodTime: "14:20",
-      time: 3000,
-      status: 1,
-      upper: (3000 / 16.5) * baratsukiRateNumber * 1.05,
-      lower: (3000 / 16.5) * baratsukiRateNumber * 0.95,
-    },
-    {
-      periodTime: "15:30",
-      time: 3600,
-      status: 1,
-      upper: (3600 / 16.5) * baratsukiRateNumber * 1.05,
-      lower: (3600 / 16.5) * baratsukiRateNumber * 0.95,
-    },
-    {
-      periodTime: "16:30",
-      time: 3600,
-      status: 1,
-      upper: (3600 / 16.5) * baratsukiRateNumber * 1.05,
-      lower: (3600 / 16.5) * baratsukiRateNumber * 0.95,
-    },
-    {
-      periodTime: "17:50",
-      time: 3600,
-      status: 1,
-      upper: (3600 / 16.5) * baratsukiRateNumber * 1.05,
-      lower: (3600 / 16.5) * baratsukiRateNumber * 0.95,
-    },
-    {
-      periodTime: "19:20",
-      time: 5400,
-      status: 1,
-      upper: (5400 / 16.5) * baratsukiRateNumber * 1.05,
-      lower: (5400 / 16.5) * baratsukiRateNumber * 0.95,
-    },
-    {
-      periodTime: "20:30",
-      time: 3600,
-      status: 1,
-      upper: (3600 / 16.5) * baratsukiRateNumber * 1.05,
-      lower: (3600 / 16.5) * baratsukiRateNumber * 0.95,
-    },
-    {
-      periodTime: "21:30",
-      time: 3600,
-      status: 1,
-      upper: (3600 / 16.5) * baratsukiRateNumber * 1.05,
-      lower: (3600 / 16.5) * baratsukiRateNumber * 0.95,
-    },
-    {
-      periodTime: "22:30",
-      time: 3000,
-      status: 1,
-      upper: (3000 / 16.5) * baratsukiRateNumber * 1.05,
-      lower: (3000 / 16.5) * baratsukiRateNumber * 0.95,
-    },
-    {
-      periodTime: "23:30",
-      time: 3600,
-      status: 1,
-      upper: (3600 / 16.5) * baratsukiRateNumber * 1.05,
-      lower: (3600 / 16.5) * baratsukiRateNumber * 0.95,
-    },
-    {
-      periodTime: "01:30",
-      time: 3000,
-      status: 1,
-      upper: (3000 / 16.5) * baratsukiRateNumber * 1.05,
-      lower: (3000 / 16.5) * baratsukiRateNumber * 0.95,
-    },
-    {
-      periodTime: "02:30",
-      time: 3600,
-      status: 1,
-      upper: (3600 / 16.5) * baratsukiRateNumber * 1.05,
-      lower: (3600 / 16.5) * baratsukiRateNumber * 0.95,
-    },
-    {
-      periodTime: "03:30",
-      time: 2400,
-      status: 1,
-      upper: (2400 / 16.5) * baratsukiRateNumber * 1.05,
-      lower: (2400 / 16.5) * baratsukiRateNumber * 0.95,
-    },
-    {
-      periodTime: "04:30",
-      time: 3600,
-      status: 1,
-      upper: (3600 / 16.5) * baratsukiRateNumber * 1.05,
-      lower: (3600 / 16.5) * baratsukiRateNumber * 0.95,
-    },
-    {
-      periodTime: "05:50",
-      time: 3600,
-      status: 1,
-      upper: (3600 / 16.5) * baratsukiRateNumber * 1.05,
-      lower: (3600 / 16.5) * baratsukiRateNumber * 0.95,
-    },
-    {
-      periodTime: "07:20",
-      time: 5400,
-      status: 1,
-      upper: (5400 / 16.5) * baratsukiRateNumber * 1.05,
-      lower: (5400 / 16.5) * baratsukiRateNumber * 0.95,
-    },
+
+  const periods2 = [
+    { periodTime: "08:30", time: 3600 },
+    { periodTime: "09:20", time: 3000 },
+    { periodTime: "10:30", time: 3600 },
+    { periodTime: "11:30", time: 3600 },
+    { periodTime: "13:30", time: 3600 },
+    { periodTime: "14:20", time: 3000 },
+    { periodTime: "15:30", time: 3600 },
+    { periodTime: "16:30", time: 3600 },
+    { periodTime: "17:50", time: 3600 },
+    { periodTime: "19:20", time: 5400 },
+    { periodTime: "20:30", time: 3600 },
+    { periodTime: "21:30", time: 3600 },
+    { periodTime: "22:30", time: 3000 },
+    { periodTime: "23:30", time: 3600 },
+    { periodTime: "01:30", time: 3000 },
+    { periodTime: "02:30", time: 3600 },
+    { periodTime: "03:30", time: 2400 },
+    { periodTime: "04:30", time: 3600 },
+    { periodTime: "05:50", time: 3600 },
+    { periodTime: "07:20", time: 5400 },
   ];
+
+  const generatePeriods = (periods: any, rate: number) =>
+    periods.map((p: any) => ({
+      ...p,
+      status: 1,
+      ...calculateBounds(p.time, rate),
+    }));
+
   const isOdd = GeneralStore((state) => state.isOdd);
-  const period3 = isOdd ? period3_1 : period3_2;
+  const period3 = isOdd
+    ? generatePeriods(periods1, baratsukiRateNumber)
+    : generatePeriods(periods2, baratsukiRateNumber);
 
   const ceilMinusOne = (value: number): number => Math.ceil(value) - 1;
 

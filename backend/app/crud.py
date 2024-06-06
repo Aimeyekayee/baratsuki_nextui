@@ -67,9 +67,10 @@ def get_data_area(
     interval: str,
     db: Session,
 ):
-    print("herety")
+    year_month = date.strftime("%Y_%m")
+    table_name = f"data_baratsuki_{year_month}"
     stmt = f"""
-        SELECT section_code, line_id, machine_no, date, data FROM data_baratsuki_2024_05
+        SELECT section_code, line_id, machine_no, date, data FROM {table_name}
         WHERE section_code = {section_code}
         AND line_id = {line_id}
         AND machine_no = '{machine_no}'
@@ -100,9 +101,12 @@ def get_dataparameter_day(
 
     minute_values_for_brakemain_night1 = "15" if isOdd else "30"
     minute_values_for_brakemain_night2 = "05" if isOdd else "20"
+    year_month = date_current[:7].replace("-", "_")
+    table_name = f"public.data_baratsuki_{year_month}"
+
     stmt = f"""
         	SELECT db.id, db.section_code, db.line_id, db.machine_no, db.date, db.data,m.machine_name
-            FROM public.data_baratsuki_2024_05 db
+            FROM {table_name} db
             JOIN public.machines m ON db.machine_no = m.machine_no
             WHERE (
                 db.date::date = '{date_current}'
@@ -122,7 +126,7 @@ def get_dataparameter_day(
             )
                 AND db.section_code = {section_code} AND db.line_id = {line_id} AND db.machine_no in ('{machine_no1}','{machine_no2}')
             )
-            ORDER BY db.id ASC;
+            ORDER BY db.date asc
 	
     """
     try:
@@ -157,9 +161,12 @@ def get_dataparameter_night(
 
     minute_values_for_brakemain_night1 = "15" if isOdd else "30"
     minute_values_for_brakemain_night2 = "05" if isOdd else "20"
+
+    year_month = date_current[:7].replace("-", "_")
+    table_name = f"public.data_baratsuki_{year_month}"
     stmt = f"""
         	SELECT db.id, db.section_code, db.line_id, db.machine_no, db.date, db.data,m.machine_name
-            FROM public.data_baratsuki_2024_05 db
+            FROM {table_name} db
             JOIN public.machines m ON db.machine_no = m.machine_no
             WHERE (
                 db.date::date = '{date_current}'
@@ -183,7 +190,7 @@ def get_dataparameter_night(
             )
                 AND db.section_code = {section_code} AND db.line_id = {line_id} AND db.machine_no in ('{machine_no1}','{machine_no2}')
             )
-            ORDER BY db.id ASC;
+            ORDER BY db.date asc
 	
     """
     try:
@@ -210,9 +217,11 @@ def get_dataparameter_by_shift_column(
     next_date: str,
     db: Session,
 ):
+    year_month = date_current[:7].replace("-", "_")
+    table_name = f"public.data_baratsuki_{year_month}"
     stmt = f"""
         	SELECT db.id, db.section_code, db.line_id, db.machine_no, db.date, db.data,m.machine_name
-            FROM public.data_baratsuki_2024_05 db
+            FROM {table_name} db
             JOIN public.machines m ON db.machine_no = m.machine_no
             WHERE (
                 db.date::date = '{date_current}'

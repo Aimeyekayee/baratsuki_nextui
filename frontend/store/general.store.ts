@@ -22,6 +22,12 @@ interface IMode {
   colorMc4: string;
   clickMCinPieGraph: string;
   sortPie: string;
+  ctTargetZone1: number;
+  ctTargetZone2: number;
+  targetRealTimeMC1: number;
+  targetRealTimeMC2: number;
+  setCtTargetZone1: (value: string) => void;
+  setCtTargetZone2: (value: string) => void;
   setSortPie: (sortPie: string) => void;
   setClickMCinPieGraph: (clickMCinPieGraph: string) => void;
   setColorMc4: (colorMc4: string) => void;
@@ -31,6 +37,8 @@ interface IMode {
   setShift: (key: React.Key) => void;
   setIsOdd: (isOdd: number) => void;
   setOpenModal: (openModal: boolean) => void;
+  setTargetRealTimeMC1: (tartgetRealTimeMC1: number) => void;
+  setTargetRealTimeMC2: (tartgetRealTimeMC2: number) => void;
   setTargetNotRealTimeMC1: () => void;
   setTargetNotRealTimeMC2: () => void;
   setActualNotRealTimeMC1: (actualNotRealTimeMC1: number) => void;
@@ -47,6 +55,8 @@ export const GeneralStore = create<IMode>((...args) => {
   const [set, get] = args;
   return {
     dataBaratsuki: [],
+    ctTargetZone1: 16.5,
+    ctTargetZone2: 16.5,
     zone1: [],
     zone2: [],
     shift: "day",
@@ -58,6 +68,8 @@ export const GeneralStore = create<IMode>((...args) => {
     actualNotRealTimeMC2: 0,
     targetNotRealTimeMC1: 0,
     targetNotRealTimeMC2: 0,
+    targetRealTimeMC1: 0,
+    targetRealTimeMC2: 0,
     clickMCinPieGraph: "",
     showGap: "off",
     openModal: false,
@@ -65,6 +77,32 @@ export const GeneralStore = create<IMode>((...args) => {
     sortPie: "1",
     dataByShiftColumnMC1: [],
     dataByShiftColumnMC2: [],
+    setCtTargetZone1: (value: string) => {
+      const setTargetNotRealTimeMC1 = get().setTargetNotRealTimeMC1;
+      const numberValue = parseFloat(value);
+      if (!isNaN(numberValue)) {
+        set({ ctTargetZone1: numberValue });
+        setTargetNotRealTimeMC1();
+      } else {
+        console.error(`Invalid value provided for ctTargetZone1: ${value}`);
+      }
+    },
+    setCtTargetZone2: (value: string) => {
+      const setTargetNotRealTimeMC2 = get().setTargetNotRealTimeMC2;
+      const numberValue = parseFloat(value);
+      if (!isNaN(numberValue)) {
+        set({ ctTargetZone2: numberValue });
+        setTargetNotRealTimeMC2();
+      } else {
+        console.error(`Invalid value provided for ctTargetZone1: ${value}`);
+      }
+    },
+    setTargetRealTimeMC1(targetRealTimeMC1) {
+      set({ targetRealTimeMC1 });
+    },
+    setTargetRealTimeMC2(targetRealTimeMC2) {
+      set({ targetRealTimeMC2 });
+    },
     setSortPie(sortPie) {
       set({ sortPie });
     },
@@ -82,6 +120,7 @@ export const GeneralStore = create<IMode>((...args) => {
     },
     setTargetNotRealTimeMC1: () => {
       const zone1 = get().zone1;
+      const ctTargetZone1 = get().ctTargetZone1;
       console.log("storezone1", zone1);
       const shift = get().shift;
       if (zone1.length > 0) {
@@ -89,15 +128,15 @@ export const GeneralStore = create<IMode>((...args) => {
           const targetValue = zone1.some(
             (item) => item.period === "19:20:00" && item.value === 0
           )
-            ? Math.floor(27300 / 16.5)
-            : Math.floor(36300 / 16.5);
+            ? Math.floor(27300 / ctTargetZone1)
+            : Math.floor(36300 / ctTargetZone1);
           set({ targetNotRealTimeMC1: targetValue });
         } else {
           const targetValue = zone1.some(
             (item) => item.period === "07:20:00" && item.value === 0
           )
-            ? Math.floor(27300 / 16.5)
-            : Math.floor(36300 / 16.5);
+            ? Math.floor(27300 / ctTargetZone1)
+            : Math.floor(36300 / ctTargetZone1);
           set({ targetNotRealTimeMC1: targetValue });
         }
       } else {
@@ -107,20 +146,22 @@ export const GeneralStore = create<IMode>((...args) => {
     setTargetNotRealTimeMC2: () => {
       const zone2 = get().zone2;
       const shift = get().shift;
+      const ctTargetZone2 = get().ctTargetZone2;
+      // console.log("get ctTargetZone2", ctTargetZone2);
       if (zone2.length > 0) {
         if (shift === "day") {
           const targetValue = zone2.some(
             (item) => item.period === "19:20:00" && item.value === 0
           )
-            ? Math.floor(27300 / 16.5)
-            : Math.floor(36300 / 16.5);
+            ? Math.floor(27300 / ctTargetZone2)
+            : Math.floor(36300 / ctTargetZone2);
           set({ targetNotRealTimeMC2: targetValue });
         } else {
           const targetValue = zone2.some(
             (item) => item.period === "07:20:00" && item.value === 0
           )
-            ? Math.floor(27300 / 16.5)
-            : Math.floor(36300 / 16.5);
+            ? Math.floor(27300 / ctTargetZone2)
+            : Math.floor(36300 / ctTargetZone2);
           set({ targetNotRealTimeMC2: targetValue });
         }
       } else {

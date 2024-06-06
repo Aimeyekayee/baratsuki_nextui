@@ -1,50 +1,14 @@
 "use client";
-import { useState, useEffect } from "react";
-import { Empty, Typography } from "antd";
-import VideoPlayer from "../video/video.player";
-import {
-  useDisclosure,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Button,
-  Chip,
-  Dropdown,
-  DropdownItem,
-  Card,
-  DropdownTrigger,
-  DropdownMenu,
-  Tooltip,
-  Listbox,
-  ListboxItem,
-  cn,
-  Avatar,
-} from "@nextui-org/react";
-import { users } from "@/asset/member_data/data";
-import { ListboxWrapper } from "../listbox/ListboxWrapper";
-import TableMock from "../table/table.alarm";
-import AreaPlot from "./areaHour";
+import { useDisclosure } from "@nextui-org/react";
+
 import ModalHour from "../modal/modal.hour";
 import { GeneralStore } from "@/store/general.store";
 import dayjs from "dayjs";
 
-import dynamic from "next/dynamic";
-import { Line, LineConfig, G2, Column, ColumnConfig } from "@ant-design/plots";
+import { G2, Column, ColumnConfig } from "@ant-design/plots";
 import { each, findIndex } from "@antv/util";
-
-// import { Liquid } from "@ant-design/charts";
-// const Line = dynamic(
-//   () => import("@ant-design/plots").then((mod) => mod.Line),
-//   { ssr: false }
-// );
-
-// import type { LineConfig } from "@ant-design/plots";
-import { text } from "stream/consumers";
 import { DataBaratsuki, ModalOpenStore } from "@/store/modal.open.store";
-import ModalHours from "../modal/modal.hour";
-import ListBoxMember from "../listbox/listbox.member";
+
 import axios from "axios";
 interface Data {
   ct_actual: number;
@@ -63,9 +27,11 @@ interface DataProps {
   value: number;
   upper?: number;
   lower?: number;
+  zone_number?: number;
 }
 interface LineProps {
   parameter: DataProps[];
+  zone_number: number;
 }
 
 // let Liquid:any
@@ -73,27 +39,17 @@ interface LineProps {
 if (typeof document !== "undefined") {
   // you are safe to use the "document" object here
 }
-const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
+const ColumnPlotTest: React.FC<LineProps> = ({ parameter, zone_number }) => {
   const shift = GeneralStore((state) => state.shift);
   const dateStrings = GeneralStore((state) => state.dateStrings);
   const setDataBaratsuki = GeneralStore((state) => state.setDataBaratsuki);
   const currentDate = dayjs().format("YYYY-MM-DD");
-  const items = [
-    {
-      key: "code39",
-      label: "Code 39",
-    },
-    {
-      key: "code42",
-      label: "Code 42",
-    },
-    {
-      key: "full",
-      label: "Full",
-    },
-  ];
   const dataTooltip = ModalOpenStore((state) => state.dataTooltip);
   const isOdd = GeneralStore((state) => state.isOdd);
+  const ctTargetZone1 = GeneralStore((state) => state.ctTargetZone1);
+  const ctTargetZone2 = GeneralStore((state) => state.ctTargetZone2);
+
+  const ctTarget = zone_number === 1 ? ctTargetZone1 : ctTargetZone2;
   const formattedData = parameter.map((entry) => {
     const period = entry.period.slice(0, -3); // Remove the last three characters (":00")
     return { ...entry, period };
@@ -193,13 +149,32 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
 
   const nightShiftTimes = isOdd ? nightShiftTimes1 : nightShiftTimes2;
   const baratsukiRate = GeneralStore((state) => state.baratsukiRate);
+  const targetRealTimeMC1 = GeneralStore((state) => state.targetRealTimeMC1);
+  const targetRealTimeMC2 = GeneralStore((state) => state.targetRealTimeMC2);
+  const targetNotRealTimeMC1 = GeneralStore(
+    (state) => state.targetNotRealTimeMC1
+  );
+  const targetNotRealTimeMC2 = GeneralStore(
+    (state) => state.targetNotRealTimeMC2
+  );
+
+  let targetZoneRate: number = 0;
+  if (dateStrings !== currentDate) {
+    targetZoneRate =
+      zone_number === 1 ? targetNotRealTimeMC1 : targetNotRealTimeMC2;
+  } else {
+    targetZoneRate = zone_number === 1 ? targetRealTimeMC1 : targetRealTimeMC2;
+  }
+
   const targetValues: { [key: number]: number } = {
-    77: 1694,
-    81:1782,
-    85: 1870,
-    100: 2200,
+    77: Math.floor(targetZoneRate * 0.77),
+    81: Math.floor(targetZoneRate * 0.81),
+    85: Math.floor(targetZoneRate * 0.85),
+    100: Math.floor(targetZoneRate * 1),
   };
   const baratsukiRateNumber = Number(baratsukiRate);
+  let target: number = targetValues[baratsukiRateNumber] || 0;
+  console.log("mine target", target);
   let targetUpper = (baratsukiRateNumber / 100) * 1.05;
   let targetLower = (baratsukiRateNumber / 100) * 0.95;
   const period1 = [
@@ -317,8 +292,8 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
     } else {
       return {
         ...item,
-        upper: Math.floor((item.time / 16.5) * targetUpper),
-        lower: Math.floor((item.time / 16.5) * targetLower),
+        upper: Math.floor((item.time / ctTarget) * targetUpper),
+        lower: Math.floor((item.time / ctTarget) * targetLower),
       };
     }
   });
@@ -350,7 +325,7 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
       status: 1,
     },
     {
-      periodTime: "13:30 - 14:30",
+      periodTime: "13:30 - 14:20",
       time: 3600,
       status: 1,
     },
@@ -436,8 +411,8 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
     } else {
       return {
         ...item,
-        upper: Math.floor((item.time / 16.5) * targetUpper),
-        lower: Math.floor((item.time / 16.5) * targetLower),
+        upper: Math.floor((item.time / ctTarget) * targetUpper),
+        lower: Math.floor((item.time / ctTarget) * targetLower),
       };
     }
   });
@@ -722,6 +697,7 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
     }
     return update; // Return the updated object
   });
+  console.log(graphData);
   for (let i = 1; i < graphData.length; i++) {
     const currentPeriod = graphData[i].period;
     const currentProdActual = graphData[i].data.prod_actual;
@@ -737,13 +713,8 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
   console.log(graphData);
 
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
-  const setModalOpen = ModalOpenStore((state) => state.setOpenModal);
   const setDataTooltip = ModalOpenStore((state) => state.setDataTooltip);
   const { InteractionAction, registerInteraction, registerAction } = G2;
-  // const parameterWithoutZero = parameter.filter((obj) => obj.value !== 0);
-  const ct_target = 16.5;
-  const upper = Math.floor((3600 / 16.5) * 1.05);
-  const lower = Math.floor((3600 / 16.5) * 0.95);
 
   G2.registerShape("point", "custom-point", {
     draw(cfg, container) {
@@ -971,7 +942,7 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
     } else if (graphData.length === 2) {
       return -249; // Or any default number value you prefer
     } else if (graphData.length === 3) {
-      return -252; // Or any default number value you prefer
+      return -145; // Or any default number value you prefer
     } else if (graphData.length === 4) {
       return -109; // Or any default number value you prefer
     } else if (graphData.length === 5) {
@@ -1046,7 +1017,7 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
     if (graphData.length === 2) {
       lastAnnotation.offsetX = 375;
     } else if (graphData.length === 3) {
-      lastAnnotation.offsetX = 252;
+      lastAnnotation.offsetX = 148;
     } else if (graphData.length === 4) {
       lastAnnotation.offsetX = 330;
     } else if (graphData.length === 5) {
@@ -1119,7 +1090,7 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
     if (graphData.length === 2) {
       lastAnnotation.offsetX = 375;
     } else if (graphData.length === 3) {
-      lastAnnotation.offsetX = 252;
+      lastAnnotation.offsetX = 148;
     } else if (graphData.length === 4) {
       lastAnnotation.offsetX = 330;
     } else if (graphData.length === 5) {
@@ -1180,7 +1151,7 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
     if (graphData.length === 2) {
       lastAnnotation.offsetX = 375;
     } else if (graphData.length === 3) {
-      lastAnnotation.offsetX = 252;
+      lastAnnotation.offsetX = 148;
     } else if (graphData.length === 4) {
       lastAnnotation.offsetX = 330;
     } else if (graphData.length === 5) {
@@ -1348,6 +1319,17 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
       ...annotationsLower,
       ...annotationsUpper,
       ...annotationsRegion,
+      {
+        type: "region",
+        start: ["start", target * 0.95],
+        end: ["end", target * 1.05],
+        // offsetX: OffsetX(graphData),
+        style: {
+          fill: "#62daab",
+          fillOpacity: "0.2",
+          // opacity: 1,
+        },
+      },
     ];
   } else {
     annotaion = [
@@ -1478,7 +1460,7 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter }) => {
                 };
                 console.log(parameter);
                 const response = await axios(
-                  "http://10.122.77.1:8004/get_data_area",
+                  "http://127.0.0.1:8000/get_data_area",
                   {
                     params: parameter,
                   }

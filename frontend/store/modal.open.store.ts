@@ -10,12 +10,13 @@ export interface DataBaratsuki {
   date: Date | undefined;
   line_id: number | null;
   machine_no: string | null;
-  machine_name:string | null
+  machine_name: string | null;
   period: string | null;
   section_code: number | null;
   shift: string | null;
   type: string | null;
   value: number | null;
+  zone_number: number;
 }
 
 interface ToolTipItem {

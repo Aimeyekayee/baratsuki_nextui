@@ -37,6 +37,7 @@ import AlarmHistoryTableAlls from "../table/table.alarmhistoryAlls";
 import { SortIcon } from "../icon";
 import SortPieSelect from "../select/select.sortPie";
 import AlarmHistoryTableEach from "../table/table.alarmhistoryEach";
+import { AdjustCT } from "../input/adjustCT.input";
 
 interface ModalManagement {
   isOpen: boolean;
@@ -299,37 +300,7 @@ const ModalHour: React.FC<ModalManagement> = ({
   ];
 
   const period = isOdd ? period1 : period2;
-  // const period = [
-  //   { periodTime: "07:35 - 08:30", time: 3300, status: 1 },
-  //   { periodTime: "08:30 - 09:40", time: 4200, status: 1 },
-  //   { periodTime: "09:40 - 09:50", time: 600, status: 2 },
-  //   { periodTime: "09:50 - 10:30", time: 2400, status: 1 },
-  //   { periodTime: "10:30 - 11:30", time: 3600, status: 1 },
-  //   { periodTime: "11:30 - 12:30", time: 3600, status: 3 },
-  //   { periodTime: "12:30 - 13:30", time: 3600, status: 1 },
-  //   { periodTime: "13:30 - 14:40", time: 4200, status: 1 },
-  //   { periodTime: "14:40 - 14:50", time: 600, status: 2 },
-  //   { periodTime: "14:50 - 15:30", time: 2400, status: 1 },
-  //   { periodTime: "15:30 - 16:30", time: 3600, status: 1 },
-  //   { periodTime: "16:30 - 16:50", time: 1200, status: 2 },
-  //   { periodTime: "16:50 - 17:50", time: 3600, status: 1 },
-  //   { periodTime: "17:50 - 19:20", time: 5400, status: 1 },
-  //   { periodTime: "19:35 - 20:30", time: 3300, status: 1 },
-  //   { periodTime: "20:30 - 21:30", time: 3600, status: 1 },
-  //   { periodTime: "21:30 - 21:40", time: 600, status: 2 },
-  //   { periodTime: "21:40 - 22:30", time: 3000, status: 1 },
-  //   { periodTime: "22:30 - 23:30", time: 3600, status: 1 },
-  //   { periodTime: "23:30 - 00:20", time: 3000, status: 3 },
-  //   { periodTime: "00:20 - 01:30", time: 4200, status: 1 },
-  //   { periodTime: "01:30 - 02:30", time: 3600, status: 1 },
-  //   { periodTime: "02:30 - 02:50", time: 1200, status: 2 },
-  //   { periodTime: "02:50 - 03:30", time: 2400, status: 1 },
-  //   { periodTime: "03:30 - 04:30", time: 3600, status: 1 },
-  //   { periodTime: "04:30 - 04:50", time: 1200, status: 2 },
-  //   { periodTime: "04:50 - 05:50", time: 3600, status: 1 },
-  //   { periodTime: "05:50 - 07:20", time: 5400, status: 1 },
-  // ];
-
+  const zone_number = dataTooltip[0]?.data.zone_number;
   return (
     <Modal
       isOpen={isOpen}
@@ -377,10 +348,11 @@ const ModalHour: React.FC<ModalManagement> = ({
                   className="flex gap-4"
                   style={{
                     display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
+                    // justifyContent: "space-between",
+                    // alignItems: "center",
                   }}
                 >
+                  <AdjustCT zone_number={zone_number} />
                   <BaratsukiChallengeTab />
                   <div className="flex items-center gap-2">
                     <Tooltip content="asda">

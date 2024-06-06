@@ -96,7 +96,10 @@ const AlarmCountColumn: React.FC = () => {
       sortPie === "1" ? item.count : item.recovery_time
     )
   );
-  const yField = sortPie === "1" ? ["count", "cumulativePercentage"] : ["recovery_time", "cumulativePercentage"];
+  const yField =
+    sortPie === "1"
+      ? ["count", "cumulativePercentage"]
+      : ["recovery_time", "cumulativePercentage"];
 
   const config: DualAxesConfig = {
     data: [chartData, chartData],

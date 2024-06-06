@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Flex, Typography } from "antd";
 import { MQTTStore } from "@/store/mqttStore";
 import dayjs from "dayjs";
@@ -40,18 +40,16 @@ const MonitorData: React.FC<IProps> = ({
   const shift = GeneralStore((state) => state.shift);
   const baratsukiRate = GeneralStore((state) => state.baratsukiRate);
   const isOdd = GeneralStore((state) => state.isOdd);
-  const targetNotRealtime = 2200;
   const actualMqtt1 = mqttDataMachine1.prod_actual;
   const actualMqtt2 = mqttDataMachine2.prod_actual;
-
-  const targetValues: { [key: number]: number } = {
-    77: 1694,
-    81: 1782,
-    85: 1870,
-    100: 2200,
-  };
-  const baratsukiRateNumber = Number(baratsukiRate);
-  let targets: number = targetValues[baratsukiRateNumber] || 0;
+  const setTargetRealTimeMC1 = GeneralStore(
+    (state) => state.setTargetRealTimeMC1
+  );
+  const targetRealTimeMC1 = GeneralStore((state) => state.targetRealTimeMC1);
+  const targetRealTimeMC2 = GeneralStore((state) => state.targetRealTimeMC2);
+  const setTargetRealTimeMC2 = GeneralStore(
+    (state) => state.setTargetRealTimeMC2
+  );
 
   const now1 = dayjs(); // Get the current date and time
 
@@ -249,8 +247,23 @@ const MonitorData: React.FC<IProps> = ({
   // const isOdd = true; // Change this to true or false as needed
   const workingMinutes = getWorkingTime(now, isOdd);
   const workingMinuteExcludeBrake = workingMinutes - brake_time_accum;
-  const targetMq = (workingMinuteExcludeBrake * 60) / 16.5;
-  // console.log(workingMinuteExcludeBrake);
+
+  const ctTargetZone1 = GeneralStore((state) => state.ctTargetZone1);
+  const ctTargetZone2 = GeneralStore((state) => state.ctTargetZone2);
+
+  const targetZoneRate = zone === 1 ? ctTargetZone1 : ctTargetZone2;
+
+  const targetMq = (workingMinuteExcludeBrake * 60) / targetZoneRate;
+  if (zone === 1) {
+    setTargetRealTimeMC1(Math.floor(targetMq));
+  } else {
+    setTargetRealTimeMC2(Math.floor(targetMq));
+  }
+
+  useEffect(() => {
+    console.log("targetMQMC1", targetRealTimeMC1);
+    console.log("targetMQMC2", targetRealTimeMC2);
+  }, [targetRealTimeMC1, targetRealTimeMC2]);
   return (
     <Flex
       style={{ height: "20%", width: "100%" }}
@@ -266,7 +279,7 @@ const MonitorData: React.FC<IProps> = ({
             color: shift === "day" ? "black" : "white",
           }}
         >
-          Target : &nbsp;
+          Target(100%) : &nbsp;
         </Typography>
         <Card
           shadow="sm"

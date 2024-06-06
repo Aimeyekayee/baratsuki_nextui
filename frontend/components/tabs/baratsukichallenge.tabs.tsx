@@ -40,6 +40,7 @@ const BaratsukiChallengeTab = () => {
           }
         ></Tab>
       </Tabs>
+      <p></p>
     </div>
   );
 };

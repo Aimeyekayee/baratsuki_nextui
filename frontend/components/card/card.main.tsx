@@ -1,5 +1,13 @@
 import React from "react";
-import { Card, Chip, Tooltip, Tab, Tabs } from "@nextui-org/react";
+import {
+  Card,
+  Chip,
+  Tooltip,
+  Tab,
+  Tabs,
+  Input,
+  Button,
+} from "@nextui-org/react";
 import BaratsukiShiftColumn from "../chart/baratsuki.column";
 import { GeneralStore } from "@/store/general.store";
 import { QuestionCircleTwoTone } from "@ant-design/icons";
@@ -7,6 +15,7 @@ import ColumnPlotTest from "../chart/main.column";
 import MonitorData from "../monitor/monitor.data";
 import { Empty } from "antd";
 import dayjs from "dayjs";
+import { AdjustCT } from "../input/adjustCT.input";
 
 interface Data {
   ct_actual: number;
@@ -48,6 +57,7 @@ const CardMainDisplay: React.FC<IProps> = ({
   const showGap = GeneralStore((state) => state.showGap);
   const dateStrings = GeneralStore((state) => state.dateStrings);
   const setShowGap = GeneralStore((state) => state.setShowGap);
+
   const capitalizedShift =
     String(shift).charAt(0).toUpperCase() + String(shift).slice(1);
 
@@ -57,6 +67,7 @@ const CardMainDisplay: React.FC<IProps> = ({
     { shift: "day", actual: realtimeActual },
     { shift: "night", actual: 0 },
   ];
+
   return (
     <Card
       shadow="md"
@@ -126,14 +137,18 @@ const CardMainDisplay: React.FC<IProps> = ({
           >
             <div className="flex justify-between">
               <div className="flex justify-center items-center">
-                <p
-                  style={{
-                    paddingLeft: "1.7rem",
-                    color: shift === "day" ? "black" : "white",
-                  }}
-                >
-                  Show Gap :&nbsp;
-                </p>
+                <div className="flex">
+                  <AdjustCT zone_number={zone_number} />
+                  <p
+                    className="flex items-center"
+                    style={{
+                      paddingLeft: "1.7rem",
+                      color: shift === "day" ? "black" : "white",
+                    }}
+                  >
+                    Show Gap :&nbsp;
+                  </p>
+                </div>
                 <Tabs
                   aria-label="Tabs sizes"
                   size="sm"
@@ -157,7 +172,7 @@ const CardMainDisplay: React.FC<IProps> = ({
                 &nbsp;By Period-Working
               </p>
             </div>
-            <ColumnPlotTest parameter={zone} />
+            <ColumnPlotTest parameter={zone} zone_number={zone_number} />
             <MonitorData
               actual={actual}
               target={target}

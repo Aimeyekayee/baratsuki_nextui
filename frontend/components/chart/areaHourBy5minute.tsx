@@ -16,130 +16,27 @@ interface TransformData {
 }
 
 const AreaPlotBy5minutes: React.FC = () => {
-  const ctTarget = 16.5;
-  const accum5min = (5 * 60) / ctTarget;
+  const dataTooltip = ModalOpenStore((state) => state.dataTooltip);
+
+  const zone_number = dataTooltip[0].data.zone_number;
+  const ctTargetZone1 = GeneralStore((state) => state.ctTargetZone1);
+  const ctTargetZone2 = GeneralStore((state) => state.ctTargetZone2);
+
+  const targetZoneRate = zone_number === 1 ? ctTargetZone1 : ctTargetZone2;
   const baratsukiRate = GeneralStore((state) => state.baratsukiRate);
   const targetValues: { [key: number]: number } = {
-    77: 14,
-    81: 14,
-    85: 15,
-    100: 18,
+    77: Math.floor(((5 * 60) / targetZoneRate) * 0.77),
+    81: Math.floor(((5 * 60) / targetZoneRate) * 0.81),
+    85: Math.floor(((5 * 60) / targetZoneRate) * 0.85),
+    100: Math.floor(((5 * 60) / targetZoneRate) * 1),
   };
   const baratsukiRateNumber = Number(baratsukiRate);
   let target: number = targetValues[baratsukiRateNumber] || 0;
   console.log(target);
   console.log(`The target for baratsukiRate ${baratsukiRate} is ${target}`);
-  const upperBaratsuki: number = Math.floor(target * 1.05);
-  const lowerBaratsuki: number = Math.floor(target * 0.95);
 
-  const dataTooltip = ModalOpenStore((state) => state.dataTooltip);
   const periodOfThisGraph = dataTooltip[0].data.period;
   const endTime = periodOfThisGraph?.split("-")[1].trim();
-
-  const period = [
-    {
-      periodTime: "08:30",
-      upper: 200,
-      lower: 140,
-    },
-    {
-      periodTime: "09:40",
-      upper: 455,
-      lower: 318,
-    },
-    {
-      periodTime: "10:30",
-      time: 2400,
-      status: 1,
-      upper: 600,
-      lower: 420,
-    },
-    {
-      periodTime: "11:30",
-      upper: 818,
-      lower: 573,
-    },
-    {
-      periodTime: "13:30",
-      upper: 1036,
-      lower: 726,
-    },
-    {
-      periodTime: "14:40",
-      upper: 1291,
-      lower: 904,
-    },
-    {
-      periodTime: "15:30",
-      upper: 1436,
-      lower: 1006,
-    },
-    {
-      periodTime: "16:30",
-      upper: 1654,
-      lower: 1159,
-    },
-    {
-      periodTime: "17:50",
-      upper: 1872,
-      lower: 1312,
-    },
-    {
-      periodTime: "19:20",
-      upper: 2200,
-      lower: 1541,
-    },
-    {
-      periodTime: "20:30",
-      upper: 200,
-      lower: 140,
-    },
-    {
-      periodTime: "21:30",
-      upper: 418,
-      lower: 293,
-    },
-    {
-      periodTime: "22:30",
-      upper: 600,
-      lower: 420,
-    },
-    {
-      periodTime: "23:30",
-      upper: 818,
-      lower: 573,
-    },
-    {
-      periodTime: "01:30",
-      upper: 1073,
-      lower: 751,
-    },
-    {
-      periodTime: "02:30",
-      upper: 1291,
-      lower: 904,
-    },
-    {
-      periodTime: "03:30",
-      upper: 1436,
-      lower: 1006,
-    },
-    {
-      periodTime: "04:30",
-      upper: 1654,
-      lower: 1159,
-    },
-    {
-      periodTime: "05:50",
-      upper: 1872,
-      lower: 1312,
-    },
-    {
-      periodTime: "07:20",
-      upper: 2200,
-      lower: 1541,
-    },
-  ];
 
   const period3 = [
     {
@@ -283,12 +180,6 @@ const AreaPlotBy5minutes: React.FC = () => {
       lower: 229,
     },
   ];
-
-  const graphLimit = period.find((item) => {
-    if (item.periodTime === endTime) {
-      return true;
-    }
-  });
 
   const graphLimit3 = period3.find((item) => {
     if (item.periodTime === endTime) {
@@ -514,7 +405,7 @@ const AreaPlotBy5minutes: React.FC = () => {
         end: ["max", target],
         offsetX: 0,
         text: {
-          content: `(calculated at C.T. Target = ${ctTarget})`,
+          content: `(calculated at C.T. Target = ${targetZoneRate})`,
           offsetY: -18,
           offsetX: 430,
           style: {
