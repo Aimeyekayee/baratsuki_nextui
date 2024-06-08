@@ -8,6 +8,7 @@ import {
   Input,
   Button,
 } from "@nextui-org/react";
+import { Divider } from "antd";
 import BaratsukiShiftColumn from "../chart/baratsuki.column";
 import { GeneralStore } from "@/store/general.store";
 import { QuestionCircleTwoTone } from "@ant-design/icons";
@@ -16,6 +17,11 @@ import MonitorData from "../monitor/monitor.data";
 import { Empty } from "antd";
 import dayjs from "dayjs";
 import { AdjustCT } from "../input/adjustCT.input";
+import PercentOaBaratsuki from "../chart/percent.dot";
+import SunIcon from "@/asset/icon/SunIcon";
+import IconMoon from "@/asset/icon/MoonIcon";
+import { TwoRingShiftChart } from "../chart/twoRingDayNight";
+import BaratsukiChallengeTab from "../tabs/baratsukichallenge.tabs";
 
 interface Data {
   ct_actual: number;
@@ -53,10 +59,11 @@ const CardMainDisplay: React.FC<IProps> = ({
   zone_number,
   realtimeActual,
 }) => {
+  console.log("dataColumn", dataColumn);
+  console.log(zone);
   const shift = GeneralStore((state) => state.shift);
   const showGap = GeneralStore((state) => state.showGap);
   const dateStrings = GeneralStore((state) => state.dateStrings);
-  const setShowGap = GeneralStore((state) => state.setShowGap);
 
   const capitalizedShift =
     String(shift).charAt(0).toUpperCase() + String(shift).slice(1);
@@ -68,6 +75,57 @@ const CardMainDisplay: React.FC<IProps> = ({
     { shift: "night", actual: 0 },
   ];
 
+  const prodActualByTime = (time: string, zone_number: number) => {
+    if (zone_number === 1) {
+      const data = dataColumn.find(
+        (item) => dayjs(item.date).format("HH:mm:ss") === time
+      );
+      return data ? data.data.prod_actual : "N/A";
+    } else {
+      const data = dataColumn.find(
+        (item) => dayjs(item.date).format("HH:mm:ss") === time
+      );
+      return data ? data.data.prod_actual : "N/A";
+    }
+  };
+
+  const prodActual1920 = prodActualByTime("19:20:00", zone_number);
+  const prodActual0720 = prodActualByTime("07:20:00", zone_number);
+
+  const targetNotRealTimeMC1 = GeneralStore(
+    (state) => state.targetNotRealTimeMC1
+  );
+  const targetNotRealTimeMC2 = GeneralStore(
+    (state) => state.targetNotRealTimeMC2
+  );
+  const targetRealTimeMC1 = GeneralStore((state) => state.targetRealTimeMC1);
+  const targetRealTimeMC2 = GeneralStore((state) => state.targetRealTimeMC2);
+
+  const oaMinMc1Day = GeneralStore((state) => state.oaMinMc1Day);
+  const oaMaxMc1Day = GeneralStore((state) => state.oaMaxMc1Day);
+  const oaMinMc2Day = GeneralStore((state) => state.oaMinMc2Day);
+  const oaMaxMc2Day = GeneralStore((state) => state.oaMaxMc2Day);
+  const oaMinMc1Night = GeneralStore((state) => state.oaMinMc1Night);
+  const oaMaxMc1Night = GeneralStore((state) => state.oaMaxMc1Night);
+  const oaMinMc2Night = GeneralStore((state) => state.oaMinMc2Night);
+  const oaMaxMc2Night = GeneralStore((state) => state.oaMaxMc2Night);
+
+  const determineTarget = (currentDate: string, zone_number: number) => {
+    if (currentDate === dateStrings) {
+      if (zone_number === 1) {
+        return targetRealTimeMC1;
+      } else {
+        return targetRealTimeMC2;
+      }
+    } else {
+      if (zone_number === 1) {
+        return targetNotRealTimeMC1;
+      } else {
+        return targetNotRealTimeMC2;
+      }
+    }
+  };
+  console.log("data Column", dataColumn);
   return (
     <Card
       shadow="md"
@@ -80,20 +138,22 @@ const CardMainDisplay: React.FC<IProps> = ({
         gap: "1rem",
         justifyContent: "center",
         alignItems: "center",
-        background: shift === "day" ? "white" : "#1c2841",
+        background: shift === "day" ? "white" : "#182228",
       }}
     >
-      <Chip color="warning" variant="flat" size="lg">
-        <p className="font-semibold">
-          Zone : {zone[0]?.machine_no} - {zone[0]?.machine_name} (
-          {capitalizedShift})
-        </p>
-      </Chip>
+      <div style={{ height: "2rem" }}>
+        <Chip color="warning" variant="flat" size="lg">
+          <p className="font-semibold">
+            Zone : {zone[0]?.machine_no} - {zone[0]?.machine_name} (
+            {capitalizedShift})
+          </p>
+        </Chip>
+      </div>
       {zone.length > 0 ? (
         <div
           style={{
             width: "100%",
-            height: "100%",
+            height: "calc(100% - 2rem)",
             display: "flex",
             gap: "2rem",
           }}
@@ -104,7 +164,8 @@ const CardMainDisplay: React.FC<IProps> = ({
               height: "100%",
               display: "flex",
               flexDirection: "column",
-              textAlign: "right",
+              justifyContent: "center",
+              alignItems: "center",
               gap: "1rem",
             }}
           >
@@ -118,12 +179,98 @@ const CardMainDisplay: React.FC<IProps> = ({
               <Tooltip content="Click at Column to change view to that shift.">
                 <QuestionCircleTwoTone style={{ fontSize: "1.5rem" }} />
               </Tooltip>
-              &nbsp;By Shift (±5%)
+              &nbsp;OA By Shift (±5%)
             </p>
-            <BaratsukiShiftColumn
-              parameter={dataColumn}
-              parameter_static_realtime={dataRealtime}
-            />
+            <div className="flex items-center justify-center">
+              <BaratsukiChallengeTab />
+            </div>
+            <div className="flex flex-col gap-2">
+              <TwoRingShiftChart
+                parameter={dataColumn}
+                zone_number={zone_number}
+                parameter_static_realtime={dataRealtime}
+              />
+              <div className="flex flex-col justify-center items-center">
+                <div className="flex gap-4 justify-center items-center">
+                  <div
+                    className="flex flex-col justify-center items-center"
+                    style={{ width: "49.5%" }}
+                  >
+                    <div className="flex">
+                      <p>Actual :&nbsp;</p>
+                      <p className="font-semibold">
+                        {currentDate !== dateStrings
+                          ? prodActual1920
+                          : realtimeActual}
+                      </p>
+                    </div>
+                    <div className="flex">
+                      <p>Target :&nbsp;</p>
+                      <p className="font-semibold">
+                        {determineTarget(currentDate, zone_number)}
+                      </p>
+                    </div>{" "}
+                    <div className="flex">
+                      <p>Baratsuki :&nbsp;</p>
+                      <p className="font-semibold">
+                        {zone_number === 1
+                          ? `${(oaMaxMc1Day - oaMinMc1Day).toFixed(2)}%`
+                          : `${(oaMaxMc2Day - oaMinMc2Day).toFixed(2)}%`}
+                      </p>
+                    </div>
+                  </div>
+                  <div style={{ width: "1%" }}>
+                    <Divider
+                      type="vertical"
+                      style={{
+                        height: "5rem",
+                        fontSize: "3rem",
+                        border: `1.5px solid ${
+                          shift === "day" ? "rgba(0, 0, 0, 0.2)" : "white"
+                        }`,
+                        borderStyle: "dashed",
+                      }}
+                      dashed
+                    />
+                  </div>
+                  <div
+                    className="flex flex-col justify-center items-center"
+                    style={{ width: "49.5%" }}
+                  >
+                    <div className="flex">
+                      <p>Actual :&nbsp;</p>
+                      <p className="font-semibold">
+                        {dateStrings !== currentDate ? prodActual0720 : "-"}
+                      </p>
+                    </div>
+                    <div className="flex">
+                      <p>Target :&nbsp;</p>
+                      <p className="font-semibold">
+                        {dateStrings !== currentDate
+                          ? determineTarget(currentDate, zone_number)
+                          : "-"}
+                      </p>
+                    </div>
+                    <div className="flex">
+                      <p>Baratsuki&nbsp;:&nbsp;</p>
+                      <p className="font-semibold">
+                        {zone_number === 1
+                          ? `${(oaMaxMc1Night - oaMinMc1Night).toFixed(2)}%`
+                          : `${(oaMaxMc2Night - oaMinMc2Night).toFixed(2)}%`}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <AdjustCT zone_number={zone_number} />
+              </div>
+            </div>
+            <div style={{ height: "25rem" }}>
+              <BaratsukiShiftColumn
+                parameter={dataColumn}
+                parameter_static_realtime={dataRealtime}
+                zone_number={zone_number}
+              />
+            </div>
           </div>
           <div
             style={{
@@ -135,10 +282,9 @@ const CardMainDisplay: React.FC<IProps> = ({
               gap: "1rem",
             }}
           >
-            <div className="flex justify-between">
-              <div className="flex justify-center items-center">
+            <div className="flex justify-between items-center">
+              {/* <div className="flex justify-center items-center">
                 <div className="flex">
-                  <AdjustCT zone_number={zone_number} />
                   <p
                     className="flex items-center"
                     style={{
@@ -158,6 +304,9 @@ const CardMainDisplay: React.FC<IProps> = ({
                   <Tab key="on" title="On" />
                   <Tab key="off" title="Off" />
                 </Tabs>
+              </div> */}
+              <div className="flex">
+                <p>{shift === "day" ? "Day Shift" : "Night Shift"}</p>
               </div>
               <p
                 style={{
@@ -172,7 +321,17 @@ const CardMainDisplay: React.FC<IProps> = ({
                 &nbsp;By Period-Working
               </p>
             </div>
-            <ColumnPlotTest parameter={zone} zone_number={zone_number} />
+            <div className="flex flex-col  gap-4">
+              <div className="h-96">
+                <div style={{ height: "100%" }}>
+                  <PercentOaBaratsuki
+                    parameter={zone}
+                    zone_number={zone_number}
+                  />
+                </div>
+              </div>
+              <ColumnPlotTest parameter={zone} zone_number={zone_number} />
+            </div>
             <MonitorData
               actual={actual}
               target={target}

@@ -1355,13 +1355,20 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter, zone_number }) => {
         ? false
         : { style: { fontSize: 20, fontWeight: "bold" } },
     yAxis: {
-      maxLimit: 340,
+      maxLimit: 300,
       title: {
-        text: "Pieces per Period",
+        text: "Pieces per Period (pcs.)",
         style: {
           fontSize: 16,
           // fontWeight: "bold",
           fill: shift === "day" ? "#595959" : "white",
+        },
+      },
+      grid: {
+        line: {
+          style: {
+            opacity: 0.2,
+          },
         },
       },
     },
@@ -1385,6 +1392,7 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter, zone_number }) => {
       return "blue";
     },
     xAxis: {
+      label:{style:{fontSize:11}},
       title: {
         text: "Period",
         style: {

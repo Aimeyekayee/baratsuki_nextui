@@ -4,10 +4,12 @@
 import { useTheme } from "next-themes";
 import { SunFilledIcon, MoonFilledIcon } from "@/components/icons";
 import { useEffect, useState } from "react";
+import { GeneralStore } from "@/store/general.store";
 
 export function ThemeSwitcher() {
   const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();
+  const shift = GeneralStore((state)=>state.shift)
 
   useEffect(() => {
     setMounted(true);

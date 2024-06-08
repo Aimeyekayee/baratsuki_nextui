@@ -26,6 +26,27 @@ interface IMode {
   ctTargetZone2: number;
   targetRealTimeMC1: number;
   targetRealTimeMC2: number;
+
+  oaMinMc1Day: number;
+  oaMaxMc1Day: number;
+  oaMinMc2Day: number;
+  oaMaxMc2Day: number;
+
+  oaMinMc1Night: number;
+  oaMaxMc1Night: number;
+  oaMinMc2Night: number;
+  oaMaxMc2Night: number;
+
+  setOaMinMc1Day: (oaMinMc1Day: number) => void;
+  setOaMaxMc1Day: (oaMaxMc1Day: number) => void;
+  setOaMinMc2Day: (oaMinMc2Day: number) => void;
+  setOaMaxMc2Day: (oaMaxMc2Day: number) => void;
+
+  setOaMinMc1Night: (oaMinMc1Night: number) => void;
+  setOaMaxMc1Night: (oaMaxMc1Night: number) => void;
+  setOaMinMc2Night: (oaMinMc2Night: number) => void;
+  setOaMaxMc2Night: (oaMaxMc2Night: number) => void;
+
   setCtTargetZone1: (value: string) => void;
   setCtTargetZone2: (value: string) => void;
   setSortPie: (sortPie: string) => void;
@@ -55,6 +76,14 @@ export const GeneralStore = create<IMode>((...args) => {
   const [set, get] = args;
   return {
     dataBaratsuki: [],
+    oaMinMc1Day: 0,
+    oaMaxMc1Day: 0,
+    oaMinMc2Day: 0,
+    oaMaxMc2Day: 0,
+    oaMinMc1Night: 0,
+    oaMaxMc1Night: 0,
+    oaMinMc2Night: 0,
+    oaMaxMc2Night: 0,
     ctTargetZone1: 16.5,
     ctTargetZone2: 16.5,
     zone1: [],
@@ -97,6 +126,33 @@ export const GeneralStore = create<IMode>((...args) => {
         console.error(`Invalid value provided for ctTargetZone1: ${value}`);
       }
     },
+
+    setOaMinMc1Day(oaMinMc1Day) {
+      set({ oaMinMc1Day });
+    },
+    setOaMaxMc1Day(oaMaxMc1Day) {
+      set({ oaMaxMc1Day });
+    },
+    setOaMinMc2Day(oaMinMc2Day) {
+      set({ oaMinMc2Day });
+    },
+    setOaMaxMc2Day(oaMaxMc2Day) {
+      set({ oaMaxMc2Day });
+    },
+
+    setOaMinMc1Night(oaMinMc1Night) {
+      set({ oaMinMc1Night });
+    },
+    setOaMaxMc1Night(oaMaxMc1Night) {
+      set({ oaMaxMc1Night });
+    },
+    setOaMinMc2Night(oaMinMc2Night) {
+      set({ oaMinMc2Night });
+    },
+    setOaMaxMc2Night(oaMaxMc2Night) {
+      set({ oaMaxMc2Night });
+    },
+
     setTargetRealTimeMC1(targetRealTimeMC1) {
       set({ targetRealTimeMC1 });
     },

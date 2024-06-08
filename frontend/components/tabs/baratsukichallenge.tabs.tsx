@@ -7,9 +7,9 @@ const BaratsukiChallengeTab = () => {
   const setBaratsukiRate = GeneralStore((state) => state.setBaratsukiRate);
   return (
     <div className="flex items-center">
-      <p>Baratsuki Challenge at : &nbsp;</p>
+      <p>Challenge at : &nbsp;</p>
       <Tabs
-        size="lg"
+        size="md"
         aria-label="Tabs form"
         selectedKey={baratsukiRate}
         onSelectionChange={setBaratsukiRate}

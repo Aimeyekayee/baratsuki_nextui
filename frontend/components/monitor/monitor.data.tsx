@@ -266,10 +266,10 @@ const MonitorData: React.FC<IProps> = ({
   }, [targetRealTimeMC1, targetRealTimeMC2]);
   return (
     <Flex
-      style={{ height: "20%", width: "100%" }}
+      style={{ height: "20%", width: "100%",display:"none" }}
       gap={10}
       align="center"
-      justify="center"
+      justify="center" 
     >
       <Flex justify="center" align="center">
         <Typography

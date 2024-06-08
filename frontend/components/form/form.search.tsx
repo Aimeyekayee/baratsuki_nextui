@@ -20,6 +20,8 @@ import { SearchRecStore } from "@/store/search.store";
 import { DateValue, getLocalTimeZone } from "@internationalized/date";
 import { ISection } from "@/types/section.type";
 import {
+  calBaratsukiDay,
+  calBaratsukiNight,
   requestDataByShiftColumn,
   requestDataDay,
   requestDataNight,
@@ -160,6 +162,8 @@ const FormSearch = () => {
         await requestDataNight(paramsNight);
       }
       await requestDataByShiftColumn(paramsByColumn);
+      await calBaratsukiDay(paramsDay);
+      await calBaratsukiNight(paramsNight);
     } catch (err) {
       console.error(err);
     }

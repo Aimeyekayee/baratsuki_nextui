@@ -24,9 +24,7 @@ export default function Home() {
     <section className="flex flex-col items-center justify-center gap-4 ">
       <HeaderBaratsuki />
       <FormSearch />
-      <div className="flex items-center justify-center">
-        <BaratsukiChallengeTab />
-      </div>
+
       <CardMainDisplay
         actual={actualNotRealTimeMC1}
         target={targetNotRealTimeMC1}
