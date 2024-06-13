@@ -701,7 +701,7 @@ const PercentOaBaratsuki: React.FC<LineProps> = ({
       graphData[i].value = currentProdActual - previousProdActual;
     }
   }
-
+  //!ทำให้ filter ot ออก (ไม่โชว์จุด ot หหหหหหมายถึงไม่โชว์ point แต่ยังมีข้อมูลอยู่)
   const addTargetOA = graphData.map((item) => {
     if (item.upper !== undefined && item.upper !== 0) {
       return {
@@ -717,19 +717,18 @@ const PercentOaBaratsuki: React.FC<LineProps> = ({
   });
   console.log(addTargetOA);
 
-  const validEntries = addTargetOA.filter((entry: any) => entry.oa !== null);
-
+  const validEntries = addTargetOA.filter(
+    (entry: any) => entry.oa !== null && entry.value !== 0
+  );
   const minOAEntry = validEntries.reduce((min: any, entry: any) => {
     return entry.oa < min.oa ? entry : min;
   }, validEntries[0]);
-
   const maxOAEntry = validEntries.reduce((max: any, entry: any) => {
     return entry.oa > max.oa ? entry : max;
   }, validEntries[0]);
 
   const maxOAPeriod = maxOAEntry.period;
   const maxOAValue = maxOAEntry.oa;
-
   const minOAPeriod = minOAEntry.period;
   const minOAValue = minOAEntry.oa;
 
@@ -745,33 +744,56 @@ const PercentOaBaratsuki: React.FC<LineProps> = ({
     [12, 13],
   ];
 
-  const annotationLine: any[] = indices.map(([startIndex, endIndex]) => ({
-    type: "line",
-    start: [addTargetOA[startIndex]?.period, addTargetOA[startIndex]?.oa],
-    end: [addTargetOA[endIndex]?.period, addTargetOA[endIndex]?.oa],
-    text: {
-      content: "",
-      position: "right",
-      style: {
-        textAlign: "right",
+  const filteredIndices = indices.filter(([startIndex, endIndex]) => {
+    const startPeriod = addTargetOA[startIndex]?.period;
+    const endPeriod = addTargetOA[endIndex]?.period;
+    const startValue = addTargetOA[startIndex]?.value;
+    const endValue = addTargetOA[endIndex]?.value;
+
+    const isInvalidPeriod = (period: string) =>
+      period === "16:30 - 16:50" ||
+      period === "16:50 - 17:50" ||
+      period === "17:50 - 19:20";
+
+    return (
+      !(startValue === 0 && isInvalidPeriod(startPeriod)) &&
+      !(endValue === 0 && isInvalidPeriod(endPeriod))
+    );
+  });
+
+  const annotationLine: any[] = filteredIndices.map(
+    ([startIndex, endIndex]) => ({
+      type: "line",
+      start: [addTargetOA[startIndex]?.period, addTargetOA[startIndex]?.oa],
+      end: [addTargetOA[endIndex]?.period, addTargetOA[endIndex]?.oa],
+      text: {
+        content: "",
+        position: "right",
+        style: {
+          textAlign: "right",
+        },
       },
-    },
-    style: {
-      lineDash: [4, 4],
-      lineWidth: 1.5,
-      //   stroke: "rgb(155, 189, 230,1)",
-    },
-  }));
+      style: {
+        lineDash: [4, 4],
+        lineWidth: 1.5,
+        //   stroke: "rgb(155, 189, 230,1)",
+      },
+    })
+  );
 
   const config: LineConfig = {
     data: addTargetOA,
     xField: "period",
     yField: "oa",
     xAxis: false,
+    legend: { title: { text: "asdas" } },
     yAxis: {
+      label: {
+        formatter: (oa) => `${oa}%`,
+      },
       title: {
-        text: "OA each Period (%)",
-        style: { fill: shift === "day" ? "#595959" : "white" },
+        text: "Performance  Analysis  per  Hour (OA%)",
+        style: { fill: shift === "day" ? "#595959" : "white", fontSize: 16 },
       },
       tickCount: 3,
       minLimit: 0,
@@ -786,7 +808,17 @@ const PercentOaBaratsuki: React.FC<LineProps> = ({
       },
     },
     label: {
-      formatter: (datum: any) => `${datum.oa} %`,
+      formatter: (datum: any) => {
+        if (
+          datum.oa === 0 &&
+          (datum.period === "16:30 - 16:50" ||
+            datum.period === "16:50 - 17:50" ||
+            datum.period === "17:50 - 19:20")
+        ) {
+          return ""; // Hide the label
+        }
+        return `${datum.oa} %`;
+      },
       style: { fill: shift === "day" ? "black" : "white" },
     },
     lineStyle: { fillOpacity: 0, opacity: 0 },
@@ -794,17 +826,46 @@ const PercentOaBaratsuki: React.FC<LineProps> = ({
       size: 7,
       shape: "circle",
       style: (datum: any) => {
-        if (datum.oa >= Number(baratsukiRate)) {
-          return { fill: "green" };
-        } else if (datum.oa < Number(baratsukiRate)) {
-          return { fill: "red" };
+        console.log(datum);
+        if (
+          datum.oa === 0 &&
+          (datum.period === "16:30 - 16:50" ||
+            datum.period === "16:50 - 17:50" ||
+            datum.period === "17:50 - 19:20")
+        ) {
+          return { fill: "rgba(255,0,0,0)", stroke: "rgba(255,0,0,0)" }; // Hide the point
+        }
+        const matchingPeriod = addTargetOA.find(
+          (p) => p.period === datum.period
+        );
+        if (matchingPeriod && matchingPeriod.oa != null) {
+          if (matchingPeriod.oa > Number(baratsukiRate)) {
+            return { fill: "rgba(24, 144, 255, 1)" };
+          } else if (matchingPeriod.oa < Number(baratsukiRate)) {
+            if (
+              matchingPeriod.lower != null &&
+              matchingPeriod.value != null &&
+              matchingPeriod.value >= matchingPeriod.lower &&
+              matchingPeriod.value < matchingPeriod.lower / 0.95
+            ) {
+              return { fill: "rgba(24, 144, 255, 1)" };
+            } else if (
+              matchingPeriod.lower != null &&
+              matchingPeriod.value != null &&
+              matchingPeriod.value >= matchingPeriod.lower / 0.95
+            ) {
+              return { fill: "rgba(24, 144, 255, 1)" };
+            } else {
+              return { fill: "red" };
+            }
+          }
         } else {
-          return { fill: "blue" };
+          return { fill: "black" };
         }
       },
     },
     tooltip: {
-      showMarkers: false,
+      showMarkers: true,
     },
     state: {
       active: {
@@ -832,14 +893,14 @@ const PercentOaBaratsuki: React.FC<LineProps> = ({
         },
         style: {
           textAlign: "center",
-          fill: shift === "day" ? "black" : "white",
+          fill: "white",
         },
         offsetY: -8,
         background: {
           padding: 4,
           style: {
             radius: 4,
-            fill: "rgba(255,0,0,0.25)",
+            fill: "black",
           },
         },
       },
@@ -854,14 +915,14 @@ const PercentOaBaratsuki: React.FC<LineProps> = ({
         },
         style: {
           textAlign: "center",
-          fill: shift === "day" ? "black" : "white",
+          fill: "white",
         },
         offsetY: -8,
         background: {
           padding: 4,
           style: {
             radius: 4,
-            fill: "rgba(255,0,0,0.25)",
+            fill: "black",
           },
         },
       },
@@ -878,11 +939,11 @@ const PercentOaBaratsuki: React.FC<LineProps> = ({
             fontSize: 16,
             fontWeight: "bold",
             textAlign: "right",
-            fill: "rgba(86, 191, 150, 1)",
+            fill: "rgba(24, 144, 255, 1)",
           },
         },
         style: {
-          stroke: "rgba(86, 191, 150, 1)",
+          stroke: "rgba(24, 144, 255, 1)",
           lineDash: [3, 3],
           lineWidth: 1.5,
         },
@@ -898,22 +959,59 @@ const PercentOaBaratsuki: React.FC<LineProps> = ({
             fontSize: 16,
             fontWeight: "bold",
             textAlign: "right",
-            fill: "rgba(86, 191, 150, 1)",
+            fill: "rgba(24, 144, 255, 1)",
           },
         },
         style: {
-          stroke: "rgba(86, 191, 150, 1)",
+          stroke: "rgba(24, 144, 255, 1)",
           lineDash: [3, 3],
           lineWidth: 1.5,
         },
       },
+      {
+        type: "text",
+        content: "_",
+        position: ["end", Number(baratsukiRate)],
+        offsetY: -12,
+        offsetX: -5,
+        rotate: 0.7,
+        style: {
+          fontSize: 42,
+          fill: "rgba(24, 144, 255, 1)",
+        },
+      },
+      {
+        type: "text",
+        content: "_",
+        position: ["end", Number(baratsukiRate)],
+        offsetY: -12,
+        offsetX: -15,
+        rotate: 0.7,
+        style: {
+          fontSize: 42,
+          fill: "rgba(24, 144, 255, 1)",
+        },
+      },
+      {
+        type: "text",
+        content: "_",
+        position: ["end", Number(baratsukiRate)],
+        offsetY: -12,
+        offsetX: -25,
+        rotate: 0.7,
+        style: {
+          fontSize: 42,
+          fill: "rgba(24, 144, 255, 1)",
+        },
+      },
+
       {
         type: "region",
         start: ["start", Number(baratsukiRate)],
         end: ["end", 100],
         offsetX: 0,
         style: {
-          fill: "#62daab",
+          fill: "#1890FF",
           fillOpacity: 0.15,
           // opacity: 1,
         },

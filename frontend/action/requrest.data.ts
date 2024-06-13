@@ -54,7 +54,7 @@ export async function requestDataDay(params: Params): Promise<any[]> {
   } = GeneralStore.getState();
   //!   "http://10.122.77.1:8004/get_dataparameter_day"
   const response = await axios.get(
-    "http://127.0.0.1:8000/get_dataparameter_day",
+    "http://10.122.77.1:8004/get_dataparameter_day",
     {
       params: params,
     }
@@ -238,7 +238,7 @@ export async function requestDataNight(params: Params): Promise<any[]> {
   } = GeneralStore.getState();
 
   const response = await axios.get(
-    "http://127.0.0.1:8000/get_dataparameter_night",
+    "http://10.122.77.1:8004/get_dataparameter_night",
     {
       params: params,
     }
@@ -412,7 +412,7 @@ export async function requestDataByShiftColumn(params: Params): Promise<any[]> {
     GeneralStore.getState();
   console.log("eie", params);
   const response = await axios.get(
-    "http://127.0.0.1:8000/get_dataparameter_by_shift_column",
+    "http://10.122.77.1:8004/get_dataparameter_by_shift_column",
     {
       params: params,
     }
@@ -489,7 +489,7 @@ export async function requestDataByShiftColumn(params: Params): Promise<any[]> {
 export async function calBaratsukiDay(params: Params): Promise<any[]> {
   const { isOdd, shift } = GeneralStore.getState();
   const response = await axios.get(
-    "http://127.0.0.1:8000/get_dataparameter_day",
+    "http://10.122.77.1:8004/get_dataparameter_day",
     {
       params: params,
     }
@@ -617,7 +617,7 @@ export async function calBaratsukiDay(params: Params): Promise<any[]> {
 export async function calBaratsukiNight(params: Params): Promise<any[]> {
   const { isOdd, shift } = GeneralStore.getState();
   const response = await axios.get(
-    "http://127.0.0.1:8000/get_dataparameter_night",
+    "http://10.122.77.1:8004/get_dataparameter_night",
     {
       params: params,
     }

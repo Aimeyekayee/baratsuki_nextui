@@ -27,6 +27,8 @@ interface DataProps {
 interface UnlogicRealtime {
   shift: string;
   actual: number;
+  lowerBaratsuki?: number;
+  upperBaratsuki?: number;
 }
 interface LineProps {
   parameter: DataProps[];
@@ -43,6 +45,9 @@ const BaratsukiShiftColumn: React.FC<LineProps> = ({
   zone_number,
 }) => {
   console.log("asd param", parameter, zone_number);
+  console.log("param realtime", parameter_static_realtime);
+  const targetRealTimeMC1 = GeneralStore((state) => state.targetRealTimeMC1);
+  const targetRealTimeMC2 = GeneralStore((state) => state.targetRealTimeMC2);
   const dateStrings = GeneralStore((state) => state.dateStrings);
   const { theme, setTheme } = useTheme();
   const currentDate = dayjs().format("YYYY-MM-DD");
@@ -99,13 +104,59 @@ const BaratsukiShiftColumn: React.FC<LineProps> = ({
   //!ถ้าในอนาคตเป็น mc อื่นที่ไม่ใช่ท้ายไลน์ จะต้องมี target ของงตัวเอง ในกรณีนั้น
   //!อาจจะต้อง fetch ข้อมูลมาใหม่ทั้งหมดในช่วง shift เพื่อมาคำนวณ target การทำงาน
 
-  const annotationsArrow: any[] = processedParameter
-    .map((item) => {
-      if (
-        item.actual >= item.lowerBaratsuki &&
-        item.actual <= item.upperBaratsuki
-      ) {
-        return null; // Skip periods with zero or invalid ct_actual values
+  const updated_parameter_static_realtime = parameter_static_realtime.map(
+    (item) => {
+      let lowerBaratsuki, upperBaratsuki, target;
+
+      if (zone_number === 1) {
+        target = targetRealTimeMC1;
+        lowerBaratsuki = targetRealTimeMC1 * (baratsukiRateNumber / 100) * 0.95;
+        upperBaratsuki = targetRealTimeMC1 * (baratsukiRateNumber / 100) * 1.05;
+      } else if (zone_number === 2) {
+        target = targetRealTimeMC2;
+        lowerBaratsuki = targetRealTimeMC2 * (baratsukiRateNumber / 100) * 0.95;
+        upperBaratsuki = targetRealTimeMC2 * (baratsukiRateNumber / 100) * 1.05;
+      }
+
+      return {
+        ...item,
+        target,
+        lowerBaratsuki,
+        upperBaratsuki,
+      };
+    }
+  );
+  console.log(updated_parameter_static_realtime);
+
+  const baseData =
+    dateStrings === currentDate
+      ? updated_parameter_static_realtime
+      : processedParameter;
+
+  const annotationsArrow: any[] = baseData
+    .map((item: any) => {
+      if (currentDate === dateStrings) {
+        return {
+          type: "line",
+          start: [baseData[0].shift, baseData[0].actual], // Start slightly below ct_actual
+          end: [baseData[0].shift, baseData[0].target], // End slightly above ct_actual
+          offsetX: -40,
+          style: {
+            stroke: "#FF4D4F",
+            lineWidth: 2,
+            opacity: 0.5,
+            fillOpactiy: 0.5,
+            strokeOpacity: 0.5,
+            endArrow: {
+              path: "M 0,0 L 8,4 L 8,-4 Z", // Arrow pointing right
+              d: -1,
+            },
+            startArrow: {
+              path: "M 0,0 L 8,4 L 8,-4 Z", // Arrow pointing left
+              d: -1,
+            },
+          },
+        };
       } else {
         return {
           type: "line",
@@ -135,10 +186,7 @@ const BaratsukiShiftColumn: React.FC<LineProps> = ({
   const generateAnnotations = (processedParameter: any[]) => {
     const annotations: any[] = processedParameter
       .map((item) => {
-        if (
-          item.actual >= item.lowerBaratsuki &&
-          item.actual <= item.upperBaratsuki
-        ) {
+        if (item.actual >= item.lowerBaratsuki) {
           return null; // Skip periods with zero or invalid actual values
         } else {
           const gapContent = `Gap = ${item.actual < item.target ? "-" : "+"}${
@@ -246,13 +294,13 @@ const BaratsukiShiftColumn: React.FC<LineProps> = ({
                   textAlign: "left",
                   fontSize: 16,
                   fontWeight: "bold",
-                  fill: "rgba(86, 191, 150, 1)",
+                  fill: "rgba(24, 144, 255, 1)",
                   textBaseline: "top",
                 },
               },
               style: {
                 opacity: 0.5,
-                stroke: "rgba(98, 218, 171, 1)",
+                stroke: "rgba(24, 144, 255, 1)",
                 lineWidth: 2.5,
                 lineDash: [4, 4],
               },
@@ -271,12 +319,12 @@ const BaratsukiShiftColumn: React.FC<LineProps> = ({
                   textAlign: "left",
                   fontSize: 10,
                   fontWeight: "bold",
-                  fill: "rgba(86, 191, 150, 1)",
+                  fill: "rgba(24, 144, 255, 1)",
                   textBaseline: "top",
                 },
               },
               style: {
-                stroke: "rgba(98, 218, 171, 1)",
+                stroke: "rgba(24, 144, 255, 1)",
                 lineDash: [4, 4],
                 lineWidth: 2.5,
               },
@@ -295,12 +343,12 @@ const BaratsukiShiftColumn: React.FC<LineProps> = ({
                   textAlign: "left",
                   fontSize: 10,
                   fontWeight: "bold",
-                  fill: "rgba(86, 191, 150, 1)",
+                  fill: "rgba(24, 144, 255, 1)",
                   textBaseline: "top",
                 },
               },
               style: {
-                stroke: "rgba(98, 218, 171, 1)",
+                stroke: "rgba(24, 144, 255, 1)",
                 lineDash: [4, 4],
                 lineWidth: 2.5,
               },
@@ -311,7 +359,7 @@ const BaratsukiShiftColumn: React.FC<LineProps> = ({
               end: [item.shift, item.upperBaratsuki],
               offsetX: 42,
               style: {
-                fill: "#62daab",
+                fill: "#1890FF",
                 fillOpacity: 0.15,
               },
             },
@@ -331,13 +379,13 @@ const BaratsukiShiftColumn: React.FC<LineProps> = ({
                   textAlign: "left",
                   fontSize: 16,
                   fontWeight: "bold",
-                  fill: "rgba(86, 191, 150, 1)",
+                  fill: "rgba(24, 144, 255, 1)",
                   textBaseline: "top",
                 },
               },
               style: {
                 opacity: 0.5,
-                stroke: "rgba(98, 218, 171, 1)",
+                stroke: "rgba(24, 144, 255, 1)",
                 lineWidth: 2.5,
                 lineDash: [4, 4],
               },
@@ -356,12 +404,12 @@ const BaratsukiShiftColumn: React.FC<LineProps> = ({
                   textAlign: "left",
                   fontSize: 10,
                   fontWeight: "bold",
-                  fill: "rgba(86, 191, 150, 1)",
+                  fill: "rgba(24, 144, 255, 1)",
                   textBaseline: "top",
                 },
               },
               style: {
-                stroke: "rgba(98, 218, 171, 1)",
+                stroke: "rgba(24, 144, 255, 1)",
                 lineDash: [4, 4],
                 lineWidth: 2.5,
               },
@@ -380,12 +428,12 @@ const BaratsukiShiftColumn: React.FC<LineProps> = ({
                   textAlign: "left",
                   fontSize: 10,
                   fontWeight: "bold",
-                  fill: "rgba(86, 191, 150, 1)",
+                  fill: "rgba(24, 144, 255, 1)",
                   textBaseline: "top",
                 },
               },
               style: {
-                stroke: "rgba(98, 218, 171, 1)",
+                stroke: "rgba(24, 144, 255, 1)",
                 lineDash: [4, 4],
                 lineWidth: 2.5,
               },
@@ -396,7 +444,7 @@ const BaratsukiShiftColumn: React.FC<LineProps> = ({
               end: ["end", item.upperBaratsuki],
               offsetX: -42,
               style: {
-                fill: "#62daab",
+                fill: "#1890FF",
                 fillOpacity: 0.15,
               },
             },
@@ -408,9 +456,151 @@ const BaratsukiShiftColumn: React.FC<LineProps> = ({
     return annotationsTargetLineRangeRegion;
   };
 
-  const annotations: any[] = generateAnnotations(processedParameter);
+  const annotations: any[] = generateAnnotations(baseData);
   const annotationsTargetLineRangeRegion: any[] =
-    generateAnnotationsTargetLineRangeRegion(processedParameter);
+    generateAnnotationsTargetLineRangeRegion(baseData);
+
+  const annotationNotRealTime = [
+    ...annotationsArrow,
+    ...annotations,
+    ...annotationsTargetLineRangeRegion,
+  ];
+
+  const lowerBaratsukiRealtime =
+    updated_parameter_static_realtime[0].lowerBaratsuki ?? 0; // Provide a default value, e.g., 0
+  const upperBaratsukiRealtime =
+    updated_parameter_static_realtime[0].upperBaratsuki ?? 0; // Provide a default value, e.g., 0
+  const targetRealTime = updated_parameter_static_realtime[0].target ?? 0;
+
+  const realtimeAnnotations = [
+    {
+      type: "line",
+      start: ["start", lowerBaratsukiRealtime],
+      end: [shift, lowerBaratsukiRealtime],
+      offsetX: 42,
+      text: {
+        content: `${Math.floor(lowerBaratsukiRealtime)}`,
+        offsetY: -9,
+        offsetX: -24,
+        position: "right",
+        style: {
+          textAlign: "left",
+          fontSize: 10,
+          fontWeight: "bold",
+          fill: "rgba(24, 144, 255, 1)",
+          textBaseline: "top",
+        },
+      },
+      style: {
+        stroke: "rgba(24, 144, 255, 1)",
+        lineDash: [4, 4],
+        lineWidth: 2.5,
+      },
+    },
+    {
+      type: "line",
+      start: ["start", upperBaratsukiRealtime],
+      end: [shift, upperBaratsukiRealtime],
+      offsetX: 42,
+      text: {
+        content: `${Math.floor(upperBaratsukiRealtime)}`,
+        offsetX: -24,
+        offsetY: -10,
+        position: "right",
+        style: {
+          textAlign: "left",
+          fontSize: 10,
+          fontWeight: "bold",
+          fill: "rgba(24, 144, 255, 1)",
+          textBaseline: "top",
+        },
+      },
+      style: {
+        stroke: "rgba(24, 144, 255, 1)",
+        lineDash: [4, 4],
+        lineWidth: 2.5,
+      },
+    },
+    {
+      type: "region",
+      start: ["start", lowerBaratsukiRealtime],
+      end: [shift, upperBaratsukiRealtime],
+      offsetX: 42,
+      style: {
+        fill: "#1890FF",
+        fillOpacity: 0.15,
+      },
+    },
+    {
+      type: "line",
+      start: [baseData[0]?.shift, baseData[0]?.actual], // Start slightly below ct_actual
+      end: [
+        baseData[0]?.shift,
+        (upperBaratsukiRealtime + lowerBaratsukiRealtime) / 2,
+      ], // End slightly above ct_actual
+      offsetX: -40,
+      style: {
+        stroke: "#FF4D4F",
+        lineWidth: 2,
+        opacity: 0.5,
+        fillOpactiy: 0.5,
+        strokeOpacity: 0.5,
+        endArrow: {
+          path: "M 0,0 L 8,4 L 8,-4 Z", // Arrow pointing right
+          d: -1,
+        },
+        startArrow: {
+          path: "M 0,0 L 8,4 L 8,-4 Z", // Arrow pointing left
+          d: -1,
+        },
+      },
+    },
+    {
+      type: "text",
+      content: `Gap = ${
+        updated_parameter_static_realtime[0].actual < targetRealTime ? "-" : "+"
+      }${targetRealTime - updated_parameter_static_realtime[0].actual} `,
+      offsetX: 80,
+      position: (xScale: any, yScale: any) => {
+        return [
+          `${
+            xScale.scale(updated_parameter_static_realtime[0].shift) * 100 - 18
+          }%`,
+          `${
+            (1 -
+              yScale.actual.scale(
+                (targetRealTime + updated_parameter_static_realtime[0].actual) /
+                  2
+              )) *
+            100
+          }%`,
+        ];
+      },
+      style: {
+        textAlign: "center",
+        fill:
+          updated_parameter_static_realtime[0].shift === "day"
+            ? updated_parameter_static_realtime[0].actual < targetRealTime
+              ? "#C40C0C"
+              : updated_parameter_static_realtime[0].actual > targetRealTime
+              ? "blue"
+              : "#FF8F8F"
+            : "#FF8F8F",
+        fontSize: 10,
+        fontWeight: "bold",
+      },
+      background: {
+        padding: 10,
+        style: {
+          z: 0,
+          radius: 17,
+        },
+      },
+    },
+  ];
+
+  const annotationsGraph: any[] =
+    currentDate === dateStrings ? realtimeAnnotations : annotationNotRealTime;
   const config: ColumnConfig = {
     data:
       dateStrings === currentDate
@@ -429,10 +619,10 @@ const BaratsukiShiftColumn: React.FC<LineProps> = ({
         console.log("Clicked data:", data);
         if (data.shift === "Day") {
           setShift("day");
-          setTheme("light")
+          setTheme("light");
         } else {
           setShift("night");
-          setTheme("dark")
+          setTheme("dark");
         }
       });
     },
@@ -440,7 +630,7 @@ const BaratsukiShiftColumn: React.FC<LineProps> = ({
     yAxis: {
       maxLimit: 2200,
       title: {
-        text: "Pieces (pcs.)",
+        text: "Performance  Analysis  By  Shift  (Pieces)",
         style: {
           fontSize: 16,
           //   fontWeight: "bold",
@@ -467,49 +657,23 @@ const BaratsukiShiftColumn: React.FC<LineProps> = ({
     },
     color: (data: any) => {
       console.log(data);
-      const matchingPeriod = processedParameter.find(
-        (p) => p.actual === data.actual
-      );
+      const matchingPeriod = baseData.find((p) => p.actual === data.actual);
+      console.log(matchingPeriod);
 
       if (matchingPeriod) {
         const actual = matchingPeriod.actual; // Access value from the found object in updatedParameter
         const lower = matchingPeriod.lowerBaratsuki ?? 0;
         const upper = matchingPeriod.upperBaratsuki ?? 0;
-        if (actual >= lower && actual <= upper) {
-          return "rgba(98, 218, 171, 0.5)";
-        } else if (actual <= lower) {
+        if (actual >= lower) {
+          return "rgba(24, 144, 255, 0.5)";
+        } else {
           return "rgba(255, 33, 33, 0.5)";
-        } else if (actual > upper) {
-          return "rgba(99,149,250, 0.5)";
         }
+      } else {
+        return "blue";
       }
-      return "blue";
     },
-    annotations: [
-      ...annotationsArrow,
-      ...annotations,
-      ...annotationsTargetLineRangeRegion,
-      // {
-      //   type: "text",
-      //   position: ["median", 2200 - 250],
-      //   content: `Challenge Rate at ${baratsukiRateNumber}%`,
-      //   style: {
-      //     textAlign: "center",
-      //     fontSize: 20,
-      //     fill: "black",
-      //     opacity: 0.8,
-      //   },
-      //   offsetY: -10,
-      // },
-    ],
-    interactions: [
-      {
-        type: "element-highlight-by-color",
-      },
-      {
-        type: "element-link",
-      },
-    ],
+    annotations: annotationsGraph,
   };
 
   return <Column {...config} />;

@@ -9,18 +9,18 @@ import {
   Button,
 } from "@nextui-org/react";
 import { Divider } from "antd";
-import BaratsukiShiftColumn from "../chart/baratsuki.column";
+import BaratsukiShiftColumn from "../chart/column/baratsuki.column";
 import { GeneralStore } from "@/store/general.store";
 import { QuestionCircleTwoTone } from "@ant-design/icons";
-import ColumnPlotTest from "../chart/main.column";
+import ColumnPlotTest from "../chart/column/main.column";
 import MonitorData from "../monitor/monitor.data";
 import { Empty } from "antd";
 import dayjs from "dayjs";
 import { AdjustCT } from "../input/adjustCT.input";
-import PercentOaBaratsuki from "../chart/percent.dot";
+import PercentOaBaratsuki from "../chart/line/percent.dot";
 import SunIcon from "@/asset/icon/SunIcon";
 import IconMoon from "@/asset/icon/MoonIcon";
-import { TwoRingShiftChart } from "../chart/twoRingDayNight";
+import { TwoRingShiftChart } from "../chart/ring/twoRingDayNight";
 import BaratsukiChallengeTab from "../tabs/baratsukichallenge.tabs";
 
 interface Data {
@@ -158,7 +158,7 @@ const CardMainDisplay: React.FC<IProps> = ({
             gap: "2rem",
           }}
         >
-          <div
+          <Card
             style={{
               width: "30%",
               height: "100%",
@@ -167,6 +167,8 @@ const CardMainDisplay: React.FC<IProps> = ({
               justifyContent: "center",
               alignItems: "center",
               gap: "1rem",
+              padding: "2rem 0rem 1rem 0rem",
+              background: shift === "day" ? "white" : "rgba(251,255,255,0.2)",
             }}
           >
             <p
@@ -211,7 +213,7 @@ const CardMainDisplay: React.FC<IProps> = ({
                       </p>
                     </div>{" "}
                     <div className="flex">
-                      <p>Baratsuki :&nbsp;</p>
+                      <p>Baratsuki&nbsp;:&nbsp;</p>
                       <p className="font-semibold">
                         {zone_number === 1
                           ? `${(oaMaxMc1Day - oaMinMc1Day).toFixed(2)}%`
@@ -254,9 +256,11 @@ const CardMainDisplay: React.FC<IProps> = ({
                     <div className="flex">
                       <p>Baratsuki&nbsp;:&nbsp;</p>
                       <p className="font-semibold">
-                        {zone_number === 1
-                          ? `${(oaMaxMc1Night - oaMinMc1Night).toFixed(2)}%`
-                          : `${(oaMaxMc2Night - oaMinMc2Night).toFixed(2)}%`}
+                        {dateStrings !== currentDate
+                          ? zone_number === 1
+                            ? `${(oaMaxMc1Night - oaMinMc1Night).toFixed(2)}%`
+                            : `${(oaMaxMc2Night - oaMinMc2Night).toFixed(2)}%`
+                          : "-"}
                       </p>
                     </div>
                   </div>
@@ -271,7 +275,7 @@ const CardMainDisplay: React.FC<IProps> = ({
                 zone_number={zone_number}
               />
             </div>
-          </div>
+          </Card>
           <div
             style={{
               height: "100%",
@@ -305,9 +309,9 @@ const CardMainDisplay: React.FC<IProps> = ({
                   <Tab key="off" title="Off" />
                 </Tabs>
               </div> */}
-              <div className="flex">
+              {/* <div className="flex">
                 <p>{shift === "day" ? "Day Shift" : "Night Shift"}</p>
-              </div>
+              </div> */}
               <p
                 style={{
                   fontSize: "1.5rem",
@@ -320,9 +324,31 @@ const CardMainDisplay: React.FC<IProps> = ({
                 </Tooltip>
                 &nbsp;By Period-Working
               </p>
+              <div className="flex gap-2">
+                <Chip
+                  color="danger"
+                  variant="dot"
+                  classNames={{
+                    base: "bg-red-200 border-0",
+                    content: "text-black ",
+                  }}
+                >
+                  จำนวนชิ้นงานในชั่วโมงการผลิตนั้นไม่อยู่ในเกณฑ์ที่ยอมรับได้
+                </Chip>
+                <Chip
+                  variant="dot"
+                  color="primary"
+                  classNames={{
+                    base: "bg-blue-200 border-0",
+                    content: "text-black ",
+                  }}
+                >
+                  จำนวนชิ้นงานในชั่วโมงการผลิตนั้นอยู่ในเกณฑ์ที่ยอมรับได้
+                </Chip>
+              </div>
             </div>
             <div className="flex flex-col  gap-4">
-              <div className="h-96">
+              <div className="h-80">
                 <div style={{ height: "100%" }}>
                   <PercentOaBaratsuki
                     parameter={zone}
@@ -330,7 +356,13 @@ const CardMainDisplay: React.FC<IProps> = ({
                   />
                 </div>
               </div>
-              <ColumnPlotTest parameter={zone} zone_number={zone_number} />
+              <p className="text-center font-light">
+                You&apos;re watching &apos;Performance Analysis&apos; of {shift}
+                &nbsp;shift
+              </p>
+              <div style={{ height: "28rem" }}>
+                <ColumnPlotTest parameter={zone} zone_number={zone_number} />
+              </div>
             </div>
             <MonitorData
               actual={actual}

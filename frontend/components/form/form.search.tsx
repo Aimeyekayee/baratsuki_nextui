@@ -81,7 +81,7 @@ const FormSearch = () => {
   const onSectionChange = async (value: Selection | any) => {
     setSection(value.currentKey);
     try {
-      const response = await axios.get(`http://127.0.0.1:8000/get_linename`, {
+      const response = await axios.get(`http://10.122.77.1:8004/get_linename`, {
         params: { section_name: value.currentKey },
       });
       if (response.status === 200) {

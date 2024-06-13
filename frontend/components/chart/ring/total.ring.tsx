@@ -25,7 +25,13 @@ const TotalRing: React.FC<LineProps> = ({ shift, actual, target }) => {
     autoFit: false,
     percent: percentage,
     color:
-      percentage >= rate ? "rgba(98, 218, 171, 0.5)" : "rgba(255, 33, 33, 0.5)",
+      shiftStore === "day"
+        ? percentage >= rate
+          ? ["rgba(24, 144, 255, 0.5)", "rgba(231, 232, 233, 0.5)"]
+          : ["rgba(255, 33, 33, 0.5)", "rgba(231, 232, 233, 0.5)"]
+        : percentage >= rate
+        ? ["rgba(24, 144, 255, 0.5)", "rgba(24, 232, 233, 0.08)"]
+        : ["rgba(255, 33, 33, 0.5)", "rgba(24, 232, 233, 0.08)"],
     innerRadius: 0.85,
     radius: 1,
     statistic: {

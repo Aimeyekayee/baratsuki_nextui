@@ -5,6 +5,7 @@ import { GeneralStore } from "@/store/general.store";
 import { ModalOpenStore } from "@/store/modal.open.store";
 import { DataProductionDetails } from "@/store/interfaces/baratsuki.fetch.interface";
 import zustand from "zustand";
+import { useRouter } from "next/navigation";
 
 interface TransformData {
   section_code: number;
@@ -17,7 +18,7 @@ interface TransformData {
 
 const AreaPlotBy5minutes: React.FC = () => {
   const dataTooltip = ModalOpenStore((state) => state.dataTooltip);
-
+  const router = useRouter();
   const zone_number = dataTooltip[0].data.zone_number;
   const ctTargetZone1 = GeneralStore((state) => state.ctTargetZone1);
   const ctTargetZone2 = GeneralStore((state) => state.ctTargetZone2);
@@ -364,6 +365,11 @@ const AreaPlotBy5minutes: React.FC = () => {
       style: {
         fontSize: 16,
       },
+    },
+    onReady: (plot) => {
+      plot.on("element:click", (evt: any) => {
+        window.open('https://ringtail-popular-ghoul.ngrok-free.app/apl/monitor?boardno=9&pageno=2', '_blank');
+      });
     },
     seriesField: "value",
     color: (value) => {

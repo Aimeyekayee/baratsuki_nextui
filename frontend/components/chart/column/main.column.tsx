@@ -1,7 +1,7 @@
 "use client";
 import { useDisclosure } from "@nextui-org/react";
 
-import ModalHour from "../modal/modal.hour";
+import ModalHour from "../../modal/modal.hour";
 import { GeneralStore } from "@/store/general.store";
 import dayjs from "dayjs";
 
@@ -895,11 +895,7 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter, zone_number }) => {
       case "16:30 - 16:50":
         return "black";
       default:
-        return value >= lower && value <= upper
-          ? "green"
-          : value > upper
-          ? "#0B60B0"
-          : "rgba(255,0,0,0.7)";
+        return value >= lower ? "#1890FF" : "rgba(255,0,0,0.7)";
     }
   }
   //!brake หาย
@@ -921,14 +917,14 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter, zone_number }) => {
       textAlign: "center",
       fill: "white",
       cursor: getModifiedCursor(point.period),
-      fontSize: 22,
+      fontSize: 14,
     },
-    offsetY: -4,
+    offsetY: 5,
     background: {
-      padding: 10,
+      padding: 8,
       style: {
         z: 0,
-        radius: 17,
+        radius: 12,
         cursor: getModifiedCursor(point.period),
         fill: getFill(point.period, point.value, point.upper, point.lower),
       },
@@ -964,7 +960,7 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter, zone_number }) => {
     } else if (graphData.length === 13) {
       return -37; // Or any default number value you prefer
     } else if (graphData.length === 14) {
-      return -31; // Or any default number value you prefer
+      return -35; // Or any default number value you prefer
     }
 
     return -60;
@@ -992,12 +988,12 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter, zone_number }) => {
               textAlign: "right",
               fontSize: 12,
               fontWeight: "bold",
-              fill: "rgba(86, 191, 150, 1)",
+              fill: "rgba(24, 144, 255, 1)",
               textBaseline: "top",
             },
           },
           style: {
-            stroke: "rgba(86, 191, 150, 1)",
+            stroke: "rgba(24, 144, 255, 1)",
             lineDash: [4, 4],
             lineWidth: 2.5,
           },
@@ -1065,12 +1061,12 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter, zone_number }) => {
               textAlign: "right",
               fontSize: 12,
               fontWeight: "bold",
-              fill: "rgba(86, 191, 150, 1)",
+              fill: "rgba(24, 144, 255, 1)",
               textBaseline: "top",
             },
           },
           style: {
-            stroke: "rgba(86, 191, 150, 1)",
+            stroke: "rgba(24, 144, 255, 1)",
             lineDash: [4, 4],
             lineWidth: 2.5,
           },
@@ -1131,7 +1127,7 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter, zone_number }) => {
             : [update.period, matchingPeriod.upper],
           offsetX: OffsetX(graphData),
           style: {
-            fill: "#62daab",
+            fill: "#1890FF",
             fillOpacity: "0.2",
             // opacity: 1,
           },
@@ -1356,8 +1352,9 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter, zone_number }) => {
         : { style: { fontSize: 20, fontWeight: "bold" } },
     yAxis: {
       maxLimit: 300,
+
       title: {
-        text: "Pieces per Period (pcs.)",
+        text: "Performance  Analysis  per  Hour  (pcs.)",
         style: {
           fontSize: 16,
           // fontWeight: "bold",
@@ -1380,19 +1377,16 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter, zone_number }) => {
         const value = matchingPeriod.value; // Access value from the found object in updatedParameter
         const lower = matchingPeriod.lower ?? 0;
         const upper = matchingPeriod.upper ?? 0;
-        if (value >= lower && value <= upper) {
-          return "rgba(98, 218, 171, 0.5)";
-        } else if (value <= lower) {
+        if (value >= lower) {
+          return "rgba(24, 144, 255, 0.5)";
+        } else {
           return "rgba(255, 33, 33, 0.5)";
-        } else if (value > upper) {
-          return "rgba(99,149,250, 0.5)";
         }
       }
-      // Default color if no matching period found
       return "blue";
     },
     xAxis: {
-      label:{style:{fontSize:11}},
+      label: { style: { fontSize: 11 } },
       title: {
         text: "Period",
         style: {
@@ -1411,15 +1405,7 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter, zone_number }) => {
     tooltip: {
       showMarkers: false,
     },
-    state: {
-      active: {
-        style: {
-          shadowBlur: 4,
-          stroke: "#000",
-          fill: "red",
-        },
-      },
-    },
+
     interactions: [
       {
         type: "element-highlight-by-color",
@@ -1468,7 +1454,7 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter, zone_number }) => {
                 };
                 console.log(parameter);
                 const response = await axios(
-                  "http://127.0.0.1:8000/get_data_area",
+                  "http://10.122.77.1:8004/get_data_area",
                   {
                     params: parameter,
                   }
