@@ -13,8 +13,8 @@ export const siteConfig = {
       href: "/baratsuki",
     },
     {
-      label: "Cycletime Monitoring",
-      href: "/alarm",
+      label: "Summary Dashboard",
+      href: "/summary",
     },
     {
       label: "Streaming",

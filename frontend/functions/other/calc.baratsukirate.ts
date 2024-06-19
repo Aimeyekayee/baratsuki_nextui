@@ -30,9 +30,9 @@
 //     setActualNotRealTimeMC1,
 //     setActualNotRealTimeMC2,
 //   } = GeneralStore.getState();
-//   //!   "http://10.122.77.1:8004/get_dataparameter_day"
+//   //!   "http://127.0.0.1:8000/get_dataparameter_day"
 //   const response = await axios.get(
-//     "http://10.122.77.1:8004/get_dataparameter_day",
+//     "http://127.0.0.1:8000/get_dataparameter_day",
 //     {
 //       params: params,
 //     }

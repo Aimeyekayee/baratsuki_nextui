@@ -54,6 +54,7 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter, zone_number }) => {
     const period = entry.period.slice(0, -3); // Remove the last three characters (":00")
     return { ...entry, period };
   });
+  console.log(formattedData);
   const dayShiftTimes1 = [
     "07:35",
     "08:30",
@@ -652,6 +653,7 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter, zone_number }) => {
   });
 
   updatedParameter.forEach((item: any) => {
+    console.log(item);
     const matchingPeriod = period.find(
       (periodItem) => periodItem.periodTime === item.period
     );
@@ -710,7 +712,72 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter, zone_number }) => {
     }
   }
 
-  console.log(graphData);
+  function updateGraphData(graphData: any[]) {
+    // Helper function to find a specific period's index
+    const findPeriodIndex = (shift: string, period: string) => {
+      return graphData.findIndex(
+        (item) => item.shift === shift && item.period === period
+      );
+    };
+
+    // Day shift condition
+    let periodIndex = findPeriodIndex("day", "17:50 - 19:20");
+    if (periodIndex !== -1) {
+      if (graphData[periodIndex].value === 0) {
+        let targetIndex = findPeriodIndex("day", "15:30 - 16:30");
+        if (targetIndex !== -1) {
+          graphData[targetIndex].upper = Math.round(
+            graphData[targetIndex].upper -
+              (600 / ctTarget) * (baratsukiRateNumber / 100)
+          );
+          graphData[targetIndex].lower = Math.round(
+            graphData[targetIndex].lower -
+              (600 / ctTarget) * (baratsukiRateNumber / 100)
+          );
+        }
+      } else {
+        graphData[periodIndex].upper = Math.round(
+          graphData[periodIndex].upper -
+            (600 / ctTarget) * (baratsukiRateNumber / 100)
+        );
+        graphData[periodIndex].lower = Math.round(
+          graphData[periodIndex].lower -
+            (600 / ctTarget) * (baratsukiRateNumber / 100)
+        );
+      }
+    }
+
+    // Night shift condition
+    periodIndex = findPeriodIndex("night", "05:50 - 07:20");
+    if (periodIndex !== -1) {
+      if (graphData[periodIndex].value === 0) {
+        let targetIndex = findPeriodIndex("night", "03:30 - 04:30");
+        if (targetIndex !== -1) {
+          graphData[targetIndex].upper = Math.round(
+            graphData[targetIndex].upper -
+              (600 / ctTarget) * (baratsukiRateNumber / 100)
+          );
+          graphData[targetIndex].lower = Math.round(
+            graphData[targetIndex].lower -
+              (600 / ctTarget) * (baratsukiRateNumber / 100)
+          );
+        }
+      } else {
+        graphData[periodIndex].upper = Math.round(
+          graphData[periodIndex].upper -
+            (600 / ctTarget) * (baratsukiRateNumber / 100)
+        );
+        graphData[periodIndex].lower = Math.round(
+          graphData[periodIndex].lower -
+            (600 / ctTarget) * (baratsukiRateNumber / 100)
+        );
+      }
+    }
+
+    return graphData;
+  }
+  const updatedGraphData = updateGraphData(graphData);
+  console.log(updatedGraphData);
 
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const setDataTooltip = ModalOpenStore((state) => state.setDataTooltip);
@@ -899,7 +966,7 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter, zone_number }) => {
     }
   }
   //!brake หาย
-  const annotations142: any[] = graphData.map((point) => ({
+  const annotations142: any[] = updatedGraphData.map((point) => ({
     type: "text",
     content: getModifiedContent(point.period, point.value),
     position: (xScale: any, yScale: any) => {
@@ -966,22 +1033,23 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter, zone_number }) => {
     return -60;
   };
 
-  const annotationsLower: any[] = graphData
+  const annotationsLower: any[] = updatedGraphData
     .map((update, index, array) => {
+      console.log(array);
       const matchingPeriod = period.find(
         (periodItem) => periodItem.periodTime === update.period
       );
-      if (matchingPeriod && matchingPeriod.lower !== 0) {
+      if (matchingPeriod && update.lower !== 0) {
         const nextUpdate = array[index + 1];
         return {
           type: "line",
-          start: [update.period, matchingPeriod.lower],
+          start: [update.period, update.lower],
           end: nextUpdate
-            ? [nextUpdate.period, matchingPeriod.lower]
-            : [update.period, matchingPeriod.lower],
-          offsetX: OffsetX(graphData),
+            ? [nextUpdate.period, update.lower]
+            : [update.period, update.lower],
+          offsetX: OffsetX(updatedGraphData),
           text: {
-            content: `${matchingPeriod.lower}`,
+            content: `${update.lower}`,
             offsetY: 1,
             position: "right",
             style: {
@@ -1010,51 +1078,51 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter, zone_number }) => {
       annotationsLower[annotationsLower.length - 2].start[0];
     lastAnnotation.end[0] =
       annotationsLower[annotationsLower.length - 2].end[0];
-    if (graphData.length === 2) {
+    if (updatedGraphData.length === 2) {
       lastAnnotation.offsetX = 375;
-    } else if (graphData.length === 3) {
+    } else if (updatedGraphData.length === 3) {
       lastAnnotation.offsetX = 148;
-    } else if (graphData.length === 4) {
+    } else if (updatedGraphData.length === 4) {
       lastAnnotation.offsetX = 330;
-    } else if (graphData.length === 5) {
+    } else if (updatedGraphData.length === 5) {
       lastAnnotation.offsetX = 89;
-    } else if (graphData.length === 6) {
+    } else if (updatedGraphData.length === 6) {
       lastAnnotation.offsetX = 76;
-    } else if (graphData.length === 7) {
+    } else if (updatedGraphData.length === 7) {
       lastAnnotation.offsetX = 215;
-    } else if (graphData.length === 8) {
+    } else if (updatedGraphData.length === 8) {
       lastAnnotation.offsetX = 165;
-    } else if (graphData.length === 9) {
+    } else if (updatedGraphData.length === 9) {
       lastAnnotation.offsetX = 60;
-    } else if (graphData.length === 10) {
+    } else if (updatedGraphData.length === 10) {
       lastAnnotation.offsetX = 130;
-    } else if (graphData.length === 11) {
+    } else if (updatedGraphData.length === 11) {
       lastAnnotation.offsetX = 50;
-    } else if (graphData.length === 12) {
+    } else if (updatedGraphData.length === 12) {
       lastAnnotation.offsetX = 65;
-    } else if (graphData.length === 13) {
+    } else if (updatedGraphData.length === 13) {
       lastAnnotation.offsetX = 39;
-    } else if (graphData.length === 14) {
+    } else if (updatedGraphData.length === 14) {
       lastAnnotation.offsetX = 33;
     }
   }
 
-  const annotationsUpper: any[] = graphData
+  const annotationsUpper: any[] = updatedGraphData
     .map((update, index, array) => {
       const matchingPeriod = period.find(
         (periodItem) => periodItem.periodTime === update.period
       );
-      if (matchingPeriod && matchingPeriod.lower !== 0) {
+      if (matchingPeriod && update.lower !== 0) {
         const nextUpdate = array[index + 1];
         return {
           type: "line",
-          start: [update.period, matchingPeriod.upper],
+          start: [update.period, update.upper],
           end: nextUpdate
-            ? [nextUpdate.period, matchingPeriod.upper]
-            : [update.period, matchingPeriod.upper],
-          offsetX: OffsetX(graphData),
+            ? [nextUpdate.period, update.upper]
+            : [update.period, update.upper],
+          offsetX: OffsetX(updatedGraphData),
           text: {
-            content: `${matchingPeriod.upper}`,
+            content: `${update.upper}`,
             offsetY: -12,
             position: "right",
             style: {
@@ -1083,49 +1151,49 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter, zone_number }) => {
       annotationsUpper[annotationsUpper.length - 2].start[0];
     lastAnnotation.end[0] =
       annotationsUpper[annotationsUpper.length - 2].end[0];
-    if (graphData.length === 2) {
+    if (updatedGraphData.length === 2) {
       lastAnnotation.offsetX = 375;
-    } else if (graphData.length === 3) {
+    } else if (updatedGraphData.length === 3) {
       lastAnnotation.offsetX = 148;
-    } else if (graphData.length === 4) {
+    } else if (updatedGraphData.length === 4) {
       lastAnnotation.offsetX = 330;
-    } else if (graphData.length === 5) {
+    } else if (updatedGraphData.length === 5) {
       lastAnnotation.offsetX = 89;
-    } else if (graphData.length === 6) {
+    } else if (updatedGraphData.length === 6) {
       lastAnnotation.offsetX = 76;
-    } else if (graphData.length === 7) {
+    } else if (updatedGraphData.length === 7) {
       lastAnnotation.offsetX = 215;
-    } else if (graphData.length === 8) {
+    } else if (updatedGraphData.length === 8) {
       lastAnnotation.offsetX = 165;
-    } else if (graphData.length === 9) {
+    } else if (updatedGraphData.length === 9) {
       lastAnnotation.offsetX = 60;
-    } else if (graphData.length === 10) {
+    } else if (updatedGraphData.length === 10) {
       lastAnnotation.offsetX = 130;
-    } else if (graphData.length === 11) {
+    } else if (updatedGraphData.length === 11) {
       lastAnnotation.offsetX = 50;
-    } else if (graphData.length === 12) {
+    } else if (updatedGraphData.length === 12) {
       lastAnnotation.offsetX = 65;
-    } else if (graphData.length === 13) {
+    } else if (updatedGraphData.length === 13) {
       lastAnnotation.offsetX = 39;
-    } else if (graphData.length === 14) {
+    } else if (updatedGraphData.length === 14) {
       lastAnnotation.offsetX = 33;
     }
   }
 
-  const annotationsRegion: any[] = graphData
+  const annotationsRegion: any[] = updatedGraphData
     .map((update, index, array) => {
       const matchingPeriod = period.find(
         (periodItem) => periodItem.periodTime === update.period
       );
-      if (matchingPeriod && matchingPeriod.lower !== 0) {
+      if (matchingPeriod && update.lower !== 0) {
         const nextUpdate = array[index + 1];
         return {
           type: "region",
-          start: [update.period, matchingPeriod.lower],
+          start: [update.period, update.lower],
           end: nextUpdate
-            ? [nextUpdate.period, matchingPeriod.upper]
-            : [update.period, matchingPeriod.upper],
-          offsetX: OffsetX(graphData),
+            ? [nextUpdate.period, update.upper]
+            : [update.period, update.upper],
+          offsetX: OffsetX(updatedGraphData),
           style: {
             fill: "#1890FF",
             fillOpacity: "0.2",
@@ -1144,36 +1212,36 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter, zone_number }) => {
       annotationsRegion[annotationsRegion.length - 2].start[0];
     lastAnnotation.end[0] =
       annotationsRegion[annotationsRegion.length - 2].end[0];
-    if (graphData.length === 2) {
+    if (updatedGraphData.length === 2) {
       lastAnnotation.offsetX = 375;
-    } else if (graphData.length === 3) {
+    } else if (updatedGraphData.length === 3) {
       lastAnnotation.offsetX = 148;
-    } else if (graphData.length === 4) {
+    } else if (updatedGraphData.length === 4) {
       lastAnnotation.offsetX = 330;
-    } else if (graphData.length === 5) {
+    } else if (updatedGraphData.length === 5) {
       lastAnnotation.offsetX = 89;
-    } else if (graphData.length === 6) {
+    } else if (updatedGraphData.length === 6) {
       lastAnnotation.offsetX = 76;
-    } else if (graphData.length === 7) {
+    } else if (updatedGraphData.length === 7) {
       lastAnnotation.offsetX = 215;
-    } else if (graphData.length === 8) {
+    } else if (updatedGraphData.length === 8) {
       lastAnnotation.offsetX = 165;
-    } else if (graphData.length === 9) {
+    } else if (updatedGraphData.length === 9) {
       lastAnnotation.offsetX = 60;
-    } else if (graphData.length === 10) {
+    } else if (updatedGraphData.length === 10) {
       lastAnnotation.offsetX = 130;
-    } else if (graphData.length === 11) {
+    } else if (updatedGraphData.length === 11) {
       lastAnnotation.offsetX = 50;
-    } else if (graphData.length === 12) {
+    } else if (updatedGraphData.length === 12) {
       lastAnnotation.offsetX = 65;
-    } else if (graphData.length === 13) {
+    } else if (updatedGraphData.length === 13) {
       lastAnnotation.offsetX = 39;
-    } else if (graphData.length === 14) {
+    } else if (updatedGraphData.length === 14) {
       lastAnnotation.offsetX = 33;
     }
   }
 
-  const annotationsArrow: any[] = graphData
+  const annotationsArrow: any[] = updatedGraphData
     .map((item) => {
       const upper = item.upper ?? 0; // Provide a default value if upper is undefined
       const lower = item.lower ?? 0;
@@ -1299,7 +1367,7 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter, zone_number }) => {
 
     return annotations;
   };
-  const annotationsGap: any[] = generateAnnotations(graphData);
+  const annotationsGap: any[] = generateAnnotations(updatedGraphData);
   const showGap = GeneralStore((state) => state.showGap);
   let annotaion = [
     ...annotations142,
@@ -1319,7 +1387,7 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter, zone_number }) => {
         type: "region",
         start: ["start", target * 0.95],
         end: ["end", target * 1.05],
-        // offsetX: OffsetX(graphData),
+        // offsetX: OffsetX(updatedGraphData),
         style: {
           fill: "#62daab",
           fillOpacity: "0.2",
@@ -1338,9 +1406,9 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter, zone_number }) => {
     ];
   }
   let chart: any;
-  console.log(graphData);
+
   const config: ColumnConfig = {
-    data: graphData,
+    data: updatedGraphData,
     xField: "period",
     yField: "value",
     columnStyle: {
@@ -1454,7 +1522,7 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter, zone_number }) => {
                 };
                 console.log(parameter);
                 const response = await axios(
-                  "http://10.122.77.1:8004/get_data_area",
+                  "http://127.0.0.1:8000/get_data_area",
                   {
                     params: parameter,
                   }

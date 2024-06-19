@@ -706,9 +706,9 @@ const PercentOaBaratsuki: React.FC<LineProps> = ({
     if (item.upper !== undefined && item.upper !== 0) {
       return {
         ...item,
-        target: item.upper / 1.05 / 0.77,
+        target: Math.round(item.upper / 1.05 / 0.77),
         oa: Number(
-          ((item.value / (item.upper / 1.05 / 0.77)) * 100).toFixed(2)
+          ((item.value / Math.round(item.upper / 1.05 / 0.77)) * 100).toFixed(2)
         ),
       };
     } else {
@@ -720,9 +720,12 @@ const PercentOaBaratsuki: React.FC<LineProps> = ({
   const validEntries = addTargetOA.filter(
     (entry: any) => entry.oa !== null && entry.value !== 0
   );
+  console.log(validEntries);
   const minOAEntry = validEntries.reduce((min: any, entry: any) => {
     return entry.oa < min.oa ? entry : min;
   }, validEntries[0]);
+
+  console.log(minOAEntry);
   const maxOAEntry = validEntries.reduce((max: any, entry: any) => {
     return entry.oa > max.oa ? entry : max;
   }, validEntries[0]);
@@ -781,6 +784,26 @@ const PercentOaBaratsuki: React.FC<LineProps> = ({
     })
   );
 
+  const valueUpper = (baratsukiRate: number) => {
+    if (baratsukiRate === 77) {
+      return 80.2;
+    } else if (baratsukiRate === 81) {
+      return 84.4;
+    } else {
+      return 88.39;
+    }
+  };
+
+  const valueLower = (baratsukiRate: number) => {
+    if (baratsukiRate === 77) {
+      return 72.42;
+    } else if (baratsukiRate === 81) {
+      return 76.24;
+    } else {
+      return 80;
+    }
+  };
+  console.log(addTargetOA);
   const config: LineConfig = {
     data: addTargetOA,
     xField: "period",
@@ -929,12 +952,12 @@ const PercentOaBaratsuki: React.FC<LineProps> = ({
       ...annotationLine,
       {
         type: "line",
-        start: ["start", 100],
-        end: ["end", 100],
+        start: ["start", valueUpper(baratsukiRateNumber)],
+        end: ["end", valueUpper(baratsukiRateNumber)],
         text: {
-          content: "100%",
+          content: `≈ ${valueUpper(baratsukiRateNumber)}%`,
           position: "right",
-          offsetY: 18,
+          offsetY: 0,
           style: {
             fontSize: 16,
             fontWeight: "bold",
@@ -950,10 +973,10 @@ const PercentOaBaratsuki: React.FC<LineProps> = ({
       },
       {
         type: "line",
-        start: ["start", Number(baratsukiRate)],
-        end: ["end", Number(baratsukiRate)],
+        start: ["start", valueLower(baratsukiRateNumber)],
+        end: ["end", valueLower(baratsukiRateNumber)],
         text: {
-          content: `${Number(baratsukiRate)}%`,
+          content: `≈ ${valueLower(baratsukiRateNumber)}%`,
           position: "right",
           style: {
             fontSize: 16,
@@ -968,47 +991,47 @@ const PercentOaBaratsuki: React.FC<LineProps> = ({
           lineWidth: 1.5,
         },
       },
-      {
-        type: "text",
-        content: "_",
-        position: ["end", Number(baratsukiRate)],
-        offsetY: -12,
-        offsetX: -5,
-        rotate: 0.7,
-        style: {
-          fontSize: 42,
-          fill: "rgba(24, 144, 255, 1)",
-        },
-      },
-      {
-        type: "text",
-        content: "_",
-        position: ["end", Number(baratsukiRate)],
-        offsetY: -12,
-        offsetX: -15,
-        rotate: 0.7,
-        style: {
-          fontSize: 42,
-          fill: "rgba(24, 144, 255, 1)",
-        },
-      },
-      {
-        type: "text",
-        content: "_",
-        position: ["end", Number(baratsukiRate)],
-        offsetY: -12,
-        offsetX: -25,
-        rotate: 0.7,
-        style: {
-          fontSize: 42,
-          fill: "rgba(24, 144, 255, 1)",
-        },
-      },
+      // {
+      //   type: "text",
+      //   content: "_",
+      //   position: ["end", valueLower(baratsukiRateNumber)],
+      //   offsetY: -12,
+      //   offsetX: -5,
+      //   rotate: 0.7,
+      //   style: {
+      //     fontSize: 42,
+      //     fill: "rgba(24, 144, 255, 1)",
+      //   },
+      // },
+      // {
+      //   type: "text",
+      //   content: "_",
+      //   position: ["end", valueLower(baratsukiRateNumber)],
+      //   offsetY: -12,
+      //   offsetX: -15,
+      //   rotate: 0.7,
+      //   style: {
+      //     fontSize: 42,
+      //     fill: "rgba(24, 144, 255, 1)",
+      //   },
+      // },
+      // {
+      //   type: "text",
+      //   content: "_",
+      //   position: ["end", valueLower(baratsukiRateNumber)],
+      //   offsetY: -12,
+      //   offsetX: -25,
+      //   rotate: 0.7,
+      //   style: {
+      //     fontSize: 42,
+      //     fill: "rgba(24, 144, 255, 1)",
+      //   },
+      // },
 
       {
         type: "region",
-        start: ["start", Number(baratsukiRate)],
-        end: ["end", 100],
+        start: ["start", valueLower(baratsukiRateNumber)],
+        end: ["end", valueUpper(baratsukiRateNumber)],
         offsetX: 0,
         style: {
           fill: "#1890FF",

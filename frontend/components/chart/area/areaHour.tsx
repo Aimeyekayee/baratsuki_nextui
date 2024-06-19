@@ -28,10 +28,17 @@ const AreaPlotByHour: React.FC = () => {
 
   const targetZoneRate = zone_number === 1 ? ctTargetZone1 : ctTargetZone2;
 
-  const calculateBounds = (time: number, rate: number) => ({
-    upper: (time / targetZoneRate) * rate * 1.05,
-    lower: (time / targetZoneRate) * rate * 0.95,
-  });
+  const calculateBounds = (time: number, rate: number) => {
+    console.log(`Time: ${time}`);
+    console.log(`Rate: ${rate}`);
+
+    return {
+      upper: time / targetZoneRate,
+      lower: (time / targetZoneRate) * rate,
+      // upper: (time / targetZoneRate) * rate * 1.05,
+      // lower: (time / targetZoneRate) * rate * 0.95,
+    };
+  };
 
   const periods1 = [
     { periodTime: "08:30", time: 3300 },
@@ -278,8 +285,8 @@ const AreaPlotByHour: React.FC = () => {
   };
 
   const annotations: any[] = generateAnnotations(
-    transformData3,
-    (upper + lower) / 2
+    transformData3,lower
+    // (upper + lower) / 2
   );
   const config: AreaConfig = {
     data: transformData3,

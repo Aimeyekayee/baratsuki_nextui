@@ -368,16 +368,19 @@ const AreaPlotBy5minutes: React.FC = () => {
     },
     onReady: (plot) => {
       plot.on("element:click", (evt: any) => {
-        window.open('https://ringtail-popular-ghoul.ngrok-free.app/apl/monitor?boardno=9&pageno=2', '_blank');
+        window.open(
+          "https://ringtail-popular-ghoul.ngrok-free.app/apl/monitor?boardno=9&pageno=2",
+          "_blank"
+        );
       });
     },
     seriesField: "value",
     color: (value) => {
       console.log(value);
-      if (value.value === target) {
-        return "#5cdaab";
+      if (value.value >= target) {
+        return "rgba(24, 144, 255, 0.5)";
       } else if (value.value < target) {
-        return "#F4664A";
+        return "rgba(255, 33, 33, 0.5)";
       }
       return "#A0DEFF";
     },
@@ -403,8 +406,8 @@ const AreaPlotBy5minutes: React.FC = () => {
     //   };
     // },
     annotations: [
-      ...annotations,
-      ...annotationsArrow,
+      // ...annotations,
+      // ...annotationsArrow,
       {
         type: "line",
         start: ["min", target],
@@ -418,12 +421,12 @@ const AreaPlotBy5minutes: React.FC = () => {
             textAlign: "left",
             fontSize: 12,
             fontWeight: "bold",
-            fill: "rgba(86, 191, 150, 1)",
+            fill: "rgba(24, 144, 255, 1)",
             textBaseline: "top",
           },
         },
         style: {
-          stroke: "rgba(86, 191, 150, 1)",
+          stroke: "rgba(24, 144, 255, 1)",
           lineDash: [4, 4],
           lineWidth: 2.5,
         },
@@ -441,12 +444,12 @@ const AreaPlotBy5minutes: React.FC = () => {
             textAlign: "left",
             fontSize: 30,
             fontWeight: "bold",
-            fill: "rgba(86, 191, 150, 1)",
+            fill: "rgba(24, 144, 255, 1)",
             textBaseline: "top",
           },
         },
         style: {
-          stroke: "rgba(86, 191, 150, 1)",
+          stroke: "rgba(24, 144, 255, 1)",
           lineDash: [4, 4],
           lineWidth: 2.5,
         },

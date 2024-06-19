@@ -64,6 +64,7 @@ const CardMainDisplay: React.FC<IProps> = ({
   const shift = GeneralStore((state) => state.shift);
   const showGap = GeneralStore((state) => state.showGap);
   const dateStrings = GeneralStore((state) => state.dateStrings);
+  const baratsukiRate = GeneralStore((state) => state.baratsukiRate);
 
   const capitalizedShift =
     String(shift).charAt(0).toUpperCase() + String(shift).slice(1);
@@ -101,6 +102,8 @@ const CardMainDisplay: React.FC<IProps> = ({
   const targetRealTimeMC1 = GeneralStore((state) => state.targetRealTimeMC1);
   const targetRealTimeMC2 = GeneralStore((state) => state.targetRealTimeMC2);
 
+  type TargetKeys = 77 | 81 | 85 | 100;
+
   const oaMinMc1Day = GeneralStore((state) => state.oaMinMc1Day);
   const oaMaxMc1Day = GeneralStore((state) => state.oaMaxMc1Day);
   const oaMinMc2Day = GeneralStore((state) => state.oaMinMc2Day);
@@ -109,6 +112,9 @@ const CardMainDisplay: React.FC<IProps> = ({
   const oaMaxMc1Night = GeneralStore((state) => state.oaMaxMc1Night);
   const oaMinMc2Night = GeneralStore((state) => state.oaMinMc2Night);
   const oaMaxMc2Night = GeneralStore((state) => state.oaMaxMc2Night);
+  const ctTargetZone1 = GeneralStore((state) => state.ctTargetZone1);
+  const ctTargetZone2 = GeneralStore((state) => state.ctTargetZone2);
+  const baratsukiRateNumber = Number(baratsukiRate) as TargetKeys;
 
   const determineTarget = (currentDate: string, zone_number: number) => {
     if (currentDate === dateStrings) {
@@ -119,9 +125,9 @@ const CardMainDisplay: React.FC<IProps> = ({
       }
     } else {
       if (zone_number === 1) {
-        return targetNotRealTimeMC1;
+        return Math.floor(targetNotRealTimeMC1 - 600 / ctTargetZone1);
       } else {
-        return targetNotRealTimeMC2;
+        return Math.floor(targetNotRealTimeMC2 - 600 / ctTargetZone2);
       }
     }
   };
@@ -181,7 +187,7 @@ const CardMainDisplay: React.FC<IProps> = ({
               <Tooltip content="Click at Column to change view to that shift.">
                 <QuestionCircleTwoTone style={{ fontSize: "1.5rem" }} />
               </Tooltip>
-              &nbsp;OA By Shift (±5%)
+              &nbsp;OA By Shift
             </p>
             <div className="flex items-center justify-center">
               <BaratsukiChallengeTab />
@@ -333,7 +339,8 @@ const CardMainDisplay: React.FC<IProps> = ({
                     content: "text-black ",
                   }}
                 >
-                  จำนวนชิ้นงานในชั่วโมงการผลิตนั้นไม่อยู่ในเกณฑ์ที่ยอมรับได้
+                  จำนวนชิ้นงานในชั่วโมงการผลิตไม่อยู่ในเกณฑ์ที่ยอมรับได้ ({"<"}
+                  {Number(baratsukiRate)}%)
                 </Chip>
                 <Chip
                   variant="dot"
@@ -343,7 +350,8 @@ const CardMainDisplay: React.FC<IProps> = ({
                     content: "text-black ",
                   }}
                 >
-                  จำนวนชิ้นงานในชั่วโมงการผลิตนั้นอยู่ในเกณฑ์ที่ยอมรับได้
+                  จำนวนชิ้นงานในชั่วโมงการผลิตอยู่ในเกณฑ์ที่ยอมรับได้ (
+                  {Number(baratsukiRate)}% - 100%)
                 </Chip>
               </div>
             </div>

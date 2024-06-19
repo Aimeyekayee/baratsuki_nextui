@@ -88,6 +88,8 @@ export const TwoRingShiftChart: React.FC<LineProps> = ({
   );
   const targetRealTimeMC1 = GeneralStore((state) => state.targetRealTimeMC1);
   const targetRealTimeMC2 = GeneralStore((state) => state.targetRealTimeMC2);
+  const ctTargetZone1 = GeneralStore((state) => state.ctTargetZone1);
+  const ctTargetZone2 = GeneralStore((state) => state.ctTargetZone2);
 
   const determineTarget = (currentDate: string, zone_number: number) => {
     if (currentDate === dateStrings) {
@@ -98,9 +100,9 @@ export const TwoRingShiftChart: React.FC<LineProps> = ({
       }
     } else {
       if (zone_number === 1) {
-        return targetNotRealTimeMC1;
+        return Math.floor(targetNotRealTimeMC1 - 600 / ctTargetZone1);
       } else {
-        return targetNotRealTimeMC2;
+        return Math.floor(targetNotRealTimeMC2 - 600 / ctTargetZone2);
       }
     }
   };
