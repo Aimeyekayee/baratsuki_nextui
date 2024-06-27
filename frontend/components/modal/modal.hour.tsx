@@ -37,6 +37,7 @@ import { SortIcon } from "../icon";
 import SortPieSelect from "../select/select.sortPie";
 import AlarmHistoryTableEach from "../table/table.alarmhistoryEach";
 import { AdjustCT } from "../input/adjustCT.input";
+import { BaratsukiStore } from "@/store/data.baratsuki.store";
 
 interface ModalManagement {
   isOpen: boolean;
@@ -49,261 +50,21 @@ const ModalHour: React.FC<ModalManagement> = ({
   onOpen,
   onOpenChange,
 }) => {
-  const modalOpen = ModalOpenStore((state) => state.openModal);
-  const [selected, setSelected] = React.useState<string | number>("1hr");
+  const baratsukiDataArea = BaratsukiStore((state) => state.baratsukiDataArea);
+  const shift = GeneralStore((state) => state.shift);
+  const setBaratsukiDataArea = BaratsukiStore(
+    (state) => state.setBaratsukiDataArea
+  );
+  const clickMCinPieGraph = GeneralStore((state) => state.clickMCinPieGraph);
+  const [selected, setSelected] = React.useState<string | number>("5min");
   const [selectedView, setSelectedView] = React.useState<string | number>(
     "each"
   );
-  const clickMCinPieGraph = GeneralStore((state) => state.clickMCinPieGraph);
-  const setDataBaratsuki = GeneralStore((state) => state.setDataBaratsuki);
-  const setOpenModal = ModalOpenStore((state) => state.setOpenModal);
-  const sortPie = GeneralStore((state) => state.sortPie);
-  const setSortPie = GeneralStore((state) => state.setSortPie);
-  const isOdd = GeneralStore((state) => state.isOdd);
-  const dataTooltip = ModalOpenStore((state) => state.dataTooltip);
-
-  const items = [
-    {
-      key: "code39",
-      label: "Code 39",
-    },
-    {
-      key: "code42",
-      label: "Code 42",
-    },
-    {
-      key: "full",
-      label: "Full",
-    },
-  ];
-  //status 1=work , 2=rest 3=lunch
-  const period1 = [
-    {
-      periodTime: "07:35 - 08:30",
-      time: 3300,
-      status: 1,
-    },
-    {
-      periodTime: "08:30 - 09:30",
-      time: 3600,
-      status: 1,
-    },
-    { periodTime: "09:30 - 09:40", time: 600, status: 2 },
-    {
-      periodTime: "09:40 - 10:30",
-      time: 3000,
-      status: 1,
-    },
-    {
-      periodTime: "10:30 - 11:15",
-      time: 2700,
-      status: 1,
-    },
-    { periodTime: "11:15 - 12:15", time: 3600, status: 3 },
-    {
-      periodTime: "12:15 - 13:30",
-      time: 4500,
-      status: 1,
-    },
-    {
-      periodTime: "13:30 - 14:30",
-      time: 3600,
-      status: 1,
-    },
-    { periodTime: "14:30 - 14:40", time: 600, status: 2 },
-    {
-      periodTime: "14:40 - 15:30",
-      time: 3000,
-      status: 1,
-    },
-    {
-      periodTime: "15:30 - 16:30",
-      time: 3600,
-      status: 1,
-    },
-    { periodTime: "16:30 - 16:50", time: 1200, status: 2 },
-    {
-      periodTime: "16:50 - 17:50",
-      time: 3600,
-      status: 1,
-    },
-    {
-      periodTime: "17:50 - 19:20",
-      time: 5400,
-      status: 1,
-    },
-    {
-      periodTime: "19:35 - 20:30",
-      time: 3300,
-      status: 1,
-    },
-    {
-      periodTime: "20:30 - 21:30",
-      time: 3600,
-      status: 1,
-    },
-    { periodTime: "21:30 - 21:40", time: 600, status: 2 },
-    {
-      periodTime: "21:40 - 22:30",
-      time: 3000,
-      status: 1,
-    },
-    {
-      periodTime: "22:30 - 23:15",
-      time: 2700,
-      status: 1,
-    },
-    { periodTime: "23:15 - 00:05", time: 3000, status: 3 },
-    {
-      periodTime: "00:05 - 01:30",
-      time: 5100,
-      status: 1,
-    },
-    {
-      periodTime: "01:30 - 02:30",
-      time: 3600,
-      status: 1,
-    },
-    { periodTime: "02:30 - 02:50", time: 1200, status: 2 },
-    {
-      periodTime: "02:50 - 03:30",
-      time: 2400,
-      status: 1,
-    },
-    {
-      periodTime: "03:30 - 04:30",
-      time: 3600,
-      status: 1,
-    },
-    { periodTime: "04:30 - 04:50", time: 1200, status: 2 },
-    {
-      periodTime: "04:50 - 05:50",
-      time: 3600,
-      status: 1,
-    },
-    {
-      periodTime: "05:50 - 07:20",
-      time: 5400,
-      status: 1,
-    },
-  ];
-  const period2 = [
-    {
-      periodTime: "07:35 - 08:30",
-      time: 3300,
-      status: 1,
-    },
-    {
-      periodTime: "08:30 - 09:20",
-      time: 3000,
-      status: 1,
-    },
-    { periodTime: "09:20 - 09:30", time: 600, status: 2 },
-    {
-      periodTime: "09:30 - 10:30",
-      time: 3600,
-      status: 1,
-    },
-    {
-      periodTime: "10:30 - 11:30",
-      time: 3600,
-      status: 1,
-    },
-    { periodTime: "11:30 - 12:30", time: 3600, status: 3 },
-    {
-      periodTime: "12:30 - 13:30",
-      time: 3600,
-      status: 1,
-    },
-    {
-      periodTime: "13:30 - 14:30",
-      time: 3600,
-      status: 1,
-    },
-    { periodTime: "14:20 - 14:30", time: 600, status: 2 },
-    {
-      periodTime: "14:30 - 15:30",
-      time: 3600,
-      status: 1,
-    },
-    {
-      periodTime: "15:30 - 16:30",
-      time: 3600,
-      status: 1,
-    },
-    { periodTime: "16:30 - 16:50", time: 1200, status: 2 },
-    {
-      periodTime: "16:50 - 17:50",
-      time: 3600,
-      status: 1,
-    },
-    {
-      periodTime: "17:50 - 19:20",
-      time: 5400,
-      status: 1,
-    },
-    {
-      periodTime: "19:35 - 20:30",
-      time: 3300,
-      status: 1,
-    },
-    {
-      periodTime: "20:30 - 21:30",
-      time: 3600,
-      status: 1,
-    },
-    { periodTime: "21:30 - 21:40", time: 600, status: 2 },
-    {
-      periodTime: "21:40 - 22:30",
-      time: 3000,
-      status: 1,
-    },
-    {
-      periodTime: "22:30 - 23:30",
-      time: 3600,
-      status: 1,
-    },
-    { periodTime: "23:30 - 00:20", time: 3000, status: 3 },
-    {
-      periodTime: "00:20 - 01:30",
-      time: 4200,
-      status: 1,
-    },
-    {
-      periodTime: "01:30 - 02:30",
-      time: 3600,
-      status: 1,
-    },
-    { periodTime: "02:30 - 02:50", time: 1200, status: 2 },
-    {
-      periodTime: "02:50 - 03:30",
-      time: 2400,
-      status: 1,
-    },
-    {
-      periodTime: "03:30 - 04:30",
-      time: 3600,
-      status: 1,
-    },
-    { periodTime: "04:30 - 04:50", time: 1200, status: 2 },
-    {
-      periodTime: "04:50 - 05:50",
-      time: 3600,
-      status: 1,
-    },
-    {
-      periodTime: "05:50 - 07:20",
-      time: 5400,
-      status: 1,
-    },
-  ];
-
-  const period = isOdd ? period1 : period2;
-  const zone_number = dataTooltip[0]?.data.zone_number;
   return (
     <Modal
       isOpen={isOpen}
       onOpenChange={onOpenChange}
+      onClose={() => setBaratsukiDataArea([])}
       isDismissable={false}
       isKeyboardDismissDisabled={true}
       size="full"
@@ -313,46 +74,16 @@ const ModalHour: React.FC<ModalManagement> = ({
         {(onClose) => (
           <>
             <ModalHeader className="flex gap-1">
-              {dataTooltip[0].data.machine_no}{" "}
-              {dataTooltip[0].data.machine_name} : {dataTooltip[0].title}{" "}
-              {period.map((periodItem) => {
-                if (periodItem.periodTime === dataTooltip[0].title) {
-                  let statusText = "";
-                  if (periodItem.status === 1) {
-                    statusText = "Working time";
-                  } else if (periodItem.status === 2) {
-                    statusText = "Rest time";
-                  } else if (periodItem.status === 3) {
-                    statusText = "Lunch time";
-                  }
-                  return (
-                    <Chip
-                      key={periodItem.periodTime}
-                      color="warning"
-                      variant="flat"
-                    >
-                      {statusText} {periodItem.time} sec.
-                    </Chip>
-                  );
-                }
-                return null; // Render nothing if periodTime doesn't match
-              })}
+              {baratsukiDataArea[0].machine_no}{" "}
+              {baratsukiDataArea[0].machine_name} :{" "}
+              {baratsukiDataArea[0].period}{" "}
             </ModalHeader>
             <ModalBody className="flex flex-row">
               <div
                 className="flex flex-col gap-2"
                 style={{ width: "50%", height: "100%" }}
               >
-                <div
-                  className="flex gap-4"
-                  style={{
-                    display: "flex",
-                    // justifyContent: "space-between",
-                    // alignItems: "center",
-                  }}
-                >
-                  <AdjustCT zone_number={zone_number} />
-                  <BaratsukiChallengeTab />
+                <div className="flex gap-4 justify-end">
                   <div className="flex items-center gap-2">
                     <Tooltip content="asda">
                       <QuestionCircleTwoTone style={{ fontSize: "1.5rem" }} />
@@ -370,14 +101,24 @@ const ModalHour: React.FC<ModalManagement> = ({
                   </div>
                 </div>
                 <Card
-                  style={{ padding: "1rem", height: "100%" }}
+                  style={{
+                    padding: "3rem",
+                    height: "100%",
+                    background: shift === 1 ? "white" : "#182228",
+                  }}
                   shadow="sm"
                   radius="sm"
                   isBlurred
                 >
-                  {selected === "1hr" && <AreaPlotByHour />}
-                  {selected === "5min" && <AreaPlotBy5minutes />}
-                  {selected === "accum" && <AreaPlotByAccummulate />}
+                  {selected === "1hr" && (
+                    <AreaPlotByHour parameter={baratsukiDataArea} />
+                  )}
+                  {selected === "5min" && (
+                    <AreaPlotBy5minutes parameter={baratsukiDataArea} />
+                  )}
+                  {selected === "accum" && (
+                    <AreaPlotByAccummulate parameter={baratsukiDataArea} />
+                  )}
                 </Card>
               </div>
               <div
@@ -434,58 +175,8 @@ const ModalHour: React.FC<ModalManagement> = ({
                     <AlarmHistoryTableEach />
                   )}
                 </div>
-                {/* <div style={{ width: "100%" }} className="flex gap-4">
-                  <div style={{ width: "40%", height: "13rem" }}>
-                    <TableMock />
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <p className="font-semibold">Person In-Charge</p>
-                    <ListBoxMember />
-                  </div>
-                </div>
-                <div className="flex justify-between" style={{ width: "100%" }}>
-                  <div className="space-y-1">
-                    <h4 className="text-medium font-medium">
-                      Recording and Highlights
-                    </h4>
-                    <p className="text-small text-default-400">
-                      Click on any period to watch alarm.
-                    </p>
-                  </div>
-                  <Dropdown>
-                    <DropdownTrigger>
-                      <Button variant="bordered">Download Video</Button>
-                    </DropdownTrigger>
-                    <DropdownMenu aria-label="Dynamic Actions" items={items}>
-                      {(item) => (
-                        <DropdownItem
-                          key={item.key}
-                          color={item.key === "delete" ? "danger" : "default"}
-                          className={item.key === "delete" ? "text-danger" : ""}
-                        >
-                          {item.label}
-                        </DropdownItem>
-                      )}
-                    </DropdownMenu>
-                  </Dropdown>
-                </div> */}
-                {/* <div style={{ width: "100%", height: "70%" }}>
-                  <VideoPlayer />
-                </div> */}
               </div>
             </ModalBody>
-            {/* <ModalFooter>
-              <Button
-                color="danger"
-                variant="light"
-                onPress={() => {
-                  onClose;
-                  setDataBaratsuki([]);
-                }}
-              >
-                Close
-              </Button>
-            </ModalFooter> */}
           </>
         )}
       </ModalContent>

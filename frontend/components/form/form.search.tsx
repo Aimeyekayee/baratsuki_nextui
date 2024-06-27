@@ -1,43 +1,60 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import debounce from "lodash.debounce";
 import { FieldValues, useForm } from "react-hook-form";
-import axios from "axios";
-import { requestSection } from "@/action/request.record";
-import { requestMachinename } from "@/action/request.record";
+import { ISection } from "@/types/section.type";
 import { useDateFormatter } from "@react-aria/i18n";
 import dayjs from "dayjs";
-import { GeneralStore } from "@/store/general.store";
 import { MQTTStore } from "@/store/mqttStore";
+import { motion } from "framer-motion";
+
 import {
   Button,
   Select,
   SelectItem,
   SelectSection,
-  Selection,
   DatePicker,
+  Chip,
 } from "@nextui-org/react";
-import { SearchRecStore } from "@/store/search.store";
 import { DateValue, getLocalTimeZone } from "@internationalized/date";
-import { ISection } from "@/types/section.type";
+import useStoreSearch from "@/action/useStoreSearch";
 import {
-  calBaratsukiDay,
-  calBaratsukiNight,
-  requestDataByShiftColumn,
-  requestDataDay,
-  requestDataNight,
-} from "@/action/requrest.data";
+  requestLinename,
+  requestMachinenames,
+  requestSection,
+} from "@/action/request.search";
+import IconDeleteBin4Fill from "../icons";
+import {
+  QueryParameterStore,
+  initialSearchQuery,
+} from "@/store/query.params.store";
 
-const FormSearch = () => {
-  let formatter = useDateFormatter({ dateStyle: "medium" });
-  const currentDate = dayjs().format("YYYY-MM-DD");
-  const shift = GeneralStore((state) => state.shift);
-  const dateStrings = GeneralStore((state) => state.dateStrings);
-  const setDateString = GeneralStore((state) => state.setDateStrings);
-  const setIsOdd = GeneralStore((state) => state.setIsOdd);
-  const sections = SearchRecStore((state) => state.sections);
-  const machinename = SearchRecStore((state) => state.name_no_machine);
-  const linename = SearchRecStore((state) => state.line_name);
-  const set_linename = SearchRecStore((state) => state.setLinename);
+interface FormSearchProps {
+  id: string;
+  onRemove: (id: string) => void;
+  sortedSection: any[];
+  sortedLinename: any[];
+  machinename: any[];
+  onSectionChange: (value: string) => void;
+  onLineNameChange: (value: string) => void;
+  onMachineChange: (value: string) => void;
+  onDateChange: (value: any) => void;
+  onSearch: () => void;
+}
+
+const FormSearch: React.FC<FormSearchProps> = ({
+  id,
+  onRemove,
+  sortedSection,
+  sortedLinename,
+  machinename,
+  onSectionChange,
+  onLineNameChange,
+  onMachineChange,
+  onDateChange,
+  onSearch,
+}) => {
   const {
     client,
     isConnected,
@@ -49,11 +66,6 @@ const FormSearch = () => {
     mqttDataMachine2,
   } = MQTTStore();
 
-  const [section, setSection] = useState("");
-  const [section_code, setSection_code] = useState<number>(0);
-  const [nextDate, setNextDate] = useState<string>("");
-  const [lineId, setLineID] = useState<number | undefined>(0);
-
   const {
     register,
     handleSubmit,
@@ -61,137 +73,21 @@ const FormSearch = () => {
     reset,
     getValues,
   } = useForm();
+  const searchParams = useSearchParams();
   const machine_no_from_form = ["6EW-0040", "6TM-0315"];
-  const sortedSection = sections
-    .slice()
-    .sort((a: ISection, b: ISection) =>
-      a.section_name.localeCompare(b.section_name)
-    );
-
-  const sortByFirstNumber = (a: any, b: any) => {
-    const numA = parseInt(a.line_name.match(/\d+/)?.[0] || 0);
-    const numB = parseInt(b.line_name.match(/\d+/)?.[0] || 0);
-    return numA - numB;
-  };
-  const sortedLinename = linename.slice().sort(sortByFirstNumber);
 
   const onSubmit = async (data: FieldValues) => {
-    console.log(data); // { selectedOption: 'selected value' }
-  };
-  const onSectionChange = async (value: Selection | any) => {
-    setSection(value.currentKey);
-    try {
-      const response = await axios.get(`http://127.0.0.1:8000/get_linename`, {
-        params: { section_name: value.currentKey },
-      });
-      if (response.status === 200) {
-        console.log(response.data);
-        set_linename(response.data);
-      }
-    } catch (err) {
-      console.error(err);
-    }
+    console.log(data);
   };
 
-  const onLineNameChange = async (value: Selection | any) => {
-    console.log(value);
-    const parts: string[] = value.currentKey.split("-");
-    const line_id = parseInt(parts[2]);
-    console.log(line_id);
-    setLineID(line_id);
-    const section_code = parseInt(value.currentKey.split(" ")[0]);
-    console.log(section_code);
-    setSection_code(section_code);
-    await requestMachinename(section_code);
-  };
+  const url_section_code = Number(searchParams.get("section_code"));
+  const url_line_id = Number(searchParams.get("line_id"));
+  const url_working_date = searchParams.get("working_date");
+  const url_machine_no = searchParams.get("machine_no");
+  const url_machine_no_array = url_machine_no ? url_machine_no.split("_") : [];
 
-  const onDateChange = (value: DateValue | any) => {
-    setIsOdd(value.month);
-    const date = formatter.format(value.toDate(getLocalTimeZone()));
-    const orginalDate = new Date(date);
-    const year = orginalDate.getFullYear();
-    const month = ("0" + (orginalDate.getMonth() + 1)).slice(-2);
-    const day = ("0" + orginalDate.getDate()).slice(-2);
-    const formattedDate = `${year}-${month}-${day}`;
-    setDateString(formattedDate);
-    const selectDate = new Date(formattedDate);
-    selectDate.setDate(selectDate.getDate() + 1);
-    const nextDate = selectDate.toISOString().split("T")[0];
-    setNextDate(nextDate);
-  };
-  const isOdd = GeneralStore((state) => state.isOdd);
-  const FetchSetting = async () => {
-    const machine_no = getValues(["machine_no"]);
-    const split_machine = machine_no[0]?.split(",");
-    const modifiedData = split_machine.map((item: any) =>
-      item.replace(/-\d+$/, "")
-    );
-    console.log(modifiedData);
-    try {
-      const paramsDay = {
-        section_code: section_code,
-        line_id: lineId,
-        machine_no1: modifiedData[0],
-        machine_no2: modifiedData[1],
-        date_current: dateStrings,
-        next_date: nextDate,
-        isOdd: isOdd,
-        shift: "day",
-      };
-      const paramsNight = {
-        section_code: section_code,
-        line_id: lineId,
-        machine_no1: modifiedData[0],
-        machine_no2: modifiedData[1],
-        date_current: dateStrings,
-        next_date: nextDate,
-        isOdd: isOdd,
-        shift: "night",
-      };
-      const paramsByColumn = {
-        section_code: section_code,
-        line_id: lineId,
-        machine_no1: modifiedData[0],
-        machine_no2: modifiedData[1],
-        date_current: dateStrings,
-        next_date: nextDate,
-      };
-      if (shift === "day") {
-        await requestDataDay(paramsDay);
-      } else {
-        await requestDataNight(paramsNight);
-      }
-      await requestDataByShiftColumn(paramsByColumn);
-      await calBaratsukiDay(paramsDay);
-      await calBaratsukiNight(paramsNight);
-    } catch (err) {
-      console.error(err);
-    }
-  };
 
-  const onSearch = async () => {
-    if (currentDate === dateStrings) {
-      connect();
-      const now = new Date();
-      const nextRun = new Date(
-        now.getFullYear(),
-        now.getMonth(),
-        now.getDate(),
-        now.getHours(),
-        Math.floor(now.getMinutes() / 5) * 5, // Round down to the nearest 5th minute
-        0 // Set seconds to 0
-      );
-
-      const delay = nextRun.getTime() - now.getTime(); // Calculate delay in milliseconds
-      setTimeout(async () => {
-        await FetchSetting();
-      }, delay);
-    } else {
-      FetchSetting();
-      disconnect();
-    }
-  };
-
+  const searchQuery = QueryParameterStore((state) => state.searchQuery);
   useEffect(() => {
     if (!client) return;
 
@@ -229,143 +125,107 @@ const FormSearch = () => {
     })();
   }, []);
 
-  useEffect(() => {
-    if (section !== "") {
-      const machine_no = getValues(["machine_no"]);
-      const split_machine = machine_no[0]?.split(",");
-      const modifiedData = split_machine.map((item: any) =>
-        item.replace(/-\d+$/, "")
-      );
-      const paramsDay = {
-        section_code: section_code,
-        line_id: lineId,
-        machine_no1: modifiedData[0],
-        machine_no2: modifiedData[1],
-        date_current: dateStrings,
-        next_date: nextDate,
-        isOdd: isOdd,
-        shift: "day",
-      };
-      const paramsNight = {
-        section_code: section_code,
-        line_id: lineId,
-        machine_no1: modifiedData[0],
-        machine_no2: modifiedData[1],
-        date_current: dateStrings,
-        next_date: nextDate,
-        isOdd: isOdd,
-        shift: "night",
-      };
-      const paramsByColumn = {
-        section_code: section_code,
-        line_id: lineId,
-        machine_no1: modifiedData[0],
-        machine_no2: modifiedData[1],
-        date_current: dateStrings,
-        next_date: nextDate,
-      };
-      if (shift === "day") {
-        requestDataDay(paramsDay);
-      } else {
-        requestDataNight(paramsNight);
-      }
-      requestDataByShiftColumn(paramsByColumn);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shift]);
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex gap-4">
-      <div className="flex items-center justify-center">
-        <h2 style={{ color: "red" }}>*</h2>
-        <h2>Section&nbsp;:&nbsp;</h2>
-        <Select
-          isRequired
-          label="Select Section"
-          onSelectionChange={onSectionChange}
-          {...register("section", { required: true })}
-          style={{ width: "15rem" }}
-          variant="faded"
-        >
-          <SelectSection>
-            {sortedSection.map((option) => (
-              <SelectItem key={option.section_name} value={option.section_name}>
-                {option.section_name}
-              </SelectItem>
-            ))}
-          </SelectSection>
-        </Select>
-      </div>
-      <div className="flex items-center justify-center">
-        <h2 style={{ color: "red" }}>*</h2>
-        <h2>Line&nbsp;name&nbsp;:&nbsp;</h2>
-        <Select
-          isRequired
-          label="Select Line Name"
-          onSelectionChange={onLineNameChange}
-          {...register("line_name", { required: true })}
-          style={{ width: "15rem" }}
-          variant="faded"
-        >
-          <SelectSection>
-            {sortedLinename.map((option) => (
-              <SelectItem
-                key={`${option.line_name}-${option.line_id}`}
-                value={`${option.line_name}-${option.line_id}`}
-              >
-                {option.line_name}
-              </SelectItem>
-            ))}
-          </SelectSection>
-        </Select>
-      </div>
-      <div className="flex items-center justify-center">
-        <h2 style={{ color: "red" }}>*</h2>
-        <h2>Machine&nbsp;name&nbsp;:&nbsp;</h2>
-        <Select
-          isRequired
-          label="Select Machine Name"
-          selectionMode="multiple"
-          style={{ width: "15rem" }}
-          variant="faded"
-          {...register("machine_no", {
-            validate: (value) =>
-              value.length === 2 || "Please select exactly 2 options.",
-          })}
-        >
-          <SelectSection>
-            {machinename.map((option, idx) => (
-              <SelectItem
-                key={`${option.machine_no}-${idx}`}
-                value={option.machine_no}
-              >
-                {option.machine_no + ` - ${option.machine_name}`}
-              </SelectItem>
-            ))}
-          </SelectSection>
-        </Select>
-      </div>
-      <div className="flex items-center justify-center">
-        <h2 style={{ color: "red" }}>*</h2>
-        <h2>Date&nbsp;:&nbsp;</h2>
-        <DatePicker
-          onChange={onDateChange}
-          style={{ width: "15rem" }}
-          size="lg"
-          variant="faded"
-          isRequired
-        />
-      </div>
-      <div className="flex items-center justify-center">
-        <Button
-          type="submit"
-          disabled={isSubmitting}
-          color="primary"
-          onClick={onSearch}
-        >
-          See Baratsuki
-        </Button>
-      </div>
-    </form>
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      transition={{ duration: 0.3 }}
+    >
+      <form onSubmit={handleSubmit(onSubmit)} className="flex gap-4">
+        <div className="flex items-center justify-center">
+          <Button
+            onClick={() => onRemove(id)}
+            size="sm"
+            isIconOnly
+            style={{ background: "#fdd0df", color: "#F31260" }}
+            radius="full"
+          >
+            <IconDeleteBin4Fill />
+          </Button>
+        </div>
+        <div className="flex items-center justify-center">
+          <h2 style={{ color: "red" }}>*</h2>
+          <h2>Section&nbsp;:&nbsp;</h2>
+          <Select
+            size="sm"
+            isRequired
+            label="Select Section"
+            onChange={(e) => onSectionChange(e.target.value)}
+            style={{ width: "15rem" }}
+            variant="faded"
+          >
+            <SelectSection>
+              {sortedSection.map((option) => (
+                <SelectItem
+                  key={option.section_name}
+                  value={option.section_name}
+                >
+                  {option.section_name}
+                </SelectItem>
+              ))}
+            </SelectSection>
+          </Select>
+        </div>
+        <div className="flex items-center justify-center">
+          <h2 style={{ color: "red" }}>*</h2>
+          <h2>Line&nbsp;name&nbsp;:&nbsp;</h2>
+          <Select
+            size="sm"
+            isRequired
+            label="Select Line Name"
+            onChange={(e) => onLineNameChange(e.target.value)}
+            style={{ width: "15rem" }}
+            variant="faded"
+          >
+            <SelectSection>
+              {sortedLinename.map((option) => (
+                <SelectItem
+                  key={`${option.line_name}-${option.line_id}`}
+                  value={`${option.line_name}-${option.line_id}`}
+                >
+                  {option.line_name}
+                </SelectItem>
+              ))}
+            </SelectSection>
+          </Select>
+        </div>
+        <div className="flex items-center justify-center">
+          <h2 style={{ color: "red" }}>*</h2>
+          <h2>Machine&nbsp;name&nbsp;:&nbsp;</h2>
+          <Select
+            isRequired
+            label="Select Machine Name"
+            style={{ width: "15rem" }}
+            variant="faded"
+            size="sm"
+            onChange={(e) => onMachineChange(e.target.value)}
+          >
+            <SelectSection>
+              {machinename.map((option, idx) => (
+                <SelectItem
+                  key={`${option.machine_no}`}
+                  value={option.machine_no}
+                >
+                  {option.machine_no + ` - ${option.machine_name}`}
+                </SelectItem>
+              ))}
+            </SelectSection>
+          </Select>
+        </div>
+        <div className="flex items-center justify-center">
+          <h2 style={{ color: "red" }}>*</h2>
+          <h2>Date&nbsp;:&nbsp;</h2>
+          <DatePicker
+            onChange={(e) => onDateChange(e)}
+            style={{ width: "15rem" }}
+            size="lg"
+            variant="faded"
+            isRequired
+          />
+        </div>
+      </form>
+    </motion.div>
   );
 };
 

@@ -10,6 +10,15 @@ import { each, findIndex } from "@antv/util";
 import { DataBaratsuki, ModalOpenStore } from "@/store/modal.open.store";
 
 import axios from "axios";
+import {
+  BaratsukiResponse,
+  MachineDataRaw,
+  SearchInputParams,
+  SearchRequestDataAreaParams,
+} from "@/types/baratsuki.type";
+import { OffsetX } from "@/functions/chart/annotations.main.column";
+import { useEffect, useState } from "react";
+import { requestBaratsukiArea } from "@/action/request.fetch";
 interface Data {
   ct_actual: number;
   prod_actual: number;
@@ -30,8 +39,7 @@ interface DataProps {
   zone_number?: number;
 }
 interface LineProps {
-  parameter: DataProps[];
-  zone_number: number;
+  baratsuki: BaratsukiResponse[];
 }
 
 // let Liquid:any
@@ -39,745 +47,17 @@ interface LineProps {
 if (typeof document !== "undefined") {
   // you are safe to use the "document" object here
 }
-const ColumnPlotTest: React.FC<LineProps> = ({ parameter, zone_number }) => {
+const ColumnPlotTest: React.FC<LineProps> = ({ baratsuki }) => {
+  function transformAndMergeData(data: BaratsukiResponse[]): string[] {
+    return data.flatMap((shiftData) =>
+      shiftData.data
+        .filter((machineData) => machineData.plan_type === "B")
+        .map((machineData) => machineData.period)
+    );
+  }
+  const brakePeriod = transformAndMergeData(baratsuki);
+
   const shift = GeneralStore((state) => state.shift);
-  const dateStrings = GeneralStore((state) => state.dateStrings);
-  const setDataBaratsuki = GeneralStore((state) => state.setDataBaratsuki);
-  const currentDate = dayjs().format("YYYY-MM-DD");
-  const dataTooltip = ModalOpenStore((state) => state.dataTooltip);
-  const isOdd = GeneralStore((state) => state.isOdd);
-  const ctTargetZone1 = GeneralStore((state) => state.ctTargetZone1);
-  const ctTargetZone2 = GeneralStore((state) => state.ctTargetZone2);
-
-  const ctTarget = zone_number === 1 ? ctTargetZone1 : ctTargetZone2;
-  const formattedData = parameter.map((entry) => {
-    const period = entry.period.slice(0, -3); // Remove the last three characters (":00")
-    return { ...entry, period };
-  });
-  console.log(formattedData);
-  const dayShiftTimes1 = [
-    "07:35",
-    "08:30",
-    "09:30",
-    "09:40",
-    "10:30",
-    "11:15",
-    "12:15",
-    "13:30",
-    "14:30",
-    "14:40",
-    "15:30",
-    "16:30",
-    "16:50",
-    "17:50",
-    "19:20",
-  ];
-  const dayShiftTimes2 = [
-    "07:35",
-    "08:30",
-    "09:20",
-    "09:30",
-    "10:30",
-    "11:30",
-    "12:30",
-    "13:30",
-    "14:20",
-    "14:30",
-    "15:30",
-    "16:30",
-    "16:50",
-    "17:50",
-    "19:20",
-  ];
-  const dayShiftTimes = isOdd ? dayShiftTimes1 : dayShiftTimes2;
-  const excludedTitles1 = [
-    "09:30 - 09:40",
-    "11:15 - 12:15",
-    "14:30 - 14:40",
-    "21:30 - 21:40",
-    "23:15 - 00:05",
-    "02:30 - 02:50",
-    "04:30 - 04:50",
-    "16:30 - 16:50",
-  ];
-  const excludedTitles2 = [
-    "09:20 - 09:30",
-    "11:30 - 12:30",
-    "14:20 - 14:30",
-    "21:30 - 21:40",
-    "23:30 - 00:20",
-    "02:30 - 02:50",
-    "04:30 - 04:50",
-    "16:30 - 16:50",
-  ];
-  const excludedTitles = isOdd ? excludedTitles1 : excludedTitles2;
-
-  const nightShiftTimes1 = [
-    "19:35",
-    "20:30",
-    "21:30",
-    "21:40",
-    "22:30",
-    "23:15",
-    "00:05",
-    "01:30",
-    "02:30",
-    "02:50",
-    "03:30",
-    "04:30",
-    "04:50",
-    "05:50",
-    "07:20",
-  ];
-
-  const nightShiftTimes2 = [
-    "19:35",
-    "20:30",
-    "21:30",
-    "21:40",
-    "22:30",
-    "23:30",
-    "00:20",
-    "01:30",
-    "02:30",
-    "02:50",
-    "03:30",
-    "04:30",
-    "04:50",
-    "05:50",
-    "07:20",
-  ];
-
-  const nightShiftTimes = isOdd ? nightShiftTimes1 : nightShiftTimes2;
-  const baratsukiRate = GeneralStore((state) => state.baratsukiRate);
-  const targetRealTimeMC1 = GeneralStore((state) => state.targetRealTimeMC1);
-  const targetRealTimeMC2 = GeneralStore((state) => state.targetRealTimeMC2);
-  const targetNotRealTimeMC1 = GeneralStore(
-    (state) => state.targetNotRealTimeMC1
-  );
-  const targetNotRealTimeMC2 = GeneralStore(
-    (state) => state.targetNotRealTimeMC2
-  );
-
-  let targetZoneRate: number = 0;
-  if (dateStrings !== currentDate) {
-    targetZoneRate =
-      zone_number === 1 ? targetNotRealTimeMC1 : targetNotRealTimeMC2;
-  } else {
-    targetZoneRate = zone_number === 1 ? targetRealTimeMC1 : targetRealTimeMC2;
-  }
-
-  const targetValues: { [key: number]: number } = {
-    77: Math.floor(targetZoneRate * 0.77),
-    81: Math.floor(targetZoneRate * 0.81),
-    85: Math.floor(targetZoneRate * 0.85),
-    100: Math.floor(targetZoneRate * 1),
-  };
-  const baratsukiRateNumber = Number(baratsukiRate);
-  let target: number = targetValues[baratsukiRateNumber] || 0;
-  console.log("mine target", target);
-  let targetUpper = (baratsukiRateNumber / 100) * 1.05;
-  let targetLower = (baratsukiRateNumber / 100) * 0.95;
-  const period1 = [
-    {
-      periodTime: "07:35 - 08:30",
-      time: 3300,
-      status: 1,
-    },
-    {
-      periodTime: "08:30 - 09:30",
-      time: 3600,
-      status: 1,
-    },
-    { periodTime: "09:30 - 09:40", time: 600, status: 2 },
-    {
-      periodTime: "09:40 - 10:30",
-      time: 3000,
-    },
-    {
-      periodTime: "10:30 - 11:15",
-      time: 2700,
-      status: 1,
-    },
-    { periodTime: "11:15 - 12:15", time: 3600, status: 3 },
-    {
-      periodTime: "12:15 - 13:30",
-      time: 4500,
-      status: 1,
-    },
-    {
-      periodTime: "13:30 - 14:30",
-      time: 3600,
-      status: 1,
-    },
-    { periodTime: "14:30 - 14:40", time: 600, status: 2 },
-    {
-      periodTime: "14:40 - 15:30",
-      time: 3000,
-      status: 1,
-    },
-    {
-      periodTime: "15:30 - 16:30",
-      time: 3600,
-      status: 1,
-    },
-    { periodTime: "16:30 - 16:50", time: 1200, status: 2 },
-    {
-      periodTime: "16:50 - 17:50",
-      time: 3600,
-      status: 1,
-    },
-    {
-      periodTime: "17:50 - 19:20",
-      time: 5400,
-      status: 1,
-    },
-    {
-      periodTime: "19:35 - 20:30",
-      time: 3300,
-      status: 1,
-    },
-    {
-      periodTime: "20:30 - 21:30",
-      time: 3600,
-      status: 1,
-    },
-    { periodTime: "21:30 - 21:40", time: 600, status: 2 },
-    {
-      periodTime: "21:40 - 22:30",
-      time: 3000,
-      status: 1,
-    },
-    {
-      periodTime: "22:30 - 23:15",
-      time: 2700,
-      status: 1,
-    },
-    { periodTime: "23:15 - 00:05", time: 3000, status: 3 },
-    {
-      periodTime: "00:05 - 01:30",
-      time: 5100,
-      status: 1,
-    },
-    {
-      periodTime: "01:30 - 02:30",
-      time: 3600,
-      status: 1,
-    },
-    { periodTime: "02:30 - 02:50", time: 1200, status: 2 },
-    {
-      periodTime: "02:50 - 03:30",
-      time: 2400,
-      status: 1,
-    },
-    {
-      periodTime: "03:30 - 04:30",
-      time: 3600,
-      status: 1,
-    },
-    { periodTime: "04:30 - 04:50", time: 1200, status: 2 },
-    {
-      periodTime: "04:50 - 05:50",
-      time: 3600,
-      status: 1,
-    },
-    {
-      periodTime: "05:50 - 07:20",
-      time: 5400,
-      status: 1,
-    },
-  ];
-  const period1_aftermap = period1.map((item) => {
-    if (item.status === 2 || item.status === 3) {
-      return { ...item, upper: 0, lower: 0 };
-    } else {
-      return {
-        ...item,
-        upper: Math.floor((item.time / ctTarget) * targetUpper),
-        lower: Math.floor((item.time / ctTarget) * targetLower),
-      };
-    }
-  });
-  const period2 = [
-    {
-      periodTime: "07:35 - 08:30",
-      time: 3300,
-      status: 1,
-    },
-    {
-      periodTime: "08:30 - 09:20",
-      time: 3000,
-      status: 1,
-    },
-    { periodTime: "09:20 - 09:30", time: 600, status: 2 },
-    {
-      periodTime: "09:30 - 10:30",
-      time: 3600,
-      status: 1,
-    },
-    {
-      periodTime: "10:30 - 11:30",
-      time: 3600,
-    },
-    { periodTime: "11:30 - 12:30", time: 3600, status: 3 },
-    {
-      periodTime: "12:30 - 13:30",
-      time: 3600,
-      status: 1,
-    },
-    {
-      periodTime: "13:30 - 14:20",
-      time: 3600,
-      status: 1,
-    },
-    { periodTime: "14:20 - 14:30", time: 600, status: 2 },
-    {
-      periodTime: "14:30 - 15:30",
-      time: 3600,
-      status: 1,
-    },
-    {
-      periodTime: "15:30 - 16:30",
-      time: 3600,
-      status: 1,
-    },
-    { periodTime: "16:30 - 16:50", time: 1200, status: 2 },
-    {
-      periodTime: "16:50 - 17:50",
-      time: 3600,
-      status: 1,
-    },
-    {
-      periodTime: "17:50 - 19:20",
-      time: 5400,
-      status: 1,
-    },
-    {
-      periodTime: "19:35 - 20:30",
-      time: 3300,
-    },
-    {
-      periodTime: "20:30 - 21:30",
-      time: 3600,
-      status: 1,
-    },
-    { periodTime: "21:30 - 21:40", time: 600, status: 2 },
-    {
-      periodTime: "21:40 - 22:30",
-      time: 3000,
-      status: 1,
-    },
-    {
-      periodTime: "22:30 - 23:30",
-      time: 3600,
-      status: 1,
-    },
-    { periodTime: "23:30 - 00:20", time: 3000, status: 3 },
-    {
-      periodTime: "00:20 - 01:30",
-      time: 4200,
-      status: 1,
-    },
-    {
-      periodTime: "01:30 - 02:30",
-      time: 3600,
-      status: 1,
-    },
-    { periodTime: "02:30 - 02:50", time: 1200, status: 2 },
-    {
-      periodTime: "02:50 - 03:30",
-      time: 2400,
-      status: 1,
-    },
-    {
-      periodTime: "03:30 - 04:30",
-      time: 3600,
-      status: 1,
-    },
-    { periodTime: "04:30 - 04:50", time: 1200, status: 2 },
-    {
-      periodTime: "04:50 - 05:50",
-      time: 3600,
-      status: 1,
-    },
-    {
-      periodTime: "05:50 - 07:20",
-      time: 5400,
-      status: 1,
-    },
-  ];
-  const period2_aftermap = period2.map((item: any) => {
-    if (item.status === 2 || item.status === 3) {
-      return { ...item, upper: 0, lower: 0 };
-    } else {
-      return {
-        ...item,
-        upper: Math.floor((item.time / ctTarget) * targetUpper),
-        lower: Math.floor((item.time / ctTarget) * targetLower),
-      };
-    }
-  });
-
-  const period = isOdd ? period1_aftermap : period2_aftermap;
-
-  const interval1 = [
-    {
-      point: "08:30:00",
-      time: "55 minutes",
-    },
-    {
-      point: "09:30:00",
-      time: "1 hour",
-    },
-    {
-      point: "09:40:00",
-      time: "10 minutes",
-    },
-    {
-      point: "10:30:00",
-      time: "50 minutes",
-    },
-    {
-      point: "11:15:00",
-      time: "45 minutes",
-    },
-    {
-      point: "12:15:00",
-      time: "1 hour",
-    },
-    {
-      point: "13:30:00",
-      time: "1 hour 15 minutes",
-    },
-    {
-      point: "14:30:00",
-      time: "1 hour",
-    },
-    {
-      point: "14:40:00",
-      time: "10 minutes",
-    },
-    {
-      point: "15:30:00",
-      time: "50 minutes",
-    },
-    {
-      point: "16:30:00",
-      time: "1 hour",
-    },
-    {
-      point: "16:50:00",
-      time: "20 minutes",
-    },
-    {
-      point: "17:50:00",
-      time: "1 hour",
-    },
-    {
-      point: "19:20:00",
-      time: "1 hour 30 minutes",
-    },
-    {
-      point: "20:30:00",
-      time: "55 minutes",
-    },
-    {
-      point: "21:30:00",
-      time: "1 hour",
-    },
-    {
-      point: "21:40:00",
-      time: "10 minutes",
-    },
-    {
-      point: "22:30:00",
-      time: "50 minutes",
-    },
-    {
-      point: "23:15:00",
-      time: "45 minutes",
-    },
-    {
-      point: "01:30:00",
-      time: "1 hour 25 minutes",
-    },
-    {
-      point: "02:30:00",
-      time: "1 hour",
-    },
-    {
-      point: "03:30:00",
-      time: "40 minutes",
-    },
-    {
-      point: "04:30:00",
-      time: "1 hour",
-    },
-    {
-      point: "05:50:00",
-      time: "1 hour",
-    },
-    {
-      point: "07:20:00",
-      time: "1 hour 30 minutes",
-    },
-  ];
-  const interval2 = [
-    {
-      point: "08:30:00",
-      time: "55 minutes",
-    },
-    {
-      point: "09:20:00",
-      time: "50 minutes",
-    },
-    {
-      point: "09:30:00",
-      time: "10 minutes",
-    },
-    {
-      point: "10:30:00",
-      time: "1 hour",
-    },
-    {
-      point: "11:30:00",
-      time: "1 hour",
-    },
-    {
-      point: "12:30:00",
-      time: "1 hour",
-    },
-    {
-      point: "13:30:00",
-      time: "1 hour",
-    },
-    {
-      point: "14:20:00",
-      time: "50 minutes",
-    },
-    {
-      point: "14:30:00",
-      time: "10 minutes",
-    },
-    {
-      point: "15:30:00",
-      time: "1 hour",
-    },
-    {
-      point: "16:30:00",
-      time: "1 hour",
-    },
-    {
-      point: "16:50:00",
-      time: "20 minutes",
-    },
-    {
-      point: "17:50:00",
-      time: "1 hour",
-    },
-    {
-      point: "19:20:00",
-      time: "1 hour 30 minutes",
-    },
-    {
-      point: "20:30:00",
-      time: "55 minutes",
-    },
-    {
-      point: "21:30:00",
-      time: "1 hour",
-    },
-    {
-      point: "21:40:00",
-      time: "10 minutes",
-    },
-    {
-      point: "22:30:00",
-      time: "50 minutes",
-    },
-    {
-      point: "23:30:00",
-      time: "1 hour",
-    },
-    {
-      point: "01:30:00",
-      time: "1 hour 10 minutes",
-    },
-    {
-      point: "02:30:00",
-      time: "1 hour",
-    },
-    {
-      point: "03:30:00",
-      time: "40 minutes",
-    },
-    {
-      point: "04:30:00",
-      time: "1 hour",
-    },
-    {
-      point: "05:50:00",
-      time: "1 hour",
-    },
-    {
-      point: "07:20:00",
-      time: "1 hour 30 minutes",
-    },
-  ];
-  const interval = isOdd ? interval1 : interval2;
-
-  const updatePeriod = (period: string, shift: string): string => {
-    let index = -1;
-    if (shift === "day") {
-      index = dayShiftTimes.indexOf(period);
-      if (index !== -1 && index > 0) {
-        return `${dayShiftTimes[index - 1]} - ${period}`;
-      }
-    } else if (shift === "night") {
-      index = nightShiftTimes.indexOf(period);
-      if (index !== -1 && index > 0) {
-        return `${nightShiftTimes[index - 1]} - ${period}`;
-      }
-    }
-    return period;
-  };
-
-  const updatedParameter = formattedData.map((item) => ({
-    ...item,
-    period: updatePeriod(item.period, item.shift),
-  }));
-  updatedParameter.forEach((item) => {
-    if (excludedTitles.includes(item.period)) {
-      item.value = 0;
-    }
-  });
-
-  updatedParameter.forEach((item: any) => {
-    console.log(item);
-    const matchingPeriod = period.find(
-      (periodItem) => periodItem.periodTime === item.period
-    );
-    if (matchingPeriod) {
-      item.upper = matchingPeriod.upper;
-      item.lower = matchingPeriod.lower;
-      if (item.value >= item.lower && item.value <= item.upper) {
-        item.color = "red";
-      } else {
-        item.color = "green";
-      }
-    }
-  });
-
-  const periodsRest1 = [
-    "09:30 - 09:40",
-    "11:15 - 12:15",
-    "14:30 - 14:40",
-    "16:30 - 16:50",
-    "21:30 - 21:40",
-    "23:15 - 00:05",
-    "02:30 - 02:50",
-    "04:30 - 04:50",
-  ];
-  const periodsRest2 = [
-    "09:20 - 09:30",
-    "11:30 - 12:30",
-    "14:20 - 14:50",
-    "16:30 - 16:50",
-    "21:30 - 21:40",
-    "23:30 - 00:20",
-    "02:30 - 02:50",
-    "04:30 - 04:50",
-  ];
-  const periodsRest = isOdd ? periodsRest1 : periodsRest2;
-  const graphData = updatedParameter?.map((update) => {
-    const matchingPeriod = period.find(
-      (periodItem) => periodItem.periodTime === update.period
-    );
-    if (matchingPeriod) {
-      update.upper = matchingPeriod.upper;
-      update.lower = matchingPeriod.lower;
-    }
-    return update; // Return the updated object
-  });
-  console.log(graphData);
-  for (let i = 1; i < graphData.length; i++) {
-    const currentPeriod = graphData[i].period;
-    const currentProdActual = graphData[i].data.prod_actual;
-    const previousProdActual = graphData[i - 1].data.prod_actual;
-
-    if (periodsRest.includes(currentPeriod)) {
-      graphData[i].value = 0;
-    } else {
-      graphData[i].value = currentProdActual - previousProdActual;
-    }
-  }
-
-  function updateGraphData(graphData: any[]) {
-    // Helper function to find a specific period's index
-    const findPeriodIndex = (shift: string, period: string) => {
-      return graphData.findIndex(
-        (item) => item.shift === shift && item.period === period
-      );
-    };
-
-    // Day shift condition
-    let periodIndex = findPeriodIndex("day", "17:50 - 19:20");
-    if (periodIndex !== -1) {
-      if (graphData[periodIndex].value === 0) {
-        let targetIndex = findPeriodIndex("day", "15:30 - 16:30");
-        if (targetIndex !== -1) {
-          graphData[targetIndex].upper = Math.round(
-            graphData[targetIndex].upper -
-              (600 / ctTarget) * (baratsukiRateNumber / 100)
-          );
-          graphData[targetIndex].lower = Math.round(
-            graphData[targetIndex].lower -
-              (600 / ctTarget) * (baratsukiRateNumber / 100)
-          );
-        }
-      } else {
-        graphData[periodIndex].upper = Math.round(
-          graphData[periodIndex].upper -
-            (600 / ctTarget) * (baratsukiRateNumber / 100)
-        );
-        graphData[periodIndex].lower = Math.round(
-          graphData[periodIndex].lower -
-            (600 / ctTarget) * (baratsukiRateNumber / 100)
-        );
-      }
-    }
-
-    // Night shift condition
-    periodIndex = findPeriodIndex("night", "05:50 - 07:20");
-    if (periodIndex !== -1) {
-      if (graphData[periodIndex].value === 0) {
-        let targetIndex = findPeriodIndex("night", "03:30 - 04:30");
-        if (targetIndex !== -1) {
-          graphData[targetIndex].upper = Math.round(
-            graphData[targetIndex].upper -
-              (600 / ctTarget) * (baratsukiRateNumber / 100)
-          );
-          graphData[targetIndex].lower = Math.round(
-            graphData[targetIndex].lower -
-              (600 / ctTarget) * (baratsukiRateNumber / 100)
-          );
-        }
-      } else {
-        graphData[periodIndex].upper = Math.round(
-          graphData[periodIndex].upper -
-            (600 / ctTarget) * (baratsukiRateNumber / 100)
-        );
-        graphData[periodIndex].lower = Math.round(
-          graphData[periodIndex].lower -
-            (600 / ctTarget) * (baratsukiRateNumber / 100)
-        );
-      }
-    }
-
-    return graphData;
-  }
-  const updatedGraphData = updateGraphData(graphData);
-  console.log(updatedGraphData);
 
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const setDataTooltip = ModalOpenStore((state) => state.setDataTooltip);
@@ -913,143 +193,24 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter, zone_number }) => {
       },
     ],
   });
-  function getModifiedContent(period: string, value: number): string {
-    switch (period) {
-      case isOdd ? "09:30 - 09:40" : "09:20 - 09:30":
-      case isOdd ? "11:15 - 12:15" : "11:30 - 12:30":
-      case isOdd ? "14:30 - 14:40" : "14:20 - 14:30":
-      case "21:30 - 21:40":
-      case isOdd ? "23:15 - 00:05" : "23:30 - 00:20":
-      case "02:30 - 02:50":
-      case "04:30 - 04:50":
-      case "16:30 - 16:50":
-        return "Brake";
-      default:
-        return value.toString();
-    }
-  }
 
-  function getModifiedCursor(period: string): string {
-    switch (period) {
-      case isOdd ? "09:30 - 09:40" : "09:20 - 09:30":
-      case isOdd ? "11:15 - 12:15" : "11:30 - 12:30":
-      case isOdd ? "14:30 - 14:40" : "14:20 - 14:30":
-      case "21:30 - 21:40":
-      case isOdd ? "23:15 - 00:05" : "23:30 - 00:20":
-      case "02:30 - 02:50":
-      case "04:30 - 04:50":
-      case "16:30 - 16:50":
-        return "default";
-      default:
-        return "pointer";
-    }
-  }
+  const parameter = shift === 1 ? baratsuki[0].data : baratsuki[1].data;
 
-  function getFill(
-    period: string,
-    value: number,
-    upper: any,
-    lower: any
-  ): string {
-    switch (period) {
-      case isOdd ? "09:30 - 09:40" : "09:20 - 09:30":
-      case isOdd ? "11:15 - 12:15" : "11:30 - 12:30":
-      case isOdd ? "14:30 - 14:40" : "14:20 - 14:30":
-      case "21:30 - 21:40":
-      case isOdd ? "23:15 - 00:05" : "23:30 - 00:20":
-      case "02:30 - 02:50":
-      case "04:30 - 04:50":
-      case "16:30 - 16:50":
-        return "black";
-      default:
-        return value >= lower ? "#1890FF" : "rgba(255,0,0,0.7)";
-    }
-  }
-  //!brake หาย
-  const annotations142: any[] = updatedGraphData.map((point) => ({
-    type: "text",
-    content: getModifiedContent(point.period, point.value),
-    position: (xScale: any, yScale: any) => {
-      const content = getModifiedContent(point.period, point.value);
-      if (showGap === "on" && content !== "Brake") {
-        return ["0", "0"];
-      } else {
-        return [
-          `${xScale.scale(point.period.toString()) * 100}%`,
-          `${(1 - yScale.value.scale(point.value)) * 100 - 5}%`,
-        ];
-      }
-    },
-    style: {
-      textAlign: "center",
-      fill: "white",
-      cursor: getModifiedCursor(point.period),
-      fontSize: 14,
-    },
-    offsetY: 5,
-    background: {
-      padding: 8,
-      style: {
-        z: 0,
-        radius: 12,
-        cursor: getModifiedCursor(point.period),
-        fill: getFill(point.period, point.value, point.upper, point.lower),
-      },
-    },
-  }));
-
-  const OffsetX = (graphData: DataProps[]): number => {
-    console.log(graphData.length);
-    if (graphData.length === 1) {
-      return -60; // Or any default number value you prefer
-    } else if (graphData.length === 2) {
-      return -249; // Or any default number value you prefer
-    } else if (graphData.length === 3) {
-      return -145; // Or any default number value you prefer
-    } else if (graphData.length === 4) {
-      return -109; // Or any default number value you prefer
-    } else if (graphData.length === 5) {
-      return -87; // Or any default number value you prefer
-    } else if (graphData.length === 6) {
-      return -72; // Or any default number value you prefer
-    } else if (graphData.length === 7) {
-      return -71; // Or any default number value you prefer
-    } else if (graphData.length === 8) {
-      return -54; // Or any default number value you prefer
-    } else if (graphData.length === 9) {
-      return -55; // Or any default number value you prefer
-    } else if (graphData.length === 10) {
-      return -43; // Or any default number value you prefer
-    } else if (graphData.length === 11) {
-      return -49; // Or any default number value you prefer
-    } else if (graphData.length === 12) {
-      return -62; // Or any default number value you prefer
-    } else if (graphData.length === 13) {
-      return -37; // Or any default number value you prefer
-    } else if (graphData.length === 14) {
-      return -35; // Or any default number value you prefer
-    }
-
-    return -60;
-  };
-
-  const annotationsLower: any[] = updatedGraphData
+  const annotationsLower: any[] = parameter
     .map((update, index, array) => {
-      console.log(array);
-      const matchingPeriod = period.find(
-        (periodItem) => periodItem.periodTime === update.period
-      );
-      if (matchingPeriod && update.lower !== 0) {
-        const nextUpdate = array[index + 1];
+      const nextUpdate = array[index + 1];
+      if (brakePeriod.includes(update.period)) {
+        return null;
+      } else {
         return {
           type: "line",
-          start: [update.period, update.lower],
+          start: [update.period, update.target_challenge_lower],
           end: nextUpdate
-            ? [nextUpdate.period, update.lower]
-            : [update.period, update.lower],
-          offsetX: OffsetX(updatedGraphData),
+            ? [nextUpdate.period, update.target_challenge_lower]
+            : [update.period, update.target_challenge_lower],
+          offsetX: OffsetX(parameter),
           text: {
-            content: `${update.lower}`,
+            content: `${update.target_challenge_lower}`,
             offsetY: 1,
             position: "right",
             style: {
@@ -1067,62 +228,59 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter, zone_number }) => {
           },
         };
       }
-      return null; // Return null for periods without matching or zero lower values
     })
     .filter((annotation) => annotation !== null);
 
-  // Modify the last object in annotationsLower array
   if (annotationsLower.length > 1) {
     const lastAnnotation = annotationsLower[annotationsLower.length - 1];
     lastAnnotation.start[0] =
       annotationsLower[annotationsLower.length - 2].start[0];
     lastAnnotation.end[0] =
       annotationsLower[annotationsLower.length - 2].end[0];
-    if (updatedGraphData.length === 2) {
+    if (parameter.length === 2) {
       lastAnnotation.offsetX = 375;
-    } else if (updatedGraphData.length === 3) {
+    } else if (parameter.length === 3) {
       lastAnnotation.offsetX = 148;
-    } else if (updatedGraphData.length === 4) {
+    } else if (parameter.length === 4) {
       lastAnnotation.offsetX = 330;
-    } else if (updatedGraphData.length === 5) {
+    } else if (parameter.length === 5) {
       lastAnnotation.offsetX = 89;
-    } else if (updatedGraphData.length === 6) {
+    } else if (parameter.length === 6) {
       lastAnnotation.offsetX = 76;
-    } else if (updatedGraphData.length === 7) {
+    } else if (parameter.length === 7) {
       lastAnnotation.offsetX = 215;
-    } else if (updatedGraphData.length === 8) {
+    } else if (parameter.length === 8) {
       lastAnnotation.offsetX = 165;
-    } else if (updatedGraphData.length === 9) {
+    } else if (parameter.length === 9) {
       lastAnnotation.offsetX = 60;
-    } else if (updatedGraphData.length === 10) {
+    } else if (parameter.length === 10) {
       lastAnnotation.offsetX = 130;
-    } else if (updatedGraphData.length === 11) {
+    } else if (parameter.length === 11) {
       lastAnnotation.offsetX = 50;
-    } else if (updatedGraphData.length === 12) {
+    } else if (parameter.length === 12) {
       lastAnnotation.offsetX = 65;
-    } else if (updatedGraphData.length === 13) {
+    } else if (parameter.length === 13) {
       lastAnnotation.offsetX = 39;
-    } else if (updatedGraphData.length === 14) {
-      lastAnnotation.offsetX = 33;
+    } else if (parameter.length === 14) {
+      lastAnnotation.offsetX = 50;
     }
   }
 
-  const annotationsUpper: any[] = updatedGraphData
+  const annotationsUpper: any[] = parameter
     .map((update, index, array) => {
-      const matchingPeriod = period.find(
-        (periodItem) => periodItem.periodTime === update.period
-      );
-      if (matchingPeriod && update.lower !== 0) {
-        const nextUpdate = array[index + 1];
+      const nextUpdate = array[index + 1];
+      if (brakePeriod.includes(update.period)) {
+        return null;
+      } else {
         return {
           type: "line",
-          start: [update.period, update.upper],
+          start: [update.period, update.target_challenge_upper],
           end: nextUpdate
-            ? [nextUpdate.period, update.upper]
-            : [update.period, update.upper],
-          offsetX: OffsetX(updatedGraphData),
+            ? [nextUpdate.period, update.target_challenge_upper]
+            : [update.period, update.target_challenge_upper],
+          offsetX: OffsetX(parameter),
           text: {
-            content: `${update.upper}`,
+            content: `${update.target_challenge_upper}`,
             offsetY: -12,
             position: "right",
             style: {
@@ -1140,7 +298,6 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter, zone_number }) => {
           },
         };
       }
-      return null; // Return null for periods without matching or zero lower values
     })
     .filter((annotation) => annotation !== null);
 
@@ -1151,57 +308,54 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter, zone_number }) => {
       annotationsUpper[annotationsUpper.length - 2].start[0];
     lastAnnotation.end[0] =
       annotationsUpper[annotationsUpper.length - 2].end[0];
-    if (updatedGraphData.length === 2) {
+    if (parameter.length === 2) {
       lastAnnotation.offsetX = 375;
-    } else if (updatedGraphData.length === 3) {
+    } else if (parameter.length === 3) {
       lastAnnotation.offsetX = 148;
-    } else if (updatedGraphData.length === 4) {
+    } else if (parameter.length === 4) {
       lastAnnotation.offsetX = 330;
-    } else if (updatedGraphData.length === 5) {
+    } else if (parameter.length === 5) {
       lastAnnotation.offsetX = 89;
-    } else if (updatedGraphData.length === 6) {
+    } else if (parameter.length === 6) {
       lastAnnotation.offsetX = 76;
-    } else if (updatedGraphData.length === 7) {
+    } else if (parameter.length === 7) {
       lastAnnotation.offsetX = 215;
-    } else if (updatedGraphData.length === 8) {
+    } else if (parameter.length === 8) {
       lastAnnotation.offsetX = 165;
-    } else if (updatedGraphData.length === 9) {
+    } else if (parameter.length === 9) {
       lastAnnotation.offsetX = 60;
-    } else if (updatedGraphData.length === 10) {
+    } else if (parameter.length === 10) {
       lastAnnotation.offsetX = 130;
-    } else if (updatedGraphData.length === 11) {
+    } else if (parameter.length === 11) {
       lastAnnotation.offsetX = 50;
-    } else if (updatedGraphData.length === 12) {
+    } else if (parameter.length === 12) {
       lastAnnotation.offsetX = 65;
-    } else if (updatedGraphData.length === 13) {
+    } else if (parameter.length === 13) {
       lastAnnotation.offsetX = 39;
-    } else if (updatedGraphData.length === 14) {
-      lastAnnotation.offsetX = 33;
+    } else if (parameter.length === 14) {
+      lastAnnotation.offsetX = 50;
     }
   }
 
-  const annotationsRegion: any[] = updatedGraphData
+  const annotationsRegion: any[] = parameter
     .map((update, index, array) => {
-      const matchingPeriod = period.find(
-        (periodItem) => periodItem.periodTime === update.period
-      );
-      if (matchingPeriod && update.lower !== 0) {
-        const nextUpdate = array[index + 1];
-        return {
-          type: "region",
-          start: [update.period, update.lower],
-          end: nextUpdate
-            ? [nextUpdate.period, update.upper]
-            : [update.period, update.upper],
-          offsetX: OffsetX(updatedGraphData),
-          style: {
-            fill: "#1890FF",
-            fillOpacity: "0.2",
-            // opacity: 1,
-          },
-        };
+      const nextUpdate = array[index + 1];
+      if (brakePeriod.includes(update.period)) {
+        return null;
       }
-      return null; // Return null for periods without matching or zero lower values
+      return {
+        type: "region",
+        start: [update.period, update.target_challenge_lower],
+        end: nextUpdate
+          ? [nextUpdate.period, update.target_challenge_upper]
+          : [update.period, update.target_challenge_upper],
+        offsetX: OffsetX(parameter),
+        style: {
+          fill: "#1890FF",
+          fillOpacity: "0.2",
+          // opacity: 1,
+        },
+      }; // Return null for periods without matching or zero lower values
     })
     .filter((annotation) => annotation !== null);
 
@@ -1212,221 +366,175 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter, zone_number }) => {
       annotationsRegion[annotationsRegion.length - 2].start[0];
     lastAnnotation.end[0] =
       annotationsRegion[annotationsRegion.length - 2].end[0];
-    if (updatedGraphData.length === 2) {
+    if (parameter.length === 2) {
       lastAnnotation.offsetX = 375;
-    } else if (updatedGraphData.length === 3) {
+    } else if (parameter.length === 3) {
       lastAnnotation.offsetX = 148;
-    } else if (updatedGraphData.length === 4) {
+    } else if (parameter.length === 4) {
       lastAnnotation.offsetX = 330;
-    } else if (updatedGraphData.length === 5) {
+    } else if (parameter.length === 5) {
       lastAnnotation.offsetX = 89;
-    } else if (updatedGraphData.length === 6) {
+    } else if (parameter.length === 6) {
       lastAnnotation.offsetX = 76;
-    } else if (updatedGraphData.length === 7) {
+    } else if (parameter.length === 7) {
       lastAnnotation.offsetX = 215;
-    } else if (updatedGraphData.length === 8) {
+    } else if (parameter.length === 8) {
       lastAnnotation.offsetX = 165;
-    } else if (updatedGraphData.length === 9) {
+    } else if (parameter.length === 9) {
       lastAnnotation.offsetX = 60;
-    } else if (updatedGraphData.length === 10) {
+    } else if (parameter.length === 10) {
       lastAnnotation.offsetX = 130;
-    } else if (updatedGraphData.length === 11) {
+    } else if (parameter.length === 11) {
       lastAnnotation.offsetX = 50;
-    } else if (updatedGraphData.length === 12) {
+    } else if (parameter.length === 12) {
       lastAnnotation.offsetX = 65;
-    } else if (updatedGraphData.length === 13) {
+    } else if (parameter.length === 13) {
       lastAnnotation.offsetX = 39;
-    } else if (updatedGraphData.length === 14) {
-      lastAnnotation.offsetX = 33;
+    } else if (parameter.length === 14) {
+      lastAnnotation.offsetX = 50;
     }
   }
 
-  const annotationsArrow: any[] = updatedGraphData
-    .map((item) => {
-      const upper = item.upper ?? 0; // Provide a default value if upper is undefined
-      const lower = item.lower ?? 0;
-      if (item.value >= lower && item.value <= upper) {
-        return null; // Skip periods with zero or invalid ct_actual values
-      } else {
-        return {
-          type: "line",
-          start: [item.period, item.value], // Start slightly below ct_actual
-          end: [item.period, (upper + lower) / 2], // End slightly above ct_actual
-          style: {
-            stroke:
-              shift === "day"
-                ? item.value < lower
-                  ? "#FF4D4F"
-                  : item.value > upper
-                  ? "blue"
-                  : "#FF8F8F"
-                : "#FF8F8F",
-            lineWidth: 2,
-            endArrow: {
-              path: "M 0,0 L 8,4 L 8,-4 Z", // Arrow pointing right
-              d: 2,
-            },
-            startArrow: {
-              path: "M 0,0 L 8,4 L 8,-4 Z", // Arrow pointing left
-              d: 2,
-            },
-          },
-        };
-      }
-    })
-    .filter((annotation) => annotation !== null);
-
-  const generateAnnotations = (processedParameter: any[]) => {
-    const annotations: any[] = processedParameter
-      .map((item) => {
-        const lowerBaratsuki = item.lower;
-        const upperBaratsuki = item.upper;
-        const target = (lowerBaratsuki + upperBaratsuki) / 2;
-        if (item.value >= lowerBaratsuki && item.value <= upperBaratsuki) {
-          return null; // Skip periods with zero or invalid ct_value values
-        } else {
-          const gapContent = `Gap = ${
-            item.value < target ? "-" : "+"
-          }${Math.abs(Math.floor(target - item.value))} pcs.`;
-          const percentContent = `${item.value < target ? "-" : "+"}${(
-            Math.abs((target - item.value) / target) * 100
-          ).toFixed(2)}%`;
-          return [
-            {
-              type: "text",
-              content: gapContent,
-              offsetX: 50,
-              position: (xScale: any, yScale: any) => {
-                return [
-                  `${xScale.scale(item.period) * 100}%`,
-                  `${
-                    (1 - yScale.value.scale((target + item.value) / 2)) * 100
-                  }%`,
-                ];
-              },
-              style: {
-                textAlign: "center",
-                fill:
-                  shift === "day"
-                    ? item.value < target
-                      ? "#C40C0C"
-                      : item.value > target
-                      ? "blue"
-                      : "#FF8F8F"
-                    : "#FF8F8F",
-                fontSize: 14,
-                fontWeight: "bold",
-              },
-              background: {
-                padding: 10,
-                style: {
-                  z: 0,
-                  radius: 17,
-                },
-              },
-            },
-            {
-              type: "text",
-              content: percentContent,
-              offsetX: 35,
-              offsetY: 20,
-              position: (xScale: any, yScale: any) => {
-                return [
-                  `${xScale.scale(item.period) * 100}%`,
-                  `${
-                    (1 - yScale.value.scale((target + item.value) / 2)) * 100
-                  }%`,
-                ];
-              },
-              style: {
-                textAlign: "center",
-                fill:
-                  shift === "day"
-                    ? item.value < target
-                      ? "#C40C0C"
-                      : item.value > target
-                      ? "blue"
-                      : "#FF8F8F"
-                    : "#FF8F8F",
-                fontSize: 14,
-                fontWeight: "bold",
-              },
-              background: {
-                padding: 10,
-                style: {
-                  z: 0,
-                  radius: 17,
-                },
-              },
-            },
-          ];
-        }
-      })
-      .filter((annotation) => annotation !== null)
-      .flat(); // Flatten the array of arrays into a single array
-
-    return annotations;
-  };
-  const annotationsGap: any[] = generateAnnotations(updatedGraphData);
-  const showGap = GeneralStore((state) => state.showGap);
-  let annotaion = [
-    ...annotations142,
-    ...annotationsLower,
-    ...annotationsUpper,
-    ...annotationsRegion,
-    ...annotationsArrow,
-    ...annotationsGap,
-  ];
-  if (showGap === "off") {
-    annotaion = [
-      ...annotations142,
-      ...annotationsLower,
-      ...annotationsUpper,
-      ...annotationsRegion,
-      {
-        type: "region",
-        start: ["start", target * 0.95],
-        end: ["end", target * 1.05],
-        // offsetX: OffsetX(updatedGraphData),
-        style: {
-          fill: "#62daab",
-          fillOpacity: "0.2",
-          // opacity: 1,
-        },
-      },
-    ];
-  } else {
-    annotaion = [
-      ...annotations142,
-      ...annotationsLower,
-      ...annotationsUpper,
-      ...annotationsRegion,
-      ...annotationsArrow,
-      ...annotationsGap,
-    ];
+  function getModifiedContent(period: string, value: number): string {
+    if (brakePeriod.includes(period)) {
+      return "Brake";
+    } else {
+      return value.toString();
+    }
   }
+
+  function getFill(
+    period: string,
+    value: number,
+    upper: any,
+    lower: any
+  ): string {
+    if (brakePeriod.includes(period)) {
+      return "black";
+    } else {
+      return value >= lower ? "#1890FF" : "rgba(255,0,0,0.7)";
+    }
+  }
+
+  function getModifiedCursor(period: string): string {
+    if (brakePeriod.includes(period)) {
+      return "default";
+    } else {
+      return "pointer";
+    }
+  }
+
+  function calculateInterval(period: string): string {
+    const [start, end] = period.split(" - ").map((time) => {
+      const [hours, minutes] = time.split(":").map(Number);
+      return { hours, minutes };
+    });
+
+    let startDate = new Date();
+    startDate.setHours(start.hours, start.minutes, 0, 0);
+
+    let endDate = new Date();
+    endDate.setHours(end.hours, end.minutes, 0, 0);
+
+    // Handle crossing midnight
+    if (endDate < startDate) {
+      endDate.setDate(endDate.getDate() + 1);
+    }
+
+    const diffMs = endDate.getTime() - startDate.getTime();
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    const hours = Math.floor(diffMinutes / 60);
+    const minutes = diffMinutes % 60;
+
+    return `${hours > 0 ? hours + " hour" + (hours > 1 ? "s" : "") : ""} ${
+      minutes > 0 ? minutes + " minute" + (minutes > 1 ? "s" : "") : ""
+    }`.trim();
+  }
+
+  const annotationsTextBox: any[] = parameter.map((point) => ({
+    type: "text",
+    content: getModifiedContent(point.period, point.actual_this_period),
+    position: (xScale: any, yScale: any) => {
+      const content = getModifiedContent(
+        point.period,
+        point.actual_this_period
+      );
+      if (content !== "Brake") {
+        return [
+          `${xScale.scale(point.period.toString()) * 100}%`,
+          `${
+            (1 - yScale.actual_this_period.scale(point.actual_this_period)) *
+              100 -
+            5
+          }%`,
+        ];
+      } else {
+        return [
+          `${xScale.scale(point.period.toString()) * 100}%`,
+          `${
+            (1 - yScale.actual_this_period.scale(point.actual_this_period)) *
+              100 -
+            5
+          }%`,
+        ];
+      }
+    },
+    style: {
+      textAlign: "center",
+      fill: "white",
+      cursor: getModifiedCursor(point.period),
+      fontSize: 14,
+    },
+    offsetY: 5,
+    background: {
+      padding: 8,
+      style: {
+        z: 0,
+        radius: 12,
+        cursor: getModifiedCursor(point.period),
+        fill: getFill(
+          point.period,
+          point.actual_this_period,
+          point.target_challenge_upper,
+          point.target_challenge_lower
+        ),
+      },
+    },
+  }));
   let chart: any;
 
+  const afterFilter = parameter.filter((item) => item.plan_type !== "B");
+
+  let accumulatedDuration = 0;
+
+  afterFilter.forEach((item) => {
+    accumulatedDuration += item.duration;
+    const accummulateTarget =
+      Math.floor(accumulatedDuration / item.ct_target) *
+      (item.challenge_target / 100);
+    const accummulateUpper = accummulateTarget * 1.05;
+    const accummulateLower = accummulateTarget * 0.95;
+
+    item.accummulate_target = Math.floor(accummulateTarget);
+    item.accummulate_upper = Math.floor(accummulateUpper);
+    item.accummulate_lower = Math.floor(accummulateLower);
+  });
+
   const config: ColumnConfig = {
-    data: updatedGraphData,
+    data: parameter,
     xField: "period",
-    yField: "value",
+    yField: "actual_this_period",
     columnStyle: {
       cursor: "pointer",
     },
-    label:
-      showGap === "off"
-        ? false
-        : { style: { fontSize: 20, fontWeight: "bold" } },
     yAxis: {
       maxLimit: 300,
-
       title: {
         text: "Performance  Analysis  per  Hour  (pcs.)",
         style: {
           fontSize: 16,
           // fontWeight: "bold",
-          fill: shift === "day" ? "#595959" : "white",
+          fill: shift === 1 ? "#595959" : "white",
         },
       },
       grid: {
@@ -1438,13 +546,10 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter, zone_number }) => {
       },
     },
     color: (data: any) => {
-      const matchingPeriod = updatedParameter.find(
-        (p) => p.period === data.period
-      );
+      const matchingPeriod = parameter.find((p) => p.period === data.period);
       if (matchingPeriod) {
-        const value = matchingPeriod.value; // Access value from the found object in updatedParameter
-        const lower = matchingPeriod.lower ?? 0;
-        const upper = matchingPeriod.upper ?? 0;
+        const value = matchingPeriod.actual_this_period; // Access value from the found object in updatedParameter
+        const lower = matchingPeriod.target_challenge_lower ?? 0;
         if (value >= lower) {
           return "rgba(24, 144, 255, 0.5)";
         } else {
@@ -1460,20 +565,17 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter, zone_number }) => {
         style: {
           fontSize: 16,
           // fontWeight: "bold",
-          fill: shift === "day" ? "#595959" : "white",
+          fill: shift === 1 ? "#595959" : "white",
         },
       },
     },
-    onReady: (plot: any) => {
-      chart = plot.chart; // Store chart instance
-      chart.render(); // Make sure to render the chart to access the scales
-    },
 
-    annotations: annotaion,
-    tooltip: {
-      showMarkers: false,
-    },
-
+    annotations: [
+      ...annotationsLower,
+      ...annotationsUpper,
+      ...annotationsRegion,
+      ...annotationsTextBox,
+    ],
     interactions: [
       {
         type: "element-highlight-by-color",
@@ -1482,6 +584,13 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter, zone_number }) => {
         type: "element-link",
       },
     ],
+    onReady: (plot: any) => {
+      chart = plot.chart; // Store chart instance
+      chart.render(); // Make sure to render the chart to access the scales
+    },
+    tooltip: {
+      showMarkers: false,
+    },
   };
 
   return (
@@ -1489,52 +598,34 @@ const ColumnPlotTest: React.FC<LineProps> = ({ parameter, zone_number }) => {
       <Column
         {...config}
         onReady={(plot) => {
-          plot.chart.on("plot:click", async (evt: any) => {
-            const { x, y } = evt;
-            const bigDataFromToolItem = plot.chart.getTooltipItems({
-              x,
-              y,
-            });
-            console.log(bigDataFromToolItem);
-            if (
-              bigDataFromToolItem.length > 0 &&
-              !excludedTitles.includes(bigDataFromToolItem[0].title)
-            ) {
-              setDataTooltip(bigDataFromToolItem);
-              onOpen();
-              try {
-                const data: DataBaratsuki = bigDataFromToolItem[0].data;
-                const dateP = bigDataFromToolItem[0].data.date;
-                const formattedTime = dayjs(dateP).format("HH:mm:ss");
-                const matchingInterval = interval.find(
-                  (item: any) => item.point === formattedTime
-                );
-                const timeToSendToAPI = matchingInterval
-                  ? matchingInterval.time
-                  : null;
-                console.log(data);
-                const parameter = {
-                  section_code: data.section_code,
-                  line_id: data.line_id,
-                  machine_no: data.machine_no,
-                  date: data.date,
-                  interval: timeToSendToAPI,
-                };
-                console.log(parameter);
-                const response = await axios(
-                  "http://127.0.0.1:8000/get_data_area",
-                  {
-                    params: parameter,
-                  }
-                );
-                if (response.status === 200) {
-                  setDataBaratsuki(response.data);
-                }
-              } catch (err) {
-                console.error(err);
-              }
-            } else {
-            }
+          plot.on("element:click", async (evt: any) => {
+            const elements: MachineDataRaw = evt.data.data;
+            const interval = calculateInterval(elements.period);
+            const matchingElement = afterFilter.find(
+              (item) => item.period === elements.period
+            );
+            const params: SearchRequestDataAreaParams = {
+              section_code: elements.section_code,
+              line_id: elements.line_id,
+              machine_no: elements.machine_no,
+              date: elements.date,
+              interval: interval,
+              period: elements.period,
+              ct_target: elements.ct_target,
+              challenge_rate: elements.challenge_target,
+              target_challege_lower: elements.target_challenge_lower,
+              target_challege_target: elements.target_challenge,
+              target_challege_upper: elements.target_challenge_upper,
+              ...(matchingElement && {
+                accummulate_target: matchingElement.accummulate_target,
+                accummulate_upper: matchingElement.accummulate_upper,
+                accummulate_lower: matchingElement.accummulate_lower,
+                duration: matchingElement.duration,
+                exclusion_time: matchingElement.exclusion_time,
+              }),
+            };
+            await requestBaratsukiArea(params);
+            onOpen();
           });
         }}
       />

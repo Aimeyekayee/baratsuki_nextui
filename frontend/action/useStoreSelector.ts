@@ -1,5 +1,5 @@
-import { GeneralStore } from "./general.store";
-import { MQTTStore } from "./mqttStore";
+import { GeneralStore } from "../store/general.store";
+import { MQTTStore } from "../store/mqttStore";
 const useStoreSelectors = () => {
   const zone1 = GeneralStore((state) => state.zone1);
   const zone2 = GeneralStore((state) => state.zone2);

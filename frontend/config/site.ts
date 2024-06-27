@@ -9,8 +9,8 @@ export const siteConfig = {
       href: "/",
     },
     {
-      label: "Baratsuki",
-      href: "/baratsuki",
+      label: "Daily Performance",
+      href: "/daily",
     },
     {
       label: "Summary Dashboard",

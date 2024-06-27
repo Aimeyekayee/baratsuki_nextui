@@ -15,7 +15,7 @@ interface IMode {
   openModal: boolean;
   isOdd: boolean;
   dataBaratsuki: DataBaratsuki[];
-  shift: React.Key;
+  shift: React.Key | number;
   disabledTabShift: boolean;
   baratsukiRate: React.Key;
   showGap: React.Key;
@@ -88,7 +88,7 @@ export const GeneralStore = create<IMode>((...args) => {
     ctTargetZone2: 16.5,
     zone1: [],
     zone2: [],
-    shift: "day",
+    shift: 1,
     baratsukiRate: "77",
     dateStrings: "",
     colorMc4: "MC1",
