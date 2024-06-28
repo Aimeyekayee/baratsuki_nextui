@@ -6,17 +6,21 @@ import { TwoRingShiftChart } from "../chart/ring/twoRingDayNight";
 import { GeneralStore } from "@/store/general.store";
 import { toLocaleFormat } from "@/functions/other/decimal.digit";
 import {
-  calculateSummaryActualThisPeriod,
+  calculateProdActualDifference,
   calculateSummaryDuration,
   calculateOADifference,
 } from "@/functions/other/cal.baratsukiparams";
 import BaratsukiShiftColumn from "../chart/column/baratsuki.column";
-
+import { MQTTStore } from "@/store/mqttStore";
+import dayjs from "dayjs";
+import { IMqttResponse } from "@/types/MqttType";
+import BaratsukiShiftColumnRealtime from "../chart/column/baratsuki.columm.realtime";
 interface IProps {
   baratsuki: BaratsukiResponse[];
+  mqttData: IMqttResponse | null;
 }
 
-const CardCommonShift: React.FC<IProps> = ({ baratsuki }) => {
+const CardCommonShift: React.FC<IProps> = ({ baratsuki, mqttData }) => {
   const shift = GeneralStore((state) => state.shift);
   const transformData = (data: typeof baratsuki) => {
     return data.map((item) => {
@@ -81,7 +85,7 @@ const CardCommonShift: React.FC<IProps> = ({ baratsuki }) => {
           &nbsp;OA By Shift
         </p>
         <div>
-          <TwoRingShiftChart parameter={baratsuki} />
+          <TwoRingShiftChart parameter={baratsuki} mqttData={mqttData} />
         </div>
         <div className="flex gap-10">
           {[0, 1].map((index) => (
@@ -104,22 +108,49 @@ const CardCommonShift: React.FC<IProps> = ({ baratsuki }) => {
                   <div key={i} className="flex">
                     <p>{label}&nbsp;:&nbsp;</p>
                     <p className="font-semibold">
-                      {i === 0
-                        ? toLocaleFormat(
-                            calculateSummaryActualThisPeriod(baratsuki[index])
-                          )
-                        : i === 1
-                        ? toLocaleFormat(
-                            Math.floor(
-                              calculateSummaryDuration(baratsuki[index]) /
-                                baratsuki[index].data[0].ct_target
+                      {index === 0
+                        ? i === 0
+                          ? mqttData !== null
+                            ? mqttData.prod_actual
+                            : toLocaleFormat(
+                                calculateProdActualDifference(baratsuki[index])
+                              )
+                          : i === 1
+                          ? mqttData !== null
+                            ? mqttData.prod_target
+                            : Math.floor(
+                                calculateSummaryDuration(baratsuki[index]) /
+                                  baratsuki[index]?.data[0]?.ct_target
+                              )
+                          : i === 2
+                          ? `${calculateOADifference(baratsuki[index])}%`
+                          : i === 3
+                          ? `${baratsuki[index]?.data[0]?.ct_target}sec.`
+                          : `${baratsuki[index]?.data[0]?.challenge_target}%`
+                        : i === 0
+                        ? mqttData !== null
+                          ? "-"
+                          : toLocaleFormat(
+                              calculateProdActualDifference(baratsuki[index])
                             )
-                          )
+                        : i === 1
+                        ? mqttData !== null
+                          ? "-"
+                          : Math.floor(
+                              calculateSummaryDuration(baratsuki[index]) /
+                                baratsuki[index]?.data[0]?.ct_target
+                            )
                         : i === 2
-                        ? `${calculateOADifference(baratsuki[index])}%`
+                        ? mqttData !== null
+                          ? "-"
+                          : `${calculateOADifference(baratsuki[index])}%`
                         : i === 3
-                        ? `${baratsuki[index].data[0].ct_target}sec.`
-                        : `${baratsuki[index].data[0].challenge_target}%`}
+                        ? mqttData !== null
+                          ? "-"
+                          : `${baratsuki[index]?.data[0]?.ct_target}sec.`
+                        : mqttData !== null
+                        ? "-"
+                        : `${baratsuki[index]?.data[0]?.challenge_target}%`}
                     </p>
                   </div>
                 ))}
@@ -129,10 +160,18 @@ const CardCommonShift: React.FC<IProps> = ({ baratsuki }) => {
         </div>
       </div>
       <div style={{ height: "25rem" }}>
-        <BaratsukiShiftColumn
-          parameter={transformedData}
-          //   parameter_static_realtime={dataRealtime}
-        />
+        {mqttData === null ? (
+          <BaratsukiShiftColumn
+            parameter={transformedData}
+            mqttData={mqttData}
+            //   parameter_static_realtime={dataRealtime}
+          />
+        ) : (
+          <BaratsukiShiftColumnRealtime
+            parameter={transformedData}
+            mqttData={mqttData}
+          ></BaratsukiShiftColumnRealtime>
+        )}
       </div>
     </Card>
   );

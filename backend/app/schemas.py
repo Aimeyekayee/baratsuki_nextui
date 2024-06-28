@@ -60,6 +60,11 @@ class SearchRequestDataAreaParams(BaseModel):
     target_challege_upper: int
 
 
+class RawDataEachRow(BaseModel):
+    ct_actual: int
+    prod_actual: int
+
+
 class DataResponseHour(BaseModel):
     section_code: int
     line_id: int

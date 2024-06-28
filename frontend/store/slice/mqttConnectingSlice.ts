@@ -1,7 +1,7 @@
 import { StateCreator } from "zustand";
 import MQTT from "mqtt";
 import { IMqttConnectingState } from "../interfaces/mqttConnectingInterface";
-import environment from "@/utils/environment";
+import { IMqttResponse } from "@/types/MqttType";
 
 export const MqttConnectingSlice: StateCreator<IMqttConnectingState> = (
   set,
@@ -9,30 +9,7 @@ export const MqttConnectingSlice: StateCreator<IMqttConnectingState> = (
 ) => ({
   client: undefined,
   isConnected: false,
-  mqttDataMachine1: {
-    section_code: 0,
-    line_id: 0,
-    machine_no: "",
-    ct_actual: 0,
-    prod_actual: 0,
-    prod_plan: 0,
-    break_id_1: 0,
-    break_id_2: 0,
-    break_id_3: 0,
-    break_id_4: 0,
-  },
-  mqttDataMachine2: {
-    section_code: 0,
-    line_id: 0,
-    machine_no: "",
-    ct_actual: 0,
-    prod_actual: 0,
-    prod_plan: 0,
-    break_id_1: 0,
-    break_id_2: 0,
-    break_id_3: 0,
-    break_id_4: 0,
-  },
+  mqttDataMachine: [] as IMqttResponse[],
   connect() {
     if (get().client) return;
     const client = MQTT.connect({
@@ -44,7 +21,6 @@ export const MqttConnectingSlice: StateCreator<IMqttConnectingState> = (
     });
     set({ client });
     client.on("connect", () => {
-      console.log("MQTT Client Connected");
       set({ client, isConnected: true });
     });
   },
@@ -57,16 +33,11 @@ export const MqttConnectingSlice: StateCreator<IMqttConnectingState> = (
       return state;
     });
   },
-  setMqttDataMachine1(response) {
-    set({
-      mqttDataMachine1: response,
-    });
-    console.log("mqttData1 = ", get().mqttDataMachine1);
-  },
-  setMqttDataMachine2(response) {
-    set({
-      mqttDataMachine2: response,
-    });
-    console.log("mqttData2 = ", get().mqttDataMachine2);
-  },
+  addOrUpdatePayload: (data) =>
+    set((state) => {
+      const updatedPayloads = state.mqttDataMachine.filter(
+        (item) => item.machine_no !== data.machine_no
+      );
+      return { mqttDataMachine: [...updatedPayloads, data] };
+    }),
 });

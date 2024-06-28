@@ -1,5 +1,5 @@
 import React from "react";
-import { Tooltip, Chip } from "@nextui-org/react";
+import { Tooltip, Chip, Button } from "@nextui-org/react";
 import { QuestionCircleTwoTone } from "@ant-design/icons";
 import { GeneralStore } from "@/store/general.store";
 import { BaratsukiResponse } from "@/types/baratsuki.type";
@@ -46,6 +46,7 @@ const CardEachShift: React.FC<IProps> = ({ baratsuki }) => {
       ),
     })),
   }));
+
   return (
     <div
       style={{

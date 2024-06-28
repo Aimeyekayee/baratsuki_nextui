@@ -10,6 +10,7 @@ import {
 } from "@/functions/chart/annotations.baratsuki.column";
 
 import { useTheme } from "next-themes";
+import { IMqttResponse } from "@/types/MqttType";
 
 export interface DataShiftColumn {
   challenge_target: number;
@@ -22,6 +23,7 @@ export interface DataShiftColumn {
 }
 interface LineProps {
   parameter: DataShiftColumn[];
+  mqttData: IMqttResponse | null;
 }
 
 if (typeof document !== "undefined") {
@@ -29,6 +31,7 @@ if (typeof document !== "undefined") {
 }
 const BaratsukiShiftColumn: React.FC<LineProps> = ({
   parameter,
+  mqttData,
   // parameter_static_realtime,
 }) => {
   const shift = GeneralStore((state) => state.shift);
@@ -237,11 +240,11 @@ const BaratsukiShiftColumn: React.FC<LineProps> = ({
     annotations: [
       {
         type: "line",
-        start: ["start", parameter[0].challenge_lower],
-        end: [parameter[0].shift_text, parameter[0].challenge_lower],
+        start: ["start", parameter[0]?.challenge_lower],
+        end: [parameter[0]?.shift_text, parameter[0]?.challenge_lower],
         offsetX: 42,
         text: {
-          content: `${parameter[0].challenge_lower}`,
+          content: `${parameter[0]?.challenge_lower}`,
           offsetY: -9,
           offsetX: -24,
           position: "right",
@@ -261,11 +264,11 @@ const BaratsukiShiftColumn: React.FC<LineProps> = ({
       },
       {
         type: "line",
-        start: ["start", parameter[0].target_challenge],
-        end: [parameter[0].shift_text, parameter[0].target_challenge],
+        start: ["start", parameter[0]?.target_challenge],
+        end: [parameter[0]?.shift_text, parameter[0]?.target_challenge],
         offsetX: 42,
         text: {
-          content: `${parameter[0].target_challenge}`,
+          content: `${parameter[0]?.target_challenge}`,
           offsetY: -5,
           offsetX: -110,
           position: "left",
@@ -283,11 +286,11 @@ const BaratsukiShiftColumn: React.FC<LineProps> = ({
       },
       {
         type: "line",
-        start: ["median", parameter[1].target_challenge],
-        end: [parameter[1].shift_text, parameter[1].target_challenge],
+        start: ["median", parameter[1]?.target_challenge],
+        end: [parameter[1]?.shift_text, parameter[1]?.target_challenge],
         offsetX: 42,
         text: {
-          content: `${parameter[1].target_challenge}`,
+          content: `${parameter[1]?.target_challenge}`,
           offsetY: -5,
           offsetX: -110,
           position: "left",
@@ -305,11 +308,11 @@ const BaratsukiShiftColumn: React.FC<LineProps> = ({
       },
       {
         type: "line",
-        start: ["start", parameter[0].challenge_upper],
-        end: [parameter[0].shift_text, parameter[0].challenge_upper],
+        start: ["start", parameter[0]?.challenge_upper],
+        end: [parameter[0]?.shift_text, parameter[0]?.challenge_upper],
         offsetX: 42,
         text: {
-          content: `${parameter[0].challenge_upper}`,
+          content: `${parameter[0]?.challenge_upper}`,
           offsetX: -24,
           offsetY: -10,
           position: "right",
@@ -329,11 +332,11 @@ const BaratsukiShiftColumn: React.FC<LineProps> = ({
       },
       {
         type: "line",
-        start: ["median", parameter[1].challenge_lower],
-        end: [parameter[1].shift_text, parameter[1].challenge_lower],
+        start: ["median", parameter[1]?.challenge_lower],
+        end: [parameter[1]?.shift_text, parameter[1]?.challenge_lower],
         offsetX: 42,
         text: {
-          content: `${parameter[1].challenge_lower}`,
+          content: `${parameter[1]?.challenge_lower}`,
           offsetY: -9,
           offsetX: -24,
           position: "right",
@@ -353,11 +356,11 @@ const BaratsukiShiftColumn: React.FC<LineProps> = ({
       },
       {
         type: "line",
-        start: ["median", parameter[1].challenge_upper],
-        end: [parameter[1].shift_text, parameter[1].challenge_upper],
+        start: ["median", parameter[1]?.challenge_upper],
+        end: [parameter[1]?.shift_text, parameter[1]?.challenge_upper],
         offsetX: 42,
         text: {
-          content: `${parameter[1].challenge_upper}`,
+          content: `${parameter[1]?.challenge_upper}`,
           offsetX: -24,
           offsetY: -10,
           position: "right",
@@ -377,8 +380,8 @@ const BaratsukiShiftColumn: React.FC<LineProps> = ({
       },
       {
         type: "region",
-        start: ["start", parameter[0].challenge_lower],
-        end: [parameter[0].shift_text, parameter[0].challenge_upper],
+        start: ["start", parameter[0]?.challenge_lower],
+        end: [parameter[0]?.shift_text, parameter[0]?.challenge_upper],
         offsetX: 42,
         style: {
           fill: "#1890FF",
@@ -387,8 +390,8 @@ const BaratsukiShiftColumn: React.FC<LineProps> = ({
       },
       {
         type: "region",
-        start: ["median", parameter[1].challenge_lower],
-        end: [parameter[1].shift_text, parameter[1].challenge_upper],
+        start: ["median", parameter[1]?.challenge_lower],
+        end: [parameter[1]?.shift_text, parameter[1]?.challenge_upper],
         offsetX: 42,
         style: {
           fill: "#1890FF",

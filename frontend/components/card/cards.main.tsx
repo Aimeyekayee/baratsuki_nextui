@@ -14,15 +14,23 @@ import CardCommonShift from "./card.common.shift";
 import CardEachShift from "./card.each.shift";
 import ParameterInputs from "../popover/setting.parameter.popover";
 import { GeneralStore } from "@/store/general.store";
+import { IMqttResponse } from "@/types/MqttType";
 
 interface CardDisplayProps {
   baratsukiResponse: BaratsukiResponse[];
+  mqttData: IMqttResponse | null;
 }
 
-const CardDisplay: React.FC<CardDisplayProps> = ({ baratsukiResponse }) => {
+const CardDisplay: React.FC<CardDisplayProps> = ({
+  baratsukiResponse,
+  mqttData,
+}) => {
   const shift = GeneralStore((state) => state.shift);
-  const zone_name = `${baratsukiResponse[1]?.data[0]?.machine_no} -
+  const zone_name_not_real_time = `${baratsukiResponse[1]?.data[0]?.machine_no} -
       ${baratsukiResponse[1]?.data[0]?.machine_name}`;
+
+  const zone_name = mqttData ? mqttData.machine_no : zone_name_not_real_time;
+
   const initialFilteredData = baratsukiResponse.map((response) => ({
     ...response,
     data: response.data.slice(1).filter((entry) => entry.plan_type === "N"),
@@ -172,7 +180,10 @@ const CardDisplay: React.FC<CardDisplayProps> = ({ baratsukiResponse }) => {
         </div>
       </div>
       <div className="flex gap-10">
-        <CardCommonShift baratsuki={dataBaratsuki}></CardCommonShift>
+        <CardCommonShift
+          baratsuki={dataBaratsuki}
+          mqttData={mqttData}
+        ></CardCommonShift>
         <CardEachShift baratsuki={dataBaratsuki2}></CardEachShift>
       </div>
     </Card>

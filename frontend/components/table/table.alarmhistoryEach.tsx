@@ -37,7 +37,6 @@ export default function AlarmHistoryTableEach() {
     return date.toLocaleDateString("en-GB", options);
   }
   const formattedDate = formatDate(dateString);
-  console.log(formattedDate);
   const sortPie = GeneralStore((state) => state.sortPie);
 
   let data: AlarmTable[] = [

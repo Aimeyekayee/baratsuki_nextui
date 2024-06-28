@@ -18,7 +18,7 @@ interface ExtendedInterface extends BaratsukiDataAreaResponse {
 }
 
 const AreaPlotByHour: React.FC<IProps> = ({ parameter }) => {
-  console.log(parameter);
+  const shift = GeneralStore((state) => state.shift);
   const transformData = (
     parameter: BaratsukiDataAreaResponse[]
   ): ExtendedInterface[] => {
@@ -39,6 +39,7 @@ const AreaPlotByHour: React.FC<IProps> = ({ parameter }) => {
       };
     });
   };
+
   const extendedData: ExtendedInterface[] = transformData(parameter);
   extendedData.forEach((item: ExtendedInterface, index) => {
     item.period_value = extendedData
@@ -47,7 +48,108 @@ const AreaPlotByHour: React.FC<IProps> = ({ parameter }) => {
   });
   const lastDataPoint: number | undefined =
     extendedData[extendedData.length - 1]?.period_value;
-  console.log(lastDataPoint);
+
+  const generateAnnotations = (processedParameter: any[], target: number) => {
+    const annotations: any[] = processedParameter
+      .map((item, index) => {
+        if (item.value === target) {
+          return null; // Skip periods with zero or invalid ct_value values
+        } else {
+          const gapContent = `Gap: ${item.value < target ? "-" : "+"}${
+            target - item.value
+          } pcs.`;
+          const percentContent = `${item.value < target ? "-" : "+"}${(
+            Math.abs((target - item.value) / target) * 100
+          ).toFixed(2)}%`;
+          return [
+            {
+              type: "text",
+              content: gapContent,
+              offsetX: -40,
+              position: (xScale: any, yScale: any) => {
+                return index === processedParameter.length - 1
+                  ? [
+                      `${xScale.scale(item.date) * 100}%`,
+                      `${
+                        (1 - yScale.value.scale((target + item.value) / 2)) *
+                        100
+                      }%`,
+                    ]
+                  : ["0", "0"]; // Use position: ["0", "0"] for all items except the last one
+              },
+              style: {
+                textAlign: "center",
+                fill:
+                  shift === "day"
+                    ? item.value < target
+                      ? "#C40C0C"
+                      : item.value > target
+                      ? "blue"
+                      : "#FF8F8F"
+                    : "#FF8F8F",
+                fontSize: 10,
+                fontWeight: "bold",
+              },
+              background: {
+                padding: 10,
+                style: {
+                  z: 0,
+                  radius: 17,
+                },
+              },
+            },
+            {
+              type: "text",
+              content: percentContent,
+              offsetX: -25,
+              offsetY: 15,
+              position: (xScale: any, yScale: any) => {
+                return index === processedParameter.length - 1
+                  ? [
+                      `${xScale.scale(item.date) * 100}%`,
+                      `${
+                        (1 - yScale.value.scale((target + item.value) / 2)) *
+                        100
+                      }%`,
+                    ]
+                  : ["0", "0"]; // Use position: ["0", "0"] for all items except the last one
+              },
+              style: {
+                textAlign: "center",
+                fill:
+                  shift === "day"
+                    ? item.value < target
+                      ? "#C40C0C"
+                      : item.value > target
+                      ? "blue"
+                      : "#FF8F8F"
+                    : "#FF8F8F",
+                fontSize: 10,
+                fontWeight: "bold",
+              },
+              background: {
+                padding: 10,
+                style: {
+                  z: 0,
+                  radius: 17,
+                },
+              },
+            },
+          ];
+        }
+      })
+      .filter((annotation) => annotation !== null)
+      .flat(); // Flatten the array of arrays into a single array
+
+    return annotations;
+  };
+
+  const annotations: any[] = generateAnnotations(
+    extendedData,
+    extendedData[0].target_challege_lower
+    // (upper + lower) / 2
+  );
+
   const config: AreaConfig = {
     data: extendedData,
     xField: "time",

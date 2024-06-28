@@ -1,10 +1,18 @@
 import { BaratsukiResponse } from "@/types/baratsuki.type";
-export function calculateSummaryActualThisPeriod(data: BaratsukiResponse) {
-  return data.data.reduce((sum, item) => sum + item.actual_this_period, 0);
+export function calculateProdActualDifference(data: BaratsukiResponse) {
+  const lastItem = data?.data[data.data.length - 1].data;
+  return lastItem?.prod_actual - 0;
 }
 
 export function calculateSummaryDuration(data: BaratsukiResponse): number {
-  //! to calculate last 2 object = 0 because incase of not working on sangyousuru
+  // Check if data and data.data are defined
+  if (!data || !data.data) {
+    console.error(
+      "Invalid data structure: data or data.data is null or undefined."
+    );
+    return 0; // Return 0 if data or data.data is null or undefined
+  }
+
   const reversedData = [...data.data].reverse();
 
   const lastTwoExclusionCondition =
@@ -30,6 +38,14 @@ export function calculateSummaryDuration(data: BaratsukiResponse): number {
 }
 
 export function calculateOADifference(data: BaratsukiResponse): number {
+  // Check if data and data.data are defined
+  if (!data || !data.data) {
+    console.error(
+      "Invalid data structure: data or data.data is null or undefined."
+    );
+    return 0; // Return 0 if data or data.data is null or undefined
+  }
+
   const oaValues = data.data.map((item) => item.oa);
   const maxOA = Math.max(...oaValues);
   const minOA = Math.min(...oaValues);

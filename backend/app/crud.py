@@ -74,7 +74,6 @@ def get_planID(
     """
     try:
         result = db.execute(text(stmt)).mappings().all()
-        print("planty", result)
         return [dict(row) for row in result]
     except Exception as e:
         raise HTTPException(400, "Error get databaratsuki :" + str(e))

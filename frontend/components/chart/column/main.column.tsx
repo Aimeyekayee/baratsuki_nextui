@@ -505,7 +505,26 @@ const ColumnPlotTest: React.FC<LineProps> = ({ baratsuki }) => {
 
   const afterFilter = parameter.filter((item) => item.plan_type !== "B");
 
+  const combinedData = [
+    ...(baratsuki[0]?.data || []), // Ensures it's an array or defaults to empty array
+    ...(baratsuki[1]?.data || []), // Same here
+  ];
+  const combinedDataFilter = combinedData.filter(
+    (item) => item.plan_type !== "B"
+  );
   let accumulatedDuration = 0;
+  combinedDataFilter.forEach((item) => {
+    accumulatedDuration += item.duration;
+    const accummulateTarget =
+      Math.floor(accumulatedDuration / item.ct_target) *
+      (item.challenge_target / 100);
+    const accummulateUpper = accummulateTarget * 1.05;
+    const accummulateLower = accummulateTarget * 0.95;
+
+    item.accummulate_target = Math.floor(accummulateTarget);
+    item.accummulate_upper = Math.floor(accummulateUpper);
+    item.accummulate_lower = Math.floor(accummulateLower);
+  });
 
   afterFilter.forEach((item) => {
     accumulatedDuration += item.duration;
@@ -599,11 +618,17 @@ const ColumnPlotTest: React.FC<LineProps> = ({ baratsuki }) => {
         {...config}
         onReady={(plot) => {
           plot.on("element:click", async (evt: any) => {
+            console.log(shift);
             const elements: MachineDataRaw = evt.data.data;
+            console.log(elements.period);
             const interval = calculateInterval(elements.period);
-            const matchingElement = afterFilter.find(
-              (item) => item.period === elements.period
-            );
+            // console.log(mergedData);
+            const matchingElement = combinedDataFilter.find((item) => {
+              console.log(combinedData);
+              console.log(item); // Log each item being checked
+              return item.period === elements.period;
+            });
+            console.log(matchingElement);
             const params: SearchRequestDataAreaParams = {
               section_code: elements.section_code,
               line_id: elements.line_id,
@@ -624,6 +649,7 @@ const ColumnPlotTest: React.FC<LineProps> = ({ baratsuki }) => {
                 exclusion_time: matchingElement.exclusion_time,
               }),
             };
+            console.log(params);
             await requestBaratsukiArea(params);
             onOpen();
           });

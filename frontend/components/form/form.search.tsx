@@ -56,17 +56,6 @@ const FormSearch: React.FC<FormSearchProps> = ({
   onSearch,
 }) => {
   const {
-    client,
-    isConnected,
-    connect,
-    disconnect,
-    setMqttDataMachine1,
-    setMqttDataMachine2,
-    mqttDataMachine1,
-    mqttDataMachine2,
-  } = MQTTStore();
-
-  const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
@@ -74,7 +63,6 @@ const FormSearch: React.FC<FormSearchProps> = ({
     getValues,
   } = useForm();
   const searchParams = useSearchParams();
-  const machine_no_from_form = ["6EW-0040", "6TM-0315"];
 
   const onSubmit = async (data: FieldValues) => {
     console.log(data);
@@ -86,34 +74,7 @@ const FormSearch: React.FC<FormSearchProps> = ({
   const url_machine_no = searchParams.get("machine_no");
   const url_machine_no_array = url_machine_no ? url_machine_no.split("_") : [];
 
-
   const searchQuery = QueryParameterStore((state) => state.searchQuery);
-  useEffect(() => {
-    if (!client) return;
-
-    client.on("connect", () => {
-      console.log("connected!");
-      //!อาจจะพิจารณาแค่ 2 อันตาม form ที่เก็บจาก select
-      client.subscribe([
-        "414273/86/baratsuki/+/raw",
-        // "test1emqxmqtt414272/A220/AddOn_Zone2/faultcode/Raw",
-      ]);
-      client.on("message", async (topic, payload) => {
-        const data = JSON.parse(payload.toString());
-        if (data.machine_no === machine_no_from_form.at(0)) {
-          console.log(data);
-          setMqttDataMachine1(data);
-        } else if (data.machine_no === machine_no_from_form.at(1)) {
-          setMqttDataMachine2(data);
-        }
-      });
-    }); //ดึงจาก environment
-
-    return () => {
-      console.log("run before change page");
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [client, setMqttDataMachine1, setMqttDataMachine2]);
 
   useEffect(() => {
     (async () => {

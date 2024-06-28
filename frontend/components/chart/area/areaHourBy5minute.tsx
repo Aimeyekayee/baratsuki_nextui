@@ -217,7 +217,6 @@ const AreaPlotBy5minutes: React.FC<IProps> = ({ parameter }) => {
     // },
     seriesField: "value",
     color: (value) => {
-      console.log(value);
       if (value.value >= target) {
         return "rgba(24, 144, 255, 0.5)";
       } else if (value.value < target) {

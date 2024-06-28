@@ -15,8 +15,10 @@ import debounce from "lodash.debounce";
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import { QueryParameter } from "@/store/interfaces/queryparams.interface";
 import { SearchInputParams } from "@/types/baratsuki.type";
-import axios from "axios";
+import dayjs from "dayjs";
 import { requestBaratsuki } from "@/action/request.fetch";
+import { MQTTStore } from "@/store/mqttStore";
+import { IMqttResponse } from "@/types/MqttType";
 interface FormItem {
   id: string;
 }
@@ -42,6 +44,16 @@ const FormContainer: React.FC = () => {
     setSearchQuery,
     searchQuery,
   } = QueryParameterStore();
+  const {
+    client,
+    isConnected,
+    connect,
+    disconnect,
+    mqttDataMachine,
+    addOrUpdatePayload,
+  } = MQTTStore();
+
+  const currentDate = dayjs().format("YYYY-MM-DD");
   const sectionCodeParams = searchParams.get("section_code");
   const lineIdParams = searchParams.get("line_id");
   const machineNoParams = searchParams.get("machine_no");
@@ -142,6 +154,44 @@ const FormContainer: React.FC = () => {
     }
   };
 
+  const [topicMqtt, setTopicMqtt] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!client) return;
+
+    let latestData: IMqttResponse[] = [];
+
+    const handleMessage = (topic: string, payload: Buffer) => {
+      const data: IMqttResponse = JSON.parse(payload.toString());
+      if (topicMqtt.some((t) => t.includes(data.machine_no))) {
+        latestData.push(data);
+      }
+    };
+
+    client.on("connect", () => {
+      console.log("connected!");
+      client.subscribe(topicMqtt);
+      client.on("message", handleMessage);
+    });
+
+    const interval = setInterval(() => {
+      if (latestData.length > 0) {
+        latestData.forEach((data) => addOrUpdatePayload(data));
+        latestData = [];
+      }
+    }, 15000); // 30 seconds interval
+
+    return () => {
+      clearInterval(interval);
+      if (client) {
+        client.off("message", handleMessage);
+        client.unsubscribe(topicMqtt);
+      }
+    };
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [client, addOrUpdatePayload]);
+
   const handleSearch = async () => {
     // Split params into arrays, with default empty arrays if params are undefined
     const lineIds = (lineIdParams || "").split("_");
@@ -163,6 +213,21 @@ const FormContainer: React.FC = () => {
         machine_no: machineNos[index].replace(/v.*$/, ""),
         working_date: workingDates[index].replace(/v.*$/, ""),
       }));
+      const topic = newData
+        .filter((item) => item.working_date === currentDate)
+        .map(
+          (item) => `${item.section_code}/86/baratsuki/${item.machine_no}/raw`
+        );
+
+      //!change 86 to item.line_id
+      if (topic.length > 0) {
+        console.log(topic);
+        setTopicMqtt(topic);
+        connect();
+      } else {
+        disconnect();
+        client?.off;
+      }
       await requestBaratsuki(newData);
     } else {
       console.error("Arrays are not defined or do not have the same length.");
@@ -179,7 +244,7 @@ const FormContainer: React.FC = () => {
     params.set("shift", "1");
     const queryString = params.toString();
     const updatedPath = queryString ? `${pathname}?${queryString}` : pathname;
-    router.push(updatedPath);
+    router.replace(updatedPath);
   }, 500);
 
   useEffect(() => {
@@ -260,7 +325,6 @@ const FormContainer: React.FC = () => {
                   + Add the machines you want to compare
                 </Button>
               </div>
-
               <Button
                 style={{ height: "6rem" }}
                 color={isDisable ? "default" : "primary"}
