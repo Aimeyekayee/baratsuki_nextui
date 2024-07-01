@@ -10,7 +10,7 @@ import axios from "axios";
 export async function requestSection(): Promise<ISection[]> {
   const { setSections } = SearchRecStore.getState();
 
-  const response = await axios.get("http://127.0.0.1:8000/get_section");
+  const response = await axios.get("http://10.122.77.1:8004/get_section");
   if (response.status === 200) {
     setSections(response.data);
   }
@@ -22,7 +22,7 @@ export async function requestLinename(
 ): Promise<ILinename[]> {
   const { setLinename } = SearchRecStore.getState();
 
-  const response = await axios.get(`http://127.0.0.1:8000/get_linename`, {
+  const response = await axios.get(`http://10.122.77.1:8004/get_linename`, {
     params: { section_name: section_name },
   });
   if (response.status === 200) {
@@ -35,7 +35,7 @@ export async function requestMachinenames(
   section_code: number
 ): Promise<IMachinename> {
   const { setMachinename } = SearchRecStore.getState();
-  const response = await axios.get("http://127.0.0.1:8000/get_machinename", {
+  const response = await axios.get("http://10.122.77.1:8004/get_machinename", {
     params: { section_code: section_code },
   });
   if (response.status === 200) {

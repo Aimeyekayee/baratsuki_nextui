@@ -14,7 +14,7 @@ export async function requestBaratsuki(
   const { setBaratsuki } = BaratsukiStore.getState();
   try {
     const response = await axios.post(
-      "http://127.0.0.1:8000/get_rawdata",
+      "http://10.122.77.1:8004/get_rawdata",
       params
     );
 
@@ -36,7 +36,7 @@ export async function requestBaratsukiArea(
 ): Promise<BaratsukiDataAreaResponse[]> {
   const { setBaratsukiDataArea } = BaratsukiStore.getState();
   try {
-    const response = await axios.get("http://127.0.0.1:8000/get_data_area", {
+    const response = await axios.get("http:/10.122.77.1:8004/get_data_area", {
       params: params,
     });
 
