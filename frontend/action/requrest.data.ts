@@ -52,7 +52,7 @@ export async function requestDataDay(params: Params): Promise<any[]> {
     setActualNotRealTimeMC1,
     setActualNotRealTimeMC2,
   } = GeneralStore.getState();
-  //!   "http://127.0.0.1:8000/get_dataparameter_day"
+  //!   "http://10.122.77.1:8004/get_dataparameter_day"
   const response = await axios.get(
     "http://10.122.77.1:8004/get_dataparameter_day",
     {
@@ -738,8 +738,8 @@ export async function calBaratsukiNight(params: Params): Promise<any[]> {
     const filteredResults2 = results2.filter(
       (item: any) => !excludedPeriods.includes(item.period)
     );
-    console.log(filteredResults1)
-    console.log(filteredResults2)
+    console.log(filteredResults1);
+    console.log(filteredResults2);
     calBaratsukiEachMachine(filteredResults1);
     calBaratsukiEachMachine(filteredResults2);
 
