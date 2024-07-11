@@ -108,6 +108,7 @@ async def get_rawdata(params: List[SearchInputParams], db: Session = Depends(get
                 db=db,
             )
             result.extend(databaratsuki)
+        print("maert", result)
 
         # Second loop to collect data_points for each item in result
         for items in result:
@@ -156,6 +157,46 @@ async def get_rawdata(params: List[SearchInputParams], db: Session = Depends(get
             rearranged_data.append(rearranged_shifts)
 
         return rearranged_data
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error during get_rawdata: {e}")
+
+
+@app.post("/get_summary", response_model=List[List[dict]])
+async def get_rawdata(params: List[SearchInputParams], db: Session = Depends(get_db)):
+    try:
+        data = []
+        result = []
+
+        # First loop to collect data_points for each item in params
+        for item in params:
+            databaratsuki = crud.get_planID(
+                section_code=item.section_code,
+                line_id=item.line_id,
+                machine_no=item.machine_no,
+                working_date=item.working_date,
+                db=db,
+            )
+            result.extend(databaratsuki)
+        print("maert", result)
+
+        # Second loop to collect data_points for each item in result
+        for items in result:
+            data_points = crud.get_data_point_period(
+                section_code=items["section_code"],
+                line_id=items["line_id"],
+                machine_no=items["machine_no"],
+                working_date=items["working_date"].strftime(
+                    "%Y-%m-%d"
+                ),  # Convert to string if necessary
+                periods=items["period"],
+                plan_id=items["plan_id"],
+                db=db,
+            )
+            # Each item in data_points represents a distinct data set
+            data.append(data_points)
+
+        return data
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error during get_rawdata: {e}")

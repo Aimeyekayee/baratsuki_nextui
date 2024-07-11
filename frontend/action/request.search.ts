@@ -2,7 +2,6 @@ import {
   ISection,
   ILinename,
   IMachinename,
-  IToolConditions,
 } from "@/types/section.type";
 import { SearchRecStore } from "@/store/search.store";
 import axios from "axios";

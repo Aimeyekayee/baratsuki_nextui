@@ -1,6 +1,6 @@
 import { BaratsukiResponse } from "@/types/baratsuki.type";
 export function calculateProdActualDifference(data: BaratsukiResponse) {
-  const lastItem = data?.data[data.data.length - 1].data;
+  const lastItem = data?.data[data.data.length - 1]?.data;
   return lastItem?.prod_actual - 0;
 }
 

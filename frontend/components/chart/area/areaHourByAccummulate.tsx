@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { Area, AreaConfig, G2 } from "@ant-design/plots";
 import { GeneralStore } from "@/store/general.store";
-import { ModalOpenStore } from "@/store/modal.open.store";
 import { DataProductionDetails } from "@/store/interfaces/baratsuki.fetch.interface";
 import zustand from "zustand";
 import { BaratsukiDataAreaResponse } from "@/types/baratsuki.type";
@@ -15,6 +14,7 @@ interface ExtendedInterface extends BaratsukiDataAreaResponse {
   time: string;
 }
 const AreaPlotByAccummulate: React.FC<IProps> = ({ parameter }) => {
+  console.log(parameter);
   const transformData = (
     parameter: BaratsukiDataAreaResponse[]
   ): ExtendedInterface[] => {
@@ -32,11 +32,13 @@ const AreaPlotByAccummulate: React.FC<IProps> = ({ parameter }) => {
       };
     });
   };
-  const extendedData: ExtendedInterface[] = transformData(parameter);
 
+  const extendedData: ExtendedInterface[] = transformData(parameter);
+  const shift = GeneralStore((state) => state.shift);
   const lastDataPoint: number = extendedData[extendedData.length - 1]?.value;
   const lower: number = extendedData[0]?.accummulate_lower;
   const upper: number = extendedData[0]?.accummulate_upper;
+
   const config: AreaConfig = {
     data: extendedData,
     xField: "time",
@@ -44,6 +46,7 @@ const AreaPlotByAccummulate: React.FC<IProps> = ({ parameter }) => {
     label: {
       style: {
         fontSize: 16,
+        fill: shift === 1 ? "black" : "white",
       },
     },
     point: {
@@ -67,18 +70,43 @@ const AreaPlotByAccummulate: React.FC<IProps> = ({ parameter }) => {
       },
     },
     xAxis: {
+      label: {
+        style: {
+          fill: shift === 1 ? "black" : "white",
+        },
+      },
       range: [0, 1],
       tickCount: extendedData.length,
       title: {
         text: "Time",
-        style: { fontSize: 20, fontWeight: "bold" },
+        style: {
+          fontSize: 20,
+          fontWeight: "bold",
+          fill: shift === 1 ? "black" : "white",
+        },
       },
     },
     yAxis: {
+      label: {
+        style: {
+          fill: shift === 1 ? "black" : "white",
+        },
+      },
+      grid: {
+        line: {
+          style: {
+            strokeOpacity: 0.2,
+          },
+        },
+      },
       maxLimit: upper + 10,
       title: {
         text: "Actual (pcs.)",
-        style: { fontSize: 20, fontWeight: "bold" },
+        style: {
+          fontSize: 20,
+          fontWeight: "bold",
+          fill: shift === 1 ? "black" : "white",
+        },
       },
     },
     areaStyle: () => {
@@ -90,8 +118,135 @@ const AreaPlotByAccummulate: React.FC<IProps> = ({ parameter }) => {
       };
     },
     annotations: [
-      // ...annotations,
-      // ...annotationsArrow,
+      {
+        type: "text",
+        content: `Gap: ${lastDataPoint - (lower + upper) / 2} pcs.`,
+        offsetX: -50,
+        offsetY: 0,
+        position: (xScale: any, yScale: any) => {
+          return [
+            `${
+              xScale.scale(extendedData[extendedData.length - 1].time) * 100
+            }%`,
+            `${
+              (1 -
+                yScale.value.scale(
+                  ((lower + upper) / 2 +
+                    extendedData[extendedData.length - 1].value) /
+                    2
+                )) *
+              100
+            }%`,
+          ];
+        },
+        style: {
+          textAlign: "center",
+          fill:
+            shift === 1
+              ? extendedData[extendedData.length - 1].value <
+                (lower + upper) / 2
+                ? "#C40C0C"
+                : extendedData[extendedData.length - 1].value >
+                  (lower + upper) / 2
+                ? "blue"
+                : "#FF8F8F"
+              : "#FF8F8F",
+          fontSize: 10,
+          fontWeight: "bold",
+        },
+        background: {
+          padding: 10,
+          style: {
+            z: 0,
+            radius: 17,
+          },
+        },
+      },
+      {
+        type: "text",
+        content: `-${((lastDataPoint / ((lower + upper) / 2)) * 100).toFixed(
+          2
+        )}%`,
+        offsetX: -50,
+        offsetY: 20,
+        position: (xScale: any, yScale: any) => {
+          return [
+            `${
+              xScale.scale(extendedData[extendedData.length - 1].time) * 100
+            }%`,
+            `${
+              (1 -
+                yScale.value.scale(
+                  ((lower + upper) / 2 +
+                    extendedData[extendedData.length - 1].value) /
+                    2
+                )) *
+              100
+            }%`,
+          ];
+        },
+        style: {
+          textAlign: "center",
+          fill:
+            shift === 1
+              ? extendedData[extendedData.length - 1].value <
+                (lower + upper) / 2
+                ? "#C40C0C"
+                : extendedData[extendedData.length - 1].value >
+                  (lower + upper) / 2
+                ? "blue"
+                : "#FF8F8F"
+              : "#FF8F8F",
+          fontSize: 10,
+          fontWeight: "bold",
+        },
+        background: {
+          padding: 10,
+          style: {
+            z: 0,
+            radius: 17,
+          },
+        },
+      },
+      {
+        type: "line",
+        start: [
+          extendedData[extendedData.length - 1].time,
+          extendedData[extendedData.length - 1].value,
+        ], // Start slightly below ct_actual
+        end: [extendedData[extendedData.length - 1].time, (lower + upper) / 2], // End slightly above ct_actual
+        style: {
+          stroke:
+            shift === 1
+              ? extendedData[extendedData.length - 1].value <
+                (lower + upper) / 2
+                ? "red"
+                : extendedData[extendedData.length - 1].value >
+                  (lower + upper) / 2
+                ? "blue"
+                : "green"
+              : extendedData[extendedData.length - 1].value <
+                (lower + upper) / 2
+              ? "red"
+              : extendedData[extendedData.length - 1].value >
+                (lower + upper) / 2
+              ? "blue"
+              : "green",
+          lineWidth: 2,
+          endArrow: {
+            path: "M 1,0 L 8,4 L 8,-4 Z", // Arrow pointing right
+            d: 0,
+            opacity: 0.5,
+            fillOpacity: 0.5,
+          },
+          startArrow: {
+            path: "M 1,0 L 8,4 L 8,-4 Z", // Arrow pointing left
+            d: 0,
+            opacity: 0.5,
+            fillOpacity: 0.5,
+          },
+        },
+      },
       {
         type: "line",
         start: ["start", lower],

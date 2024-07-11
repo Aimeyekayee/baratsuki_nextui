@@ -33,7 +33,9 @@ const PercentOaBaratsuki: React.FC<LineProps> = ({ baratsuki }) => {
     let periodMinLower: string | undefined = undefined;
     let periodMinUpper: string | undefined = undefined;
 
-    data.forEach((entry) => {
+    const filteredData = data.filter((item) => item.plan_type !== "B");
+
+    filteredData.forEach((entry) => {
       if (
         entry.target_challenge_lower_percent !== undefined &&
         entry.target_challenge_lower_percent < minLowerPercent
@@ -69,9 +71,11 @@ const PercentOaBaratsuki: React.FC<LineProps> = ({ baratsuki }) => {
     let maxOa = -Infinity;
     let minOaPeriod = "";
     let maxOaPeriod = "";
+    const filteredData = data.filter((item) => item.plan_type !== "B");
+
 
     // Loop through data to find min and max oa values with associated periods
-    data.forEach((item) => {
+    filteredData.forEach((item) => {
       if (item.plan_type === "N") {
         if (item.oa < minOa) {
           minOa = item.oa;

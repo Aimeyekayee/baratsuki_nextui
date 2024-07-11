@@ -15,6 +15,8 @@ if (typeof document !== "undefined") {
   // you are safe to use the "document" object here
 }
 const TotalRing: React.FC<LineProps> = ({ shift, actual, target, rate }) => {
+  console.log("target",target)
+  console.log("actual",actual)
   const shiftStore = GeneralStore((state) => state.shift);
   const percentage = actual / target;
   const config: RingProgressConfig = {

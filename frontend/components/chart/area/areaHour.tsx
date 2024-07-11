@@ -1,10 +1,6 @@
 "use client";
-import { useState, useEffect } from "react";
 import { Area, AreaConfig, G2 } from "@ant-design/plots";
 import { GeneralStore } from "@/store/general.store";
-import { ModalOpenStore } from "@/store/modal.open.store";
-import { DataProductionDetails } from "@/store/interfaces/baratsuki.fetch.interface";
-import zustand from "zustand";
 import { BaratsukiDataAreaResponse } from "@/types/baratsuki.type";
 
 interface IProps {
@@ -39,13 +35,13 @@ const AreaPlotByHour: React.FC<IProps> = ({ parameter }) => {
       };
     });
   };
-
   const extendedData: ExtendedInterface[] = transformData(parameter);
   extendedData.forEach((item: ExtendedInterface, index) => {
     item.period_value = extendedData
       .slice(0, index + 1)
       .reduce((acc, curr) => acc + curr.value, 0);
   });
+
   const lastDataPoint: number | undefined =
     extendedData[extendedData.length - 1]?.period_value;
 
@@ -143,12 +139,12 @@ const AreaPlotByHour: React.FC<IProps> = ({ parameter }) => {
 
     return annotations;
   };
-
-  const annotations: any[] = generateAnnotations(
-    extendedData,
-    extendedData[0].target_challege_lower
-    // (upper + lower) / 2
-  );
+  const target =
+    (extendedData[0].target_challege_upper +
+      extendedData[0].target_challege_lower) /
+    2;
+  const lower = extendedData[0].target_challege_lower;
+  const upper = extendedData[0].target_challege_upper;
 
   const config: AreaConfig = {
     data: extendedData,
@@ -157,6 +153,7 @@ const AreaPlotByHour: React.FC<IProps> = ({ parameter }) => {
     label: {
       style: {
         fontSize: 16,
+        fill: shift === 1 ? "black" : "white",
       },
     },
     point: {
@@ -181,24 +178,199 @@ const AreaPlotByHour: React.FC<IProps> = ({ parameter }) => {
             : "rgba(255,0,0,0.7)", // Red line
       },
     },
+    areaStyle: () => {
+      return {
+        fill:
+          lastDataPoint &&
+          lastDataPoint >= extendedData[0].target_challege_lower &&
+          lastDataPoint <= extendedData[0].target_challege_upper
+            ? "l(270) 0:#ffffff 0.5:#7ec2f3 1:#1890ff"
+            : "l(270) 0:#ffffff 0.5:#ff9673 1:#ff5218",
+      };
+    },
     xAxis: {
+      label: {
+        style: {
+          fill: shift === 1 ? "black" : "white",
+        },
+      },
       range: [0, 1],
       tickCount: extendedData.length,
+      tickLine: {
+        style: {
+          fill: shift === 1 ? "black" : "white",
+        },
+      },
       title: {
         text: "Time",
-        style: { fontSize: 20, fontWeight: "bold" },
+        style: {
+          fontSize: 20,
+          fontWeight: "bold",
+          fill: shift === 1 ? "black" : "white",
+        },
       },
     },
     yAxis: {
+      label: {
+        style: {
+          fill: shift === 1 ? "black" : "white",
+        },
+      },
+      grid: {
+        line: {
+          style: {
+            strokeOpacity: 0.2,
+          },
+        },
+      },
       maxLimit: extendedData[0].target_challege_upper + 10,
       title: {
         text: "Actual (pcs.)",
-        style: { fontSize: 20, fontWeight: "bold" },
+        style: {
+          fontSize: 20,
+          fontWeight: "bold",
+          fill: shift === 1 ? "black" : "white",
+        },
       },
     },
     annotations: [
-      // ...annotationsArrow,
-      // ...annotations,
+      {
+        type: "text",
+        content:
+          lastDataPoint && lastDataPoint >= lower
+            ? ""
+            : `Gap: ${
+                lastDataPoint !== undefined ? lastDataPoint - target : "Unknown"
+              } pcs.`,
+        offsetX: -50,
+        offsetY: 0,
+        position: (xScale: any, yScale: any) => {
+          const lastPeriodValue =
+            extendedData[extendedData.length - 1].period_value;
+          if (
+            lastPeriodValue !== undefined &&
+            yScale.period_value !== undefined
+          ) {
+            const targetValue = (target + lastPeriodValue) / 2;
+            const xPosition =
+              xScale.scale(extendedData[extendedData.length - 1].time) * 100;
+            const yPosition =
+              (1 - yScale.period_value.scale(targetValue)) * 100;
+
+            return [`${xPosition}%`, `${yPosition}%`];
+          } else {
+            // Handle case where lastPeriodValue or yScale.period_value is undefined
+            return ["0%", "0%"]; // or some default values as needed
+          }
+        },
+        style: {
+          textAlign: "center",
+          fill:
+            shift === 1
+              ? extendedData[extendedData.length - 1].value < target
+                ? "#C40C0C"
+                : extendedData[extendedData.length - 1].value > target
+                ? "blue"
+                : "#FF8F8F"
+              : "#FF8F8F",
+          fontSize: 10,
+          fontWeight: "bold",
+        },
+        background: {
+          padding: 10,
+          style: {
+            z: 0,
+            radius: 17,
+          },
+        },
+      },
+      {
+        type: "line",
+        start: [
+          extendedData[extendedData.length - 1].time,
+          extendedData[extendedData.length - 1].period_value ?? "Unknown",
+        ], // Start slightly below ct_actual
+        end: [extendedData[extendedData.length - 1].time, target], // End slightly above ct_actual
+        style: {
+          stroke:
+            shift === 1
+              ? extendedData[extendedData.length - 1].value < target
+                ? "red"
+                : extendedData[extendedData.length - 1].value > target
+                ? "blue"
+                : "green"
+              : extendedData[extendedData.length - 1].value < target
+              ? "red"
+              : extendedData[extendedData.length - 1].value > target
+              ? "blue"
+              : "green",
+          lineWidth: 2,
+          endArrow: {
+            path: "M 1,0 L 8,4 L 8,-4 Z", // Arrow pointing right
+            d: 0,
+            opacity: 0.5,
+            fillOpacity: 0.5,
+          },
+          startArrow: {
+            path: "M 1,0 L 8,4 L 8,-4 Z", // Arrow pointing left
+            d: 0,
+            opacity: 0.5,
+            fillOpacity: 0.5,
+          },
+        },
+      },
+      {
+        type: "text",
+        content:
+          lastDataPoint && lastDataPoint >= lower
+            ? ""
+            : `-${(
+                (lastDataPoint !== undefined
+                  ? lastDataPoint / target
+                  : 0 / target) * 100
+              ).toFixed(2)}%`,
+        offsetX: -50,
+        offsetY: 20,
+        position: (xScale: any, yScale: any) => {
+          const lastPeriodValue =
+            extendedData[extendedData.length - 1].period_value;
+          if (
+            lastPeriodValue !== undefined &&
+            yScale.period_value !== undefined
+          ) {
+            const targetValue = (target + lastPeriodValue) / 2;
+            const xPosition =
+              xScale.scale(extendedData[extendedData.length - 1].time) * 100;
+            const yPosition =
+              (1 - yScale.period_value.scale(targetValue)) * 100;
+
+            return [`${xPosition}%`, `${yPosition}%`];
+          } else {
+            // Handle case where lastPeriodValue or yScale.period_value is undefined
+            return ["0%", "0%"]; // or some default values as needed
+          }
+        },
+        style: {
+          textAlign: "center",
+          fill:
+            shift === 1
+              ? extendedData[extendedData.length - 1].value < target
+                ? "#C40C0C"
+                : extendedData[extendedData.length - 1].value > target
+                ? "blue"
+                : "#FF8F8F"
+              : "#FF8F8F",
+          fontSize: 10,
+          fontWeight: "bold",
+        },
+        background: {
+          padding: 10,
+          style: {
+            z: 0,
+            radius: 17,
+          },
+        },
+      },
       {
         type: "line",
         start: ["min", extendedData[0].target_challege_lower],

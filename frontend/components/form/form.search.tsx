@@ -1,12 +1,8 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import debounce from "lodash.debounce";
+import React, {useEffect } from "react";
+import { useSearchParams, } from "next/navigation";
 import { FieldValues, useForm } from "react-hook-form";
-import { ISection } from "@/types/section.type";
-import { useDateFormatter } from "@react-aria/i18n";
-import dayjs from "dayjs";
-import { MQTTStore } from "@/store/mqttStore";
+
 import { motion } from "framer-motion";
 
 import {
@@ -17,18 +13,12 @@ import {
   DatePicker,
   Chip,
 } from "@nextui-org/react";
-import { DateValue, getLocalTimeZone } from "@internationalized/date";
-import useStoreSearch from "@/action/useStoreSearch";
+
 import {
-  requestLinename,
-  requestMachinenames,
   requestSection,
 } from "@/action/request.search";
 import IconDeleteBin4Fill from "../icons";
-import {
-  QueryParameterStore,
-  initialSearchQuery,
-} from "@/store/query.params.store";
+
 
 interface FormSearchProps {
   id: string;
@@ -67,14 +57,6 @@ const FormSearch: React.FC<FormSearchProps> = ({
   const onSubmit = async (data: FieldValues) => {
     console.log(data);
   };
-
-  const url_section_code = Number(searchParams.get("section_code"));
-  const url_line_id = Number(searchParams.get("line_id"));
-  const url_working_date = searchParams.get("working_date");
-  const url_machine_no = searchParams.get("machine_no");
-  const url_machine_no_array = url_machine_no ? url_machine_no.split("_") : [];
-
-  const searchQuery = QueryParameterStore((state) => state.searchQuery);
 
   useEffect(() => {
     (async () => {

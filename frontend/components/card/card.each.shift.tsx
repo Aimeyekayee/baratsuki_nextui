@@ -11,6 +11,7 @@ interface IProps {
   baratsuki: BaratsukiResponse[];
 }
 const CardEachShift: React.FC<IProps> = ({ baratsuki }) => {
+  console.log(baratsuki);
   const { theme, setTheme } = useTheme();
   const shift = GeneralStore((state) => state.shift);
   const setShift = GeneralStore((state) => state.setShift);
@@ -46,6 +47,7 @@ const CardEachShift: React.FC<IProps> = ({ baratsuki }) => {
       ),
     })),
   }));
+  console.log(transformData);
 
   return (
     <div
@@ -109,15 +111,15 @@ const CardEachShift: React.FC<IProps> = ({ baratsuki }) => {
             shift. Challenge rate at{" "}
             <span className="font-medium">
               {shift === 1
-                ? transformData[0].data[0].challenge_target
-                : transformData[1].data[1].challenge_target}
+                ? transformData[0].data[0]?.challenge_target
+                : transformData[1].data[1]?.challenge_target}
               %
             </span>{" "}
             and CT. target at{" "}
             <span className="font-medium">
               {shift === 1
-                ? transformData[0].data[0].ct_target
-                : transformData[1].data[1].ct_target}{" "}
+                ? transformData[0].data[0]?.ct_target
+                : transformData[1].data[1]?.ct_target}{" "}
               sec
             </span>
           </p>

@@ -3,11 +3,9 @@ import { useDisclosure } from "@nextui-org/react";
 
 import ModalHour from "../../modal/modal.hour";
 import { GeneralStore } from "@/store/general.store";
-import dayjs from "dayjs";
 
 import { G2, Column, ColumnConfig } from "@ant-design/plots";
 import { each, findIndex } from "@antv/util";
-import { DataBaratsuki, ModalOpenStore } from "@/store/modal.open.store";
 
 import axios from "axios";
 import {
@@ -17,7 +15,6 @@ import {
   SearchRequestDataAreaParams,
 } from "@/types/baratsuki.type";
 import { OffsetX } from "@/functions/chart/annotations.main.column";
-import { useEffect, useState } from "react";
 import { requestBaratsukiArea } from "@/action/request.fetch";
 interface Data {
   ct_actual: number;
@@ -48,6 +45,20 @@ if (typeof document !== "undefined") {
   // you are safe to use the "document" object here
 }
 const ColumnPlotTest: React.FC<LineProps> = ({ baratsuki }) => {
+  baratsuki.forEach((shiftObj) => {
+    let accumTarget = 0;
+
+    shiftObj.data = shiftObj.data.map((item: any) => {
+      accumTarget += item.target_challenge;
+      return {
+        ...item,
+        accum_target: accumTarget,
+        accum_lower: Math.round(accumTarget * 0.95),
+        accum_upper: Math.round(accumTarget * 1.05),
+      };
+    });
+  });
+  console.log(baratsuki);
   function transformAndMergeData(data: BaratsukiResponse[]): string[] {
     return data.flatMap((shiftData) =>
       shiftData.data
@@ -60,7 +71,6 @@ const ColumnPlotTest: React.FC<LineProps> = ({ baratsuki }) => {
   const shift = GeneralStore((state) => state.shift);
 
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
-  const setDataTooltip = ModalOpenStore((state) => state.setDataTooltip);
   const { InteractionAction, registerInteraction, registerAction } = G2;
 
   G2.registerShape("point", "custom-point", {
@@ -195,6 +205,7 @@ const ColumnPlotTest: React.FC<LineProps> = ({ baratsuki }) => {
   });
 
   const parameter = shift === 1 ? baratsuki[0].data : baratsuki[1].data;
+  console.log(parameter);
 
   const annotationsLower: any[] = parameter
     .map((update, index, array) => {
@@ -504,7 +515,7 @@ const ColumnPlotTest: React.FC<LineProps> = ({ baratsuki }) => {
   let chart: any;
 
   const afterFilter = parameter.filter((item) => item.plan_type !== "B");
-
+  console.log(afterFilter);
   const combinedData = [
     ...(baratsuki[0]?.data || []), // Ensures it's an array or defaults to empty array
     ...(baratsuki[1]?.data || []), // Same here
@@ -513,6 +524,7 @@ const ColumnPlotTest: React.FC<LineProps> = ({ baratsuki }) => {
     (item) => item.plan_type !== "B"
   );
   let accumulatedDuration = 0;
+  console.log(combinedData);
   combinedDataFilter.forEach((item) => {
     accumulatedDuration += item.duration;
     const accummulateTarget =
@@ -618,17 +630,11 @@ const ColumnPlotTest: React.FC<LineProps> = ({ baratsuki }) => {
         {...config}
         onReady={(plot) => {
           plot.on("element:click", async (evt: any) => {
-            console.log(shift);
             const elements: MachineDataRaw = evt.data.data;
-            console.log(elements.period);
             const interval = calculateInterval(elements.period);
-            // console.log(mergedData);
             const matchingElement = combinedDataFilter.find((item) => {
-              console.log(combinedData);
-              console.log(item); // Log each item being checked
               return item.period === elements.period;
             });
-            console.log(matchingElement);
             const params: SearchRequestDataAreaParams = {
               section_code: elements.section_code,
               line_id: elements.line_id,
@@ -642,14 +648,13 @@ const ColumnPlotTest: React.FC<LineProps> = ({ baratsuki }) => {
               target_challege_target: elements.target_challenge,
               target_challege_upper: elements.target_challenge_upper,
               ...(matchingElement && {
-                accummulate_target: matchingElement.accummulate_target,
-                accummulate_upper: matchingElement.accummulate_upper,
-                accummulate_lower: matchingElement.accummulate_lower,
+                accummulate_target: matchingElement.accum_target,
+                accummulate_upper: matchingElement.accum_upper,
+                accummulate_lower: matchingElement.accum_lower,
                 duration: matchingElement.duration,
                 exclusion_time: matchingElement.exclusion_time,
               }),
             };
-            console.log(params);
             await requestBaratsukiArea(params);
             onOpen();
           });

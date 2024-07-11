@@ -1,3 +1,4 @@
+"use client";
 import {
   Navbar as NextUINavbar,
   NavbarContent,
@@ -12,6 +13,7 @@ import { Kbd } from "@nextui-org/kbd";
 import { Link } from "@nextui-org/link";
 import { Input } from "@nextui-org/input";
 // import { ThemeSwitch } from "./theme-switch";
+import { usePathname } from "next/navigation";
 
 import { link as linkStyles } from "@nextui-org/theme";
 
@@ -31,6 +33,7 @@ import { Logo } from "@/components/icons";
 import { ThemeSwitcher } from "./themeSwitcher";
 
 export const Navbar = () => {
+  const pathname = usePathname();
   const searchInput = (
     <Input
       aria-label="Search"
@@ -53,7 +56,13 @@ export const Navbar = () => {
   );
 
   return (
-    <NextUINavbar maxWidth="xl" position="sticky">
+    <NextUINavbar
+      maxWidth="xl"
+      position="sticky"
+      style={
+        pathname === "/summary" ? { display: "none" } : { display: "flex" }
+      }
+    >
       <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
         <NavbarBrand as="li" className="gap-3 max-w-fit">
           <NextLink className="flex justify-start items-center gap-1" href="/">

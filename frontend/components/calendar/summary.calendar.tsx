@@ -1,5 +1,4 @@
-"use client";
-import React from "react";
+import React, { useEffect } from "react";
 import {
   RangeCalendar,
   Radio,
@@ -8,20 +7,26 @@ import {
   ButtonGroup,
   cn,
 } from "@nextui-org/react";
+import debounce from "lodash.debounce";
 import type { DateValue } from "@react-types/calendar";
 import type { RangeValue } from "@react-types/shared";
-import { isWeekend } from "@internationalized/date";
 import {
   today,
   getLocalTimeZone,
   startOfWeek,
-  endOfWeek,
   startOfMonth,
+  endOfWeek,
   endOfMonth,
 } from "@internationalized/date";
 import { useLocale } from "@react-aria/i18n";
+import { QueryParameterStore } from "@/store/query.params.store";
+import { usePathname, useSearchParams, useRouter } from "next/navigation";
+import { QueryParameter } from "@/store/interfaces/queryparams.interface";
 
-export default function CalendarSummary() {
+export default function RangeCalendars() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
   let [value, setValue] = React.useState<RangeValue<DateValue>>({
     start: today(getLocalTimeZone()),
     end: today(getLocalTimeZone()).add({ weeks: 1, days: 3 }),
@@ -34,14 +39,19 @@ export default function CalendarSummary() {
   let { locale } = useLocale();
 
   let now = today(getLocalTimeZone());
-  let startOfThisWeek = startOfWeek(now, locale);
-  let endOfThisWeek = endOfWeek(now, locale);
-  let startOfLastWeek = startOfWeek(now.add({ weeks: -1 }), locale);
-  let endOfLastWeek = endOfWeek(now.add({ weeks: -1 }), locale);
-  let startOfThisMonth = startOfMonth(now);
-  let endOfThisMonth = endOfMonth(now);
-  let startOfLastMonth = startOfMonth(now.add({ months: -1 }));
-  let endOfLastMonth = endOfMonth(now.add({ months: -1 }));
+  let thisWeek = {
+    start: startOfWeek(now, locale),
+    end: endOfWeek(now, locale),
+  };
+
+  let lastWeek = {
+    start: startOfWeek(now.add({ weeks: -1 }), locale),
+    end: endOfWeek(now.add({ weeks: -1 }), locale),
+  };
+  let thisMonth = { start: startOfMonth(now), end: endOfMonth(now) };
+
+  const { replaceWorkingDate, addWorkingDate, searchQuery } =
+    QueryParameterStore();
 
   const CustomRadio = (props: any) => {
     const { children, ...otherProps } = props;
@@ -64,12 +74,43 @@ export default function CalendarSummary() {
       </Radio>
     );
   };
+  const updateSearchQuery = debounce(() => {
+    const params = new URLSearchParams();
+    Object.keys(searchQuery).forEach((key) => {
+      if (searchQuery[key as keyof QueryParameter]) {
+        params.set(key, searchQuery[key as keyof QueryParameter] as string);
+      }
+    });
+    params.set("shift", "1");
+    const queryString = params.toString();
+    const updatedPath = queryString ? `${pathname}?${queryString}` : pathname;
+    router.replace(updatedPath);
+  }, 500);
+
+  useEffect(() => {
+    updateSearchQuery();
+    return () => {
+      updateSearchQuery.cancel();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery]);
+  const handleChange = (newValue: RangeValue<DateValue>) => {
+    const id = "";
+    setValue(newValue);
+    const startDate = `${newValue.start.year}-${newValue.start.month}-${newValue.start.day}`;
+    const endDate = `${newValue.end.year}-${newValue.end.month}-${newValue.end.day}`;
+    const workingDateParams = searchParams.get("working_date");
+    if (workingDateParams?.includes("x")) {
+      console.log("yes");
+      replaceWorkingDate(id, `${startDate}x${endDate}`);
+    } else {
+      addWorkingDate(`${startDate}x${endDate}`);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-4">
       <RangeCalendar
-        allowsNonContiguousRanges
-        aria-label="Time off request"
         focusedValue={focusedValue}
         nextButtonProps={{
           variant: "bordered",
@@ -78,7 +119,7 @@ export default function CalendarSummary() {
           variant: "bordered",
         }}
         bottomContent={
-            <ButtonGroup
+          <ButtonGroup
             fullWidth
             className="px-3 max-w-full pb-2 pt-3 bg-content1 [&>button]:text-default-500 [&>button]:border-default-200/60"
             radius="full"
@@ -86,37 +127,25 @@ export default function CalendarSummary() {
             variant="bordered"
           >
             <Button
-              className="max-w-[100px]" // Add this line to limit the width
               onPress={() => {
-                setValue({ start: startOfLastWeek, end: endOfLastWeek });
-                setFocusedValue(endOfLastWeek);
+                setValue(lastWeek);
+                setFocusedValue(lastWeek.end);
               }}
             >
               Last week
             </Button>
             <Button
-              className="max-w-[100px]" // Add this line to limit the width
               onPress={() => {
-                setValue({ start: startOfThisWeek, end: endOfThisWeek });
-                setFocusedValue(endOfThisWeek);
+                setValue(thisWeek);
+                setFocusedValue(thisWeek.start);
               }}
             >
               This week
             </Button>
             <Button
-              className="max-w-[100px]" // Add this line to limit the width
               onPress={() => {
-                setValue({ start: startOfLastMonth, end: endOfLastMonth });
-                setFocusedValue(endOfLastMonth);
-              }}
-            >
-              Last month
-            </Button>
-            <Button
-              className="max-w-[100px]" // Add this line to limit the width
-              onPress={() => {
-                setValue({ start: startOfThisMonth, end: endOfThisMonth });
-                setFocusedValue(endOfThisMonth);
+                setValue(thisMonth);
+                setFocusedValue(thisMonth.start);
               }}
             >
               This month
@@ -124,7 +153,7 @@ export default function CalendarSummary() {
           </ButtonGroup>
         }
         value={value}
-        onChange={setValue}
+        onChange={handleChange}
         onFocusChange={setFocusedValue}
       />
     </div>

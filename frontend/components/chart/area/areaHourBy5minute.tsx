@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { Area, AreaConfig, G2, Column, ColumnConfig } from "@ant-design/plots";
 import { GeneralStore } from "@/store/general.store";
-import { ModalOpenStore } from "@/store/modal.open.store";
 import { DataProductionDetails } from "@/store/interfaces/baratsuki.fetch.interface";
 import zustand from "zustand";
 import { useRouter } from "next/navigation";
@@ -44,23 +43,31 @@ const AreaPlotBy5minutes: React.FC<IProps> = ({ parameter }) => {
 
   extendedData.shift();
 
-  // Helper function to format time
-  function formatTime(date: any) {
-    return date.toISOString().slice(11, 16);
-  }
+
 
   // Add 'range' key to each object
   for (let i = 1; i < extendedData.length; i++) {
-    const currentDate = new Date(extendedData[i].date);
-    const previousDate = new Date(extendedData[i - 1].date);
-    const range = `${formatTime(previousDate)} - ${formatTime(currentDate)}`;
+    const currentDate = extendedData[i].time;
+    const previousDate = extendedData[i - 1].time;
+    const range = `${previousDate} - ${currentDate}`;
     extendedData[i].range = range;
   }
+  const getTimeMinusMinutes = (
+    time: string,
+    minutesToSubtract: number
+  ): string => {
+    const [hours, minutes] = time.split(":").map(Number);
+    const date = new Date();
+    date.setHours(hours, minutes);
+    date.setMinutes(date.getMinutes() - minutesToSubtract);
+    const newHours = String(date.getHours()).padStart(2, "0");
+    const newMinutes = String(date.getMinutes()).padStart(2, "0");
 
-  // Special case for the first element
-  extendedData[0].range = `09:30 - ${formatTime(
-    new Date(extendedData[0].date)
-  )}`;
+    return `${newHours}:${newMinutes}`;
+  };
+  const newTime = getTimeMinusMinutes(extendedData[0].time, 5);
+  
+  extendedData[0].range = `${newTime} - ${extendedData[0].time}`;
   const target = Math.floor(
     (300 / extendedData[0].ct_target) * (extendedData[0].challenge_rate / 100)
   ); // target by 5 min @challenge_rate
@@ -197,6 +204,8 @@ const AreaPlotBy5minutes: React.FC<IProps> = ({ parameter }) => {
       }
     })
     .filter((annotation) => annotation !== null);
+  console.log(parameter);
+  console.log(extendedData);
   const config: ColumnConfig = {
     data: extendedData,
     xField: "range",
@@ -226,6 +235,11 @@ const AreaPlotBy5minutes: React.FC<IProps> = ({ parameter }) => {
     },
     legend: false,
     xAxis: {
+      label: {
+        style: {
+          fill: shift === 1 ? "black" : "white",
+        },
+      },
       title: {
         text: "Time",
         style: {
@@ -236,6 +250,11 @@ const AreaPlotBy5minutes: React.FC<IProps> = ({ parameter }) => {
       },
     },
     yAxis: {
+      label: {
+        style: {
+          fill: shift === 1 ? "black" : "white",
+        },
+      },
       maxLimit: target + 8,
       title: {
         text: "Actual (pcs.)",

@@ -4,8 +4,9 @@ import { siteConfig } from "@/config/site";
 import { fontSans } from "@/config/fonts";
 import { Providers } from "./providers";
 import { Navbar } from "@/components/navbar";
-import { Link } from "@nextui-org/link";
 import clsx from "clsx";
+import { Inter } from "next/font/google";
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: {
@@ -42,7 +43,9 @@ export default function RootLayout({
         <Providers themeProps={{ attribute: "class", defaultTheme: "light" }}>
           <div className="relative flex flex-col h-screen min-h-dvh">
             <Navbar />
-            <main className="px-6 flex-grow py-6">{children}</main>
+            <main className={inter.className} style={{ flexGrow: 1 }}>
+              {children}
+            </main>
           </div>
         </Providers>
       </body>

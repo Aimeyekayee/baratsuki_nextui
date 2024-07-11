@@ -3,7 +3,6 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@nextui-org/react";
 import useStoreSearch from "@/action/useStoreSearch";
 import FormSearch from "./form.search";
-import { ISection } from "@/types/section.type";
 import { AnimatePresence } from "framer-motion";
 import { Accordion, AccordionItem } from "@nextui-org/react";
 import { requestLinename, requestMachinenames } from "@/action/request.search";
@@ -19,16 +18,20 @@ import dayjs from "dayjs";
 import { requestBaratsuki } from "@/action/request.fetch";
 import { MQTTStore } from "@/store/mqttStore";
 import { IMqttResponse } from "@/types/MqttType";
+import {
+  sortedLineName,
+  sortedSection,
+} from "@/functions/other/sort.selection";
+import { GeneralStore } from "@/store/general.store";
 interface FormItem {
   id: string;
 }
 
 //!จะต้องแก้เรื่องการ fetch line name และ machine_name เนื่องจาก set เป็น store เดียวเลยทำให้
-//!เมื่อเลือกตัวเลือกที่ 2 store ของตัวเลือกที่ 2 จะโดนทับไป ต้องทำให้แยกกันให้ได้
-
-//!ทำ remove query paramerter ด้วย เมื่อ close form
 
 const FormContainer: React.FC = () => {
+  const { sections, linename, machinename } = useStoreSearch();
+  const setIsLoading = GeneralStore((state) => state.setIsLoading);
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -67,22 +70,10 @@ const FormContainer: React.FC = () => {
   };
 
   const removeForm = (id: string) => {
-    console.log(...forms);
-    const line_id_parts = lineIdParams?.split("_");
-    const section_code_parts = sectionCodeParams?.split("_");
-    const machine_no_parts = machineNoParams?.split("_");
-    const working_date_parts = workingDateParams?.split("_");
-
-    if (
-      !line_id_parts ||
-      !section_code_parts ||
-      !machine_no_parts ||
-      !working_date_parts
-    ) {
-      console.log("One or more parameters are missing.");
-      return;
-    }
-
+    const line_id_parts = lineIdParams?.split("_") || [];
+    const section_code_parts = sectionCodeParams?.split("_") || [];
+    const machine_no_parts = machineNoParams?.split("_") || [];
+    const working_date_parts = workingDateParams?.split("_") || [];
     const index = line_id_parts.findIndex((part) => part.includes(id));
 
     if (index !== -1) {
@@ -92,20 +83,35 @@ const FormContainer: React.FC = () => {
         return [before, after].filter((part) => part).join("_");
       };
 
-      const newData = {
-        shift: "1",
-        line_id: joinWithDelimiter(line_id_parts, index),
-        section_code: joinWithDelimiter(section_code_parts, index),
-        machine_no: joinWithDelimiter(machine_no_parts, index),
-        working_date: joinWithDelimiter(working_date_parts, index),
+      const newData: Partial<QueryParameter> = {
+        shift: "1", // Ensure shift is always a string
+        line_id: line_id_parts.length
+          ? joinWithDelimiter(line_id_parts, index)
+          : undefined,
+        section_code: section_code_parts.length
+          ? joinWithDelimiter(section_code_parts, index)
+          : undefined,
+        machine_no: machine_no_parts.length
+          ? joinWithDelimiter(machine_no_parts, index)
+          : undefined,
+        working_date: working_date_parts.length
+          ? joinWithDelimiter(working_date_parts, index)
+          : undefined,
       };
-
-      setSearchQuery(newData);
-      setForms(forms.filter((form) => form.id !== id));
+      // Remove undefined keys from newData
+      Object.keys(newData).forEach(
+        (key) =>
+          newData[key as keyof Partial<QueryParameter>] === undefined &&
+          delete newData[key as keyof Partial<QueryParameter>]
+      );
+      // Typecast newData to QueryParameter to satisfy the function's requirement
+      setSearchQuery(newData as QueryParameter);
     } else {
       console.log("ID not found in line_id parts.");
     }
+    setForms(forms.filter((form) => form.id !== id));
   };
+
   const handleSectionChange = async (id: string, value: string) => {
     await requestLinename(value);
   };
@@ -158,29 +164,24 @@ const FormContainer: React.FC = () => {
 
   useEffect(() => {
     if (!client) return;
-
     let latestData: IMqttResponse[] = [];
-
     const handleMessage = (topic: string, payload: Buffer) => {
       const data: IMqttResponse = JSON.parse(payload.toString());
       if (topicMqtt.some((t) => t.includes(data.machine_no))) {
         latestData.push(data);
       }
     };
-
     client.on("connect", () => {
       console.log("connected!");
       client.subscribe(topicMqtt);
       client.on("message", handleMessage);
     });
-
     const interval = setInterval(() => {
       if (latestData.length > 0) {
         latestData.forEach((data) => addOrUpdatePayload(data));
         latestData = [];
       }
-    }, 15000); // 30 seconds interval
-
+    }, 10000);
     return () => {
       clearInterval(interval);
       if (client) {
@@ -188,18 +189,14 @@ const FormContainer: React.FC = () => {
         client.unsubscribe(topicMqtt);
       }
     };
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [client, addOrUpdatePayload]);
 
   const handleSearch = async () => {
-    // Split params into arrays, with default empty arrays if params are undefined
     const lineIds = (lineIdParams || "").split("_");
     const sectionCodes = (sectionCodeParams || "").split("_");
     const machineNos = (machineNoParams || "").split("_");
     const workingDates = (workingDateParams || "").split("_");
-
-    // Check if all arrays are defined and have the same length
     if (
       lineIds.length > 0 &&
       lineIds.length === sectionCodes.length &&
@@ -228,7 +225,9 @@ const FormContainer: React.FC = () => {
         disconnect();
         client?.off;
       }
+
       await requestBaratsuki(newData);
+      setIsLoading(false);
     } else {
       console.error("Arrays are not defined or do not have the same length.");
     }
@@ -244,10 +243,11 @@ const FormContainer: React.FC = () => {
     params.set("shift", "1");
     const queryString = params.toString();
     const updatedPath = queryString ? `${pathname}?${queryString}` : pathname;
-    router.replace(updatedPath);
+    router.push(updatedPath);
   }, 500);
 
   useEffect(() => {
+    console.log("here");
     updateSearchQuery();
     return () => {
       updateSearchQuery.cancel();
@@ -255,24 +255,20 @@ const FormContainer: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery]);
 
-  const { sections, linename, machinename } = useStoreSearch();
-  const sortedSection = sections
-    .slice()
-    .sort((a: ISection, b: ISection) =>
-      a.section_name.localeCompare(b.section_name)
-    );
-  const sortByFirstNumber = (a: any, b: any) => {
-    const numA = parseInt(a.line_name.match(/\d+/)?.[0] || "0");
-    const numB = parseInt(b.line_name.match(/\d+/)?.[0] || "0");
-    return numA - numB;
-  };
-  const sortedLinename = linename.slice().sort(sortByFirstNumber);
-
   const isDisable =
     !searchParams.has("section_code") ||
     !searchParams.has("line_id") ||
     !searchParams.has("machine_no") ||
     !searchParams.has("working_date");
+
+  useEffect(() => {
+    if (isDisable) {
+    } else {
+      setIsLoading(true);
+      handleSearch();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="flex">
@@ -292,8 +288,8 @@ const FormContainer: React.FC = () => {
                       key={form.id}
                       id={form.id}
                       onRemove={removeForm}
-                      sortedSection={sortedSection}
-                      sortedLinename={sortedLinename}
+                      sortedSection={sortedSection(sections)}
+                      sortedLinename={sortedLineName(linename)}
                       machinename={machinename}
                       onSectionChange={(value) =>
                         handleSectionChange(form.id, value)

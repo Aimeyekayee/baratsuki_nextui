@@ -33,6 +33,9 @@ export interface MachineDataRaw {
   accummulate_target?: number;
   accummulate_upper?: number;
   accummulate_lower?: number;
+  accum_target?: number;
+  accum_lower?: number;
+  accum_upper?: number;
 }
 
 export interface BaratsukiResponse {

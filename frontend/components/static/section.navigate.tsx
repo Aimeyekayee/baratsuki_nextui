@@ -3,25 +3,10 @@ import denso_bg from "@/public/Denso.png";
 import { Card, CardBody } from "@nextui-org/react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { siteConfig } from "@/config/site";
 
-const listNavigate = [
-  {
-    title: "Daily Performance",
-    text: "Daily Performance",
-    router: "/daily",
-  },
-  {
-    title: "Summary Dashboard",
-    text: "Summary Dashboard",
-    router: "/summary",
-  },
-  ,
-  {
-    title: "Streaming",
-    text: "Streaming",
-    router: "/streaming",
-  },
-];
+const listNavigate = siteConfig.navItems;
+const filteredList = listNavigate.filter((item) => item.label !== "Home");
 const cardVariants = {
   initial: { opacity: 0, y: 50 },
   animate: { opacity: 1, y: 0 },
@@ -35,25 +20,16 @@ const SectionNavigate = () => {
     router.push(router_url ? router_url : "/");
   };
   return (
-    <div
-      className="relative flex flex-col justify-center items-center"
-      style={{ width: "100%", height: "80%" }}
-    >
+    <div className="relative flex flex-col justify-center items-center w-full h-4/5">
       <div className="h-16"></div>
       <div
+        className="w-full h-full bg-cover bg-center"
         style={{
           backgroundImage: `url(${denso_bg.src})`,
-          width: "100%",
-          height: "100%",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
         }}
       ></div>
-      <div
-        className="absolute flex gap-6"
-        style={{ bottom: "5%", height: "100%" }}
-      >
-        {listNavigate.map((item, index) => (
+      <div className="absolute flex gap-6 h-full" style={{ bottom: "5%" }}>
+        {filteredList.map((item, index) => (
           <motion.div
             key={index}
             whileHover="hover"
@@ -66,11 +42,12 @@ const SectionNavigate = () => {
             <Card
               shadow="sm"
               isPressable
-              onPress={() => onCardPress(item?.router)}
-              style={{ height: "100%", width: "30rem" }}
+              className="h-full"
+              onPress={() => onCardPress(item?.href)}
+              style={{ width: "30rem" }}
             >
               <CardBody>
-                <p>{item?.title}</p>
+                <p>{item?.label}</p>
               </CardBody>
             </Card>
           </motion.div>

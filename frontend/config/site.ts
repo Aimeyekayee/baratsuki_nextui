@@ -6,18 +6,22 @@ export const siteConfig = {
   navItems: [
     {
       label: "Home",
+      text: "Home",
       href: "/",
     },
     {
       label: "Daily Performance",
+      text: "Daily Performance",
       href: "/daily",
     },
     {
       label: "Summary Dashboard",
+      text: "Summary Dashboard",
       href: "/summary",
     },
     {
       label: "Streaming",
+      text: "Streaming",
       href: "/streaming",
     },
   ],

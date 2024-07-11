@@ -21,12 +21,12 @@ export const TwoRingShiftChart: React.FC<LineProps> = ({
       {parameter.map((item, index) => (
         <TotalRing
           key={index}
-          rate={item.data[0].challenge_target}
+          rate={item.data[0]?.challenge_target}
           target={
             mqttData !== null && item.shift === 2
               ? 0
               : Math.floor(
-                  calculateSummaryDuration(item) / item.data[0].ct_target
+                  calculateSummaryDuration(item) / item.data[0]?.ct_target
                 )
           }
           shift={item.shift}

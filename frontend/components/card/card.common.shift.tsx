@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Card, Tooltip } from "@nextui-org/react";
+import { Card, Tooltip, Chip } from "@nextui-org/react";
 import { QuestionCircleTwoTone } from "@ant-design/icons";
 import { BaratsukiResponse } from "@/types/baratsuki.type";
 import { TwoRingShiftChart } from "../chart/ring/twoRingDayNight";
@@ -25,14 +25,14 @@ const CardCommonShift: React.FC<IProps> = ({ baratsuki, mqttData }) => {
   const transformData = (data: typeof baratsuki) => {
     return data.map((item) => {
       const shiftText = item.shift === 1 ? "Day" : "Night";
-      const actual = item.data.reduce(
-        (sum, entry) => sum + entry.actual_this_period,
-        0
-      );
+      const last_index_prod_actual =
+        item.data[item.data.length - 1]?.data.prod_actual;
+
+      const actual = last_index_prod_actual - 0;
       const duration = calculateSummaryDuration(item);
-      const ct_target = item.data[0].ct_target;
+      const ct_target = item.data[0]?.ct_target;
       const target100 = duration / ct_target;
-      const challengeTarget = item.data[0].challenge_target;
+      const challengeTarget = item.data[0]?.challenge_target;
       const target_challenge = target100 * (challengeTarget / 100);
 
       return {
@@ -73,17 +73,26 @@ const CardCommonShift: React.FC<IProps> = ({ baratsuki, mqttData }) => {
       }}
     >
       <div className="flex flex-col items-center gap-4">
-        <p
-          style={{
-            fontSize: "1.5rem",
-            fontWeight: "bold",
-          }}
-        >
-          <Tooltip content="Click at Column to change view to that shift.">
-            <QuestionCircleTwoTone style={{ fontSize: "1.5rem" }} />
-          </Tooltip>
-          &nbsp;OA By Shift
-        </p>
+        <div className="flex flex-col justify-center items-center">
+          <p
+            style={{
+              fontSize: "1.5rem",
+              fontWeight: "bold",
+            }}
+          >
+            <Tooltip content="Click at Column to change view to that shift.">
+              <QuestionCircleTwoTone style={{ fontSize: "1.5rem" }} />
+            </Tooltip>
+            &nbsp;OA By Shift
+          </p>
+          <span className="text-[#006FEE]">
+            working date:{" "}
+            {new Date(baratsuki[0].data[0]?.working_date).toLocaleDateString(
+              "en-US",
+              { day: "2-digit", month: "long", year: "numeric" }
+            )}
+          </span>
+        </div>
         <div>
           <TwoRingShiftChart parameter={baratsuki} mqttData={mqttData} />
         </div>
