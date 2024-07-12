@@ -14,13 +14,13 @@ import { GeneralStore } from "@/store/general.store";
 import AreaPlotByHour from "../chart/area/areaHour";
 import AreaPlotBy5minutes from "../chart/area/areaHourBy5minute";
 import AreaPlotByAccummulate from "../chart/area/areaHourByAccummulate";
-import AlarmCountColumn from "../chart/dualaxes - pareto/alarmfreq.column";
-import PieAllMachine from "../chart/pie/pieallMc";
-import AlarmCountEachMC1 from "../chart/dualaxes - pareto/alarmEachMc1";
-import AlarmCountEachMC2 from "../chart/dualaxes - pareto/alarmEachMc2";
-import AlarmHistoryTableAlls from "../table/table.alarmhistoryAlls";
-import SortPieSelect from "../select/select.sortPie";
-import AlarmHistoryTableEach from "../table/table.alarmhistoryEach";
+// import AlarmCountColumn from "../chart/dualaxes - pareto/alarmfreq.column";
+// import PieAllMachine from "../chart/pie/pieallMc";
+// // import AlarmCountEachMC1 from "../chart/dualaxes - pareto/alarmEachMc1";
+// // import AlarmCountEachMC2 from "../chart/dualaxes - pareto/alarmEachMc2";
+// import AlarmHistoryTableAlls from "../table/table.alarmhistoryAlls";
+// import SortPieSelect from "../select/select.sortPie";
+// import AlarmHistoryTableEach from "../table/table.alarmhistoryEach";
 import { BaratsukiStore } from "@/store/data.baratsuki.store";
 
 interface ModalManagement {
@@ -40,7 +40,7 @@ const ModalHour: React.FC<ModalManagement> = ({
   const setBaratsukiDataArea = BaratsukiStore(
     (state) => state.setBaratsukiDataArea
   );
-  const clickMCinPieGraph = GeneralStore((state) => state.clickMCinPieGraph);
+  // const clickMCinPieGraph = GeneralStore((state) => state.clickMCinPieGraph);
   const [selected, setSelected] = React.useState<string | number>("5min");
   const [selectedView, setSelectedView] = React.useState<string | number>(
     "each"
@@ -137,30 +137,30 @@ const ModalHour: React.FC<ModalManagement> = ({
                     style={{ width: "30%" }}
                     className="flex flex-col items-center justify-center"
                   >
-                    <SortPieSelect />
-                    <PieAllMachine />
+                    {/* <SortPieSelect />
+                    <PieAllMachine /> */}
                   </div>
                   <div style={{ width: "70%" }}>
-                    {clickMCinPieGraph === "MC1" ? (
+                    {/* {clickMCinPieGraph === "MC1" ? (
                       <AlarmCountEachMC1 />
                     ) : (
                       <AlarmCountEachMC2 />
-                    )}
+                    )} */}
                   </div>
                 </div>
               ) : (
                 <div>
-                  <SortPieSelect />
-                  <AlarmCountColumn />
+                  {/* <SortPieSelect />
+                  <AlarmCountColumn /> */}
                 </div>
               )}
             </div>
             <div style={{ padding: "0 1rem 0 1rem" }}>
-              {selectedView === "all" ? (
+              {/* {selectedView === "all" ? (
                 <AlarmHistoryTableAlls />
               ) : (
                 <AlarmHistoryTableEach />
-              )}
+              )} */}
             </div>
           </div>
         </ModalBody>
